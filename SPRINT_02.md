@@ -459,3 +459,71 @@ both work without component-level branching.
   an ICU plural for `activity.tooltip`.
 - **32 new tests; 179 total.** 100 % coverage on
   `src/lib/dashboard/aggregations.ts`.
+
+## Task 3 — AI activation + cache + rate limiting (shipped)
+
+`src/lib/ai.ts` now makes real Claude calls via `@anthropic-ai/sdk`
+when `ANTHROPIC_API_KEY` is present, with response caching, per-user
+rate limiting, and usage logging. Deterministic stubs are preserved
+verbatim and used when the env var is missing — no behavior change for
+local dev without a key.
+
+### What landed
+
+- **Real Anthropic calls.** `generateExercise`, `evaluateAnswer`, and
+  `reviewText` in `src/lib/ai.ts` now dispatch to the SDK when
+  `AI_CONFIGURED` is true. The public function signatures kept their
+  shape and gained an optional trailing `userId?: string` argument.
+- **Three new tables** in `prisma/schema.prisma`: `AiCache`,
+  `AiRateLimit`, `AiUsage`. Hand-written migration at
+  `prisma/migrations/20260515130000_ai_tables/migration.sql` — **not
+  yet applied** (no live DB in this environment); it will run on the
+  next `prisma migrate dev/deploy`.
+- **Cache.** `src/lib/ai-cache.ts` — `get(key)` / `set(args)`, SHA-256
+  over `endpoint:model:canonicalPrompt`. Expired rows are best-effort
+  deleted on read; `set` swallows errors so a doomed cache write never
+  breaks the caller; `ttlMs === 0` skips the write entirely.
+- **Rate limits.** `src/lib/ai-rate-limit.ts` —
+  `checkAndIncrement(userId, endpoint)` runs atomically inside
+  `prisma.$transaction` over a rolling 24h window and throws
+  `AiRateLimitedError` when the daily ceiling is hit. Cache hits do not
+  count.
+- **Limits + pricing config.** `src/config/limits.ts` —
+  `AI_RATE_LIMITS` (`REVIEW_TEXT: 20/day`,
+  `EVALUATE_ANSWER: 200/day`, `GENERATE_EXERCISE: 50/day`),
+  `AI_CACHE_TTL_MS` (`REVIEW_TEXT: 0` never cached;
+  `EVALUATE_ANSWER: 1h`; `GENERATE_EXERCISE: 30 days`),
+  `AI_MODEL_PRICING_MICROCENTS_PER_TOKEN`, and
+  `estimateCostMicrocents(model, in, out)`. Integer microcents
+  (1 cent = 100 µ¢; USD × 100 000) keep `AiUsage.costMicrocents` away
+  from float drift.
+- **Usage logging.** Every AI call writes an `AiUsage` row with
+  `cacheHit` flag and `costMicrocents` estimate, regardless of whether
+  the user is anonymous (`userId: null`).
+- **Rate-limit surfacing.**
+  - `src/lib/review/actions.ts` returns
+    `{ ok: false, error: 'rate_limited' }` on `AiRateLimitedError`;
+    `ReviewForm` renders the new `review.rateLimited` localized message
+    in all four locales.
+  - `src/lib/exercises/actions.ts` **soft-fails**: if `evaluateAnswer`
+    rate-limits, the local rule-based grade is used and the attempt is
+    still recorded — submission never blocks on AI availability.
+- **Generation script.** `scripts/generate-exercises.ts` opens with an
+  `AI mode: real|stub (model: <model>)` log line and passes
+  `userId: undefined` so admin runs skip per-user rate limits while
+  still logging usage with `userId: null`.
+
+### Important: prompt invalidation
+
+The cache key includes the canonical prompt body, so a prompt change
+yields a new key automatically — but **old rows for the old prompt
+remain in `AiCache` until their TTL expires**. If you change a prompt
+in `ai.ts` and need fresh results immediately, either bump the model
+name (forces a new key) or run a one-shot
+`DELETE FROM "AiCache" WHERE endpoint = '<endpoint>'`.
+
+### Tests
+
+47 new tests; **226 total**. 100 % coverage on `src/config/limits.ts`,
+`src/lib/ai-cache.ts`, and `src/lib/ai-rate-limit.ts`; 96 %+ on
+`src/lib/ai.ts`.

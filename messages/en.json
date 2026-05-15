@@ -171,6 +171,7 @@
     "placeholder": "Paste your German text here…",
     "submit": "Request review",
     "insufficientFunds": "You don't have enough Münzen for a review.",
+    "rateLimited": "You've reached the daily limit for AI reviews. Try again tomorrow.",
     "feedbackHeading": "AI feedback",
     "history": "Past reviews",
     "balanceLine": "Balance: {balance} M · Cost: {cost} M"

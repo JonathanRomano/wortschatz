@@ -56,7 +56,13 @@ export function ReviewForm({ balance, cost }: { balance: number; cost: number })
             startTransition(async () => {
               const res = await submitReviewRequest(text);
               if (!res.ok) {
-                setError(res.error === "insufficient_funds" ? t("insufficientFunds") : "Error");
+                if (res.error === "insufficient_funds") {
+                  setError(t("insufficientFunds"));
+                } else if (res.error === "rate_limited") {
+                  setError(t("rateLimited"));
+                } else {
+                  setError("Error");
+                }
               } else {
                 setFeedback(res.feedback);
                 setRemaining(res.remainingMuenzen);

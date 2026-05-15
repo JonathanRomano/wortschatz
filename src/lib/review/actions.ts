@@ -3,12 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { reviewText } from "@/lib/ai";
+import { reviewText, AiRateLimitedError } from "@/lib/ai";
 import { debit, InsufficientFundsError, MUENZEN_RULES } from "@/lib/muenzen";
 
 export type ReviewResult =
   | { ok: true; feedback: string; remainingMuenzen: number }
-  | { ok: false; error: "insufficient_funds" | "not_authenticated" | "empty" };
+  | {
+      ok: false;
+      error:
+        | "insufficient_funds"
+        | "not_authenticated"
+        | "empty"
+        | "rate_limited";
+    };
 
 export async function submitReviewRequest(text: string): Promise<ReviewResult> {
   const session = await auth();
@@ -28,8 +35,17 @@ export async function submitReviewRequest(text: string): Promise<ReviewResult> {
   }
 
   // We default user level to B1 for the AI prompt — once we track level
-  // explicitly on the User model, swap that in here.
-  const ai = await reviewText(trimmed, "B1");
+  // explicitly on the User model, swap that in here. Pass userId so the
+  // call counts against the user's daily quota.
+  let ai;
+  try {
+    ai = await reviewText(trimmed, "B1", userId);
+  } catch (err) {
+    if (err instanceof AiRateLimitedError) {
+      return { ok: false, error: "rate_limited" };
+    }
+    throw err;
+  }
 
   try {
     await debit(userId, MUENZEN_RULES.aiReviewCost, "SPENT_AI_REVIEW");

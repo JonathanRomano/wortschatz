@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
 import { gradeLocally } from "@/lib/exercises/grade";
-import { evaluateAnswer, AI_CONFIGURED } from "@/lib/ai";
+import {
+  evaluateAnswer,
+  AI_CONFIGURED,
+  AiRateLimitedError,
+} from "@/lib/ai";
 import {
   computeReward,
   credit,
@@ -55,10 +59,21 @@ export async function submitExerciseAttempt(
   let feedback = local.feedback;
 
   // Fall back to AI when local grading isn't deterministic and AI is on.
+  // Swallow rate-limit errors here — the local grade is still recorded,
+  // so the user just doesn't get the richer AI feedback this attempt.
   if (!local.deterministic && AI_CONFIGURED) {
-    const ai = await evaluateAnswer(exercise, rawAnswer);
-    score = ai.score;
-    feedback = ai.feedback;
+    try {
+      const ai = await evaluateAnswer(exercise, rawAnswer, userId);
+      score = ai.score;
+      feedback = ai.feedback;
+    } catch (err) {
+      if (!(err instanceof AiRateLimitedError)) throw err;
+      // Keep the local placeholder feedback; surface a soft note so the
+      // UI can show that AI grading wasn't applied this time.
+      feedback =
+        feedback +
+        " (AI evaluation skipped: daily limit reached. Try again tomorrow.)";
+    }
   }
 
   // Streak handling: bump if last activity was yesterday, reset if older.

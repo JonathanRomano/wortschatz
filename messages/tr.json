@@ -171,6 +171,7 @@
     "placeholder": "Almanca metninizi buraya yapıştırın…",
     "submit": "Değerlendirme iste",
     "insufficientFunds": "Bir değerlendirme için yeterli Münzen'iniz yok.",
+    "rateLimited": "AI inceleme günlük sınırına ulaştınız. Yarın tekrar deneyin.",
     "feedbackHeading": "AI geri bildirimi",
     "history": "Geçmiş değerlendirmeler",
     "balanceLine": "Bakiye: {balance} M · Maliyet: {cost} M"

@@ -181,6 +181,40 @@ writes production code; reviewer audits (no tests, no docs); tester
 writes tests (no production code); docs updates `CLAUDE.md`,
 `SPRINT_02.md`, `ROADMAP.md`, etc. One semantic commit per task.
 
+## AI integration
+
+- `src/lib/ai.ts` is the **only** file that imports the Anthropic SDK.
+  Never read `process.env.ANTHROPIC_API_KEY` elsewhere — gate on the
+  exported `AI_CONFIGURED` boolean instead.
+- When `AI_CONFIGURED` is `false`, the public functions return
+  deterministic stubs and write nothing to the DB (no cache write, no
+  `AiUsage` row, no rate-limit increment).
+- All call sites pass `userId?: string` when available. Pure scripts
+  (e.g. `scripts/generate-exercises.ts`) pass `undefined` so admin runs
+  skip per-user rate limits — usage is still logged with `userId: null`.
+- **Caching.** SHA-256 over `endpoint:model:canonicalPrompt`. TTLs live
+  in `AI_CACHE_TTL_MS` in `src/config/limits.ts`
+  (`REVIEW_TEXT: 0` = never cached; `EVALUATE_ANSWER: 1h`;
+  `GENERATE_EXERCISE: 30 days`). `set` swallows errors and a TTL of 0
+  skips the write entirely; expired rows are best-effort deleted on read.
+- **Rate limits.** Per-user, per-endpoint, rolling 24h window via
+  `prisma.$transaction` (`src/lib/ai-rate-limit.ts`). Limits live in
+  `AI_RATE_LIMITS` in `src/config/limits.ts`
+  (`REVIEW_TEXT: 20`, `EVALUATE_ANSWER: 200`, `GENERATE_EXERCISE: 50`
+  per day). Cache hits do not count.
+- **Errors.** Catch `AiRateLimitedError` at the call site and surface a
+  localized message (review returns
+  `{ ok: false, error: 'rate_limited' }`; evaluate falls back to the
+  local grade and still records the attempt). Cache errors are already
+  swallowed inside `ai-cache.ts`.
+- **Cost.** `estimateCostMicrocents(model, inputTokens, outputTokens)`
+  returns integer microcents (1 cent = 100 µ¢; USD × 100 000). Persist
+  on `AiUsage.costMicrocents` to avoid float drift.
+
 ## What NOT to change without a request
 
-- Prisma schema, API routes, grading, Münzen amounts, AI prompts
+- Prisma schema, API routes, grading, Münzen amounts
+- AI surface (`src/lib/ai.ts`) — keep the public function signatures
+  stable; if you change prompts, follow the cache invalidation note in
+  `SPRINT_02.md` (the cache key includes the prompt body, so old rows
+  for the old prompt remain until their TTL expires).

@@ -171,6 +171,7 @@
     "placeholder": "Вставте свій німецький текст тут…",
     "submit": "Замовити огляд",
     "insufficientFunds": "У вас недостатньо Münzen для огляду.",
+    "rateLimited": "Ви досягли денного ліміту перевірок ШІ. Спробуйте завтра.",
     "feedbackHeading": "Відгук ШІ",
     "history": "Минулі огляди",
     "balanceLine": "Баланс: {balance} M · Вартість: {cost} M"

@@ -171,6 +171,59 @@ model AIReviewRequest {
   @@index([userId, createdAt])
 }
 
+// --- AI infrastructure --------------------------------------------------
+//
+// Persisted cache, per-user rate-limit windows, and per-call usage log for
+// the Claude integration in src/lib/ai.ts. See src/config/limits.ts for the
+// TTLs and rate ceilings.
+
+model AiCache {
+  id           String   @id @default(cuid())
+  // SHA-256 hex of the canonical prompt + endpoint + model. Indexed.
+  key          String   @unique
+  endpoint     String
+  model        String
+  // The cached response as JSON. Shape varies by endpoint.
+  response     Json
+  // Cumulative token usage from the original call.
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+
+  @@index([expiresAt])
+  @@index([endpoint])
+}
+
+model AiRateLimit {
+  id          String   @id @default(cuid())
+  userId      String
+  endpoint    String
+  count       Int      @default(0)
+  // Start of the rolling 24h window. Reset when now - windowStart > 1 day.
+  windowStart DateTime @default(now())
+
+  @@unique([userId, endpoint])
+  @@index([windowStart])
+}
+
+model AiUsage {
+  id             String   @id @default(cuid())
+  userId         String?  // null for system/admin scripts
+  endpoint       String
+  model          String
+  inputTokens    Int
+  outputTokens   Int
+  // Estimated USD cost, computed from a per-model price table.
+  // Stored as integer microcents (cost * 100000) to avoid float drift.
+  costMicrocents Int
+  cacheHit       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([endpoint, createdAt])
+}
+
 // --- NextAuth tables ----------------------------------------------------
 // Standard schema from @auth/prisma-adapter.
 

@@ -5,14 +5,17 @@
  *   npm run db:generate-exercises
  *
  * Without an ANTHROPIC_API_KEY the generator falls back to deterministic
- * stub content (see src/lib/ai.ts). To use real Claude generation, set
- * ANTHROPIC_API_KEY and replace the TODO in src/lib/ai.ts:generateExercise.
+ * stub content (see src/lib/ai.ts). With the key set, generateExercise
+ * makes real Claude calls — they go through the cache + usage log, and
+ * since we pass `userId: undefined` this script bypasses per-user rate
+ * limiting (it's an admin/system run).
  */
 import type { CefrLevel, ExerciseType, Prisma } from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
 import { generateExercise, AI_CONFIGURED } from "../src/lib/ai";
 
 const prisma = new PrismaClient();
+const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
 
 const TYPES: ExerciseType[] = [
   "FILL_IN_THE_BLANK",
@@ -32,9 +35,7 @@ const LEVELS: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1"];
 
 async function main() {
   console.log(
-    AI_CONFIGURED
-      ? "ANTHROPIC_API_KEY detected — real AI generation should be wired in src/lib/ai.ts."
-      : "No ANTHROPIC_API_KEY — generating deterministic stub exercises.",
+    `AI mode: ${AI_CONFIGURED ? "real" : "stub"} (model: ${MODEL})`,
   );
 
   const admin = await prisma.user.findUnique({
@@ -50,7 +51,9 @@ async function main() {
     for (let i = 0; i < 5; i++) {
       const topic = TOPICS[i % TOPICS.length]!;
       const level = LEVELS[i % LEVELS.length]!;
-      const ex = await generateExercise(type, level, topic);
+      // Pass userId: undefined so per-user rate limiting is skipped;
+      // usage rows are still recorded with userId = null.
+      const ex = await generateExercise(type, level, topic, undefined);
       await prisma.exercise.create({
         data: {
           authorId: admin.id,

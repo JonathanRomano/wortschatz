@@ -22,8 +22,25 @@ per task.
   blocking inline script in the root layout for anti-FOUC, header +
   mobile-menu toggle, and `nav.colorMode.*` i18n in all four locales.
   18 new tests (98 total).
-- [ ] **Task 3** — Real Anthropic API calls in `src/lib/ai.ts` with
-  caching + a rate limiter (supersedes "What's NOT done" item 1 below).
+- [x] **Task 3** — Real Anthropic API calls in `src/lib/ai.ts` via
+  `@anthropic-ai/sdk` when `ANTHROPIC_API_KEY` is set (stubs preserved
+  when missing). Three new tables (`AiCache`, `AiRateLimit`, `AiUsage`)
+  with hand-written migration SQL at
+  `prisma/migrations/20260515130000_ai_tables/` — **not yet applied**
+  (no live DB). Cache (SHA-256 keyed, per-endpoint TTL — `REVIEW_TEXT: 0`,
+  `EVALUATE_ANSWER: 1h`, `GENERATE_EXERCISE: 30d`), per-user rate
+  limits (`20/200/50` per day, rolling 24h window via
+  `prisma.$transaction`), and `AiUsage` rows with `cacheHit` flag +
+  integer-microcents cost estimate. Review surfaces a 429 via
+  `review.rateLimited`; exercise submit soft-falls-back to the local
+  grade when `evaluateAnswer` is throttled. `scripts/generate-exercises.ts`
+  logs `AI mode: real|stub`. **47 new tests (226 total)**; 100 %
+  coverage on `src/config/limits.ts`, `src/lib/ai-cache.ts`,
+  `src/lib/ai-rate-limit.ts`; 96 %+ on `src/lib/ai.ts`. **Prompt
+  invalidation note:** the cache key includes the prompt body, so old
+  rows for an old prompt linger until their TTL expires — bump the
+  model name or `DELETE FROM "AiCache"` if you need an immediate
+  refresh.
 - [x] **Task 4** — Münzen extension: `MuenzenReason` gained
   `PERFECT_SCORE_BONUS` + `ADMIN_ADJUSTMENT` (legacy `BONUS` retained);
   `computeReward` now returns `{ base, perfect, streakBonus }` and
@@ -97,38 +114,16 @@ per task.
   request, admin status changes
 - Seed script (admin + teacher) and exercise generation script (uses the
   deterministic stub AI)
-- `lib/ai.ts` with `generateExercise`, `evaluateAnswer`, `reviewText` —
-  scaffolded with TODOs, returns deterministic stubs without the API key
+- `lib/ai.ts` makes real Claude calls via `@anthropic-ai/sdk` when
+  `ANTHROPIC_API_KEY` is set; falls back to deterministic stubs without
+  the key. Backed by `AiCache` / `AiRateLimit` / `AiUsage` tables and
+  the config in `src/config/limits.ts`. (See Task 3 above.)
 
 ---
 
 ## What's NOT done (and why)
 
-### 1. Anthropic API calls (intentional, per task instructions)
-
-**Status:** still pending — scheduled for **Task 3** of the revised
-Sprint 02 (above), which will also add response caching and a rate
-limiter.
-
-`src/lib/ai.ts` exposes the right interface but never calls the network. The
-three functions return placeholder responses and log a warning. To finish:
-
-1. `npm install` then export `ANTHROPIC_API_KEY` in `.env`.
-2. In `src/lib/ai.ts`:
-   - Replace the body of `generateExercise` with an `Anthropic` client call.
-     The system prompt should pin the schema for the requested
-     `ExerciseType` (see `src/lib/exercises/schemas.ts`) and ask for JSON.
-     Validate with the matching Zod schema before returning.
-   - Replace `evaluateAnswer` with a Claude call that takes the exercise +
-     user answer and returns `{ score: 0-100, feedback }`.
-   - Replace `reviewText` with a teacher-persona call that returns Markdown
-     review feedback at the requested CEFR level.
-3. Re-run `npm run db:generate-exercises` — the script automatically uses
-   real generation once `generateExercise` does.
-
-The `@anthropic-ai/sdk` dependency is already declared in `package.json`.
-
-### 2. Database wasn't actually started
+### 1. Database wasn't actually started
 
 Docker isn't installed in the scaffolding environment. To bring up the DB:
 
@@ -142,7 +137,7 @@ npm run db:generate-exercises
 npm run dev
 ```
 
-### 3. `npm install` and typecheck not run here
+### 2. `npm install` and typecheck not run here
 
 The scaffold has not been verified with a real install in this environment.
 On first run, watch for:
@@ -156,7 +151,7 @@ On first run, watch for:
 If typecheck flags missing `@types` after install, add them then re-run
 `npm run typecheck`.
 
-### 4. Listening exercise audio is not wired
+### 3. Listening exercise audio is not wired
 
 `ListeningComprehensionRenderer` shows the transcript when no `audioUrl`
 is present. Once asset hosting is decided (S3, Vercel Blob, etc.):
@@ -167,14 +162,14 @@ is present. Once asset hosting is decided (S3, Vercel Blob, etc.):
   or OpenAI's `tts-1`) and upload the result before persisting the
   exercise.
 
-### 5. Google OAuth requires real credentials
+### 4. Google OAuth requires real credentials
 
 `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` are blank in `.env`. Until set,
 the "Continue with Google" button on `/login` will fail. Create OAuth
 credentials at <https://console.cloud.google.com> and authorize the
 redirect `http://localhost:3000/api/auth/callback/google`.
 
-### 6. Vercel deployment
+### 5. Vercel deployment
 
 Not configured yet. Minimum required steps:
 
@@ -185,7 +180,7 @@ Not configured yet. Minimum required steps:
 - Add a `postinstall` hook that runs `prisma generate` (or set
   `"build": "prisma generate && next build"`).
 
-### 7. Tests — partially done
+### 6. Tests — partially done
 
 **Status:** `vitest` is wired (jsdom + `@testing-library/react` +
 coverage v8) as of Sprint 02 Task 1, with helpers in `src/test/` and
@@ -200,8 +195,15 @@ form + action, and the `/profile/historico` page — bringing the count
 to 147 with 100 % coverage on `muenzen.ts`. Task 5 added **32 more**
 across the dashboard data plumbing — `src/lib/dashboard/aggregations.ts`
 (`buildMuenzenSeries`, `buildHeatmap`, `buildRadar`, `countToday`,
-`toUtcDayKey`) and the four chart components — total **179 tests** with
-100 % coverage on `src/lib/dashboard/aggregations.ts`.
+`toUtcDayKey`) and the four chart components — bringing the count to
+179 with 100 % coverage on `src/lib/dashboard/aggregations.ts`. Task 3
+added **47 more** across the AI surface — three new test files
+(`src/config/__tests__/limits.test.ts`,
+`src/lib/__tests__/ai-cache.test.ts`,
+`src/lib/__tests__/ai-rate-limit.test.ts`) plus expanded coverage of
+`src/lib/ai.ts` — total **226 tests** with 100 % coverage on
+`src/config/limits.ts`, `src/lib/ai-cache.ts`, `src/lib/ai-rate-limit.ts`
+and 96 %+ on `src/lib/ai.ts`.
 
 Still uncovered:
 
@@ -213,7 +215,7 @@ Still uncovered:
 - End-to-end: Playwright for the critical login → submit-exercise flow
   has not been added yet.
 
-### 8. Admin UX is intentionally minimal
+### 7. Admin UX is intentionally minimal
 
 Just enough to approve/reject drafts and view users. Future work:
 
@@ -222,7 +224,7 @@ Just enough to approve/reject drafts and view users. Future work:
   there's no UI to *create* one yet, though the schema supports it via
   `Exercise.authorId`).
 
-### 9. Münzen edge cases worth revisiting
+### 8. Münzen edge cases worth revisiting
 
 - `submitExerciseAttempt` allows the same exercise to be repeated and
   re-rewarded. If exercises should only pay out once per user, add a
@@ -231,7 +233,7 @@ Just enough to approve/reject drafts and view users. Future work:
 - Streak bonus is awarded on the *first passing exercise of the calendar
   day in UTC* — consider per-user timezone once `User` has a tz field.
 
-### 10. i18n caveats
+### 9. i18n caveats
 
 - `notFound()` from `next-intl` is used in `request.ts` — make sure
   `not-found.tsx` exists per-locale (it does).

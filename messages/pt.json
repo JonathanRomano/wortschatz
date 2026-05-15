@@ -171,6 +171,7 @@
     "placeholder": "Cole seu texto em alemão aqui…",
     "submit": "Solicitar revisão",
     "insufficientFunds": "Você não tem Münzen suficientes para uma revisão.",
+    "rateLimited": "Você atingiu o limite diário de revisões por IA. Tente novamente amanhã.",
     "feedbackHeading": "Feedback da IA",
     "history": "Revisões anteriores",
     "balanceLine": "Saldo: {balance} M · Custo: {cost} M"
