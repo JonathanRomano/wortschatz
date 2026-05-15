@@ -15,6 +15,7 @@
     "db:seed": "tsx scripts/seed.ts",
     "db:generate-exercises": "tsx scripts/generate-exercises.ts",
     "db:migrate-exercise-i18n": "tsx scripts/migrate-exercise-i18n.ts",
+    "db:seed-muenzen-history": "tsx scripts/seed-muenzen-history.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

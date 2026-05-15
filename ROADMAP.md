@@ -24,8 +24,26 @@ per task.
   18 new tests (98 total).
 - [ ] **Task 3** — Real Anthropic API calls in `src/lib/ai.ts` with
   caching + a rate limiter (supersedes "What's NOT done" item 1 below).
-- [ ] **Task 4** — Münzen extension (history view, richer transaction
-  reasons).
+- [x] **Task 4** — Münzen extension: `MuenzenReason` gained
+  `PERFECT_SCORE_BONUS` + `ADMIN_ADJUSTMENT` (legacy `BONUS` retained);
+  `computeReward` now returns `{ base, perfect, streakBonus }` and
+  `submitExerciseAttempt` writes three itemized transactions;
+  `adminAdjust(userId, delta, note?)` helper + admin adjust form (caps
+  ±100 000 delta, 280-char note); paginated `/profile/historico` page
+  with single-value type filter and localized dates; one-shot
+  `db:seed-muenzen-history` backfill. 49 new tests (147 total); 100 %
+  coverage on `src/lib/muenzen.ts`.
+
+  **Notes for Task 4**
+  - The migration SQL (`prisma/migrations/20260515120000_muenzen_reason_extension/`)
+    is **not yet applied** — no live DB in this environment. It will
+    apply on the next `prisma migrate dev/deploy`.
+  - `/profile/historico` uses the Portuguese-flavored path for *all*
+    locales, not per-locale variants. The brief specified PT-flavored
+    naming but didn't address per-locale aliases — flag for a revisit
+    if we want `/profile/history` on `en` etc.
+  - A `description` column on `MuenzenTransaction` was discussed but
+    skipped; admin notes are overloaded onto `refId` instead.
 - [ ] **Task 5** — Charts on the dashboard (progress over time, accuracy
   by exercise type).
 - [ ] **Task 6** — Profile page expansion (preferences, CEFR level on
@@ -161,14 +179,17 @@ tests under `__tests__/` directories beside source. The theme
 (`src/theme/**`) and the shared UI primitives are covered. Task 2 added
 the color-mode surface — `useColorMode` hook, `ColorModeContext`,
 `ColorModeToggle`, and the `Provider` mode-resolution logic — bringing
-the total to 98 tests (100 % on the hook/context/toggle, 87.7 %
-statements on `Provider.tsx`).
+the count to 98 (100 % on the hook/context/toggle, 87.7 % statements on
+`Provider.tsx`). Task 4 added 49 more across `src/lib/muenzen.ts`
+(`computeReward`, `credit`, `debit`, `adminAdjust`), the admin adjust
+form + action, and the `/profile/historico` page — total **147 tests**
+with 100 % coverage on `muenzen.ts`.
 
 Still uncovered:
 
-- Server actions (`src/app/[locale]/**/actions.ts` and friends).
+- Server actions (`src/app/[locale]/**/actions.ts` and friends) — Task 4
+  covered admin adjust + history; the rest remain.
 - Local grading in `src/lib/exercises/grade.ts`.
-- Münzen logic in `src/lib/muenzen.ts` (credit / debit / streak bonus).
 - `ButtonLink` / `InlineLink` shims and the named-palette branches of
   `ExerciseTypeIcon` (tracked under **Discovered debt** at the top).
 - End-to-end: Playwright for the critical login → submit-exercise flow

@@ -16,6 +16,7 @@ import { prisma } from "@/lib/db";
 import { Card } from "@/components/ui/Card";
 import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
 import { AdminExerciseRow } from "./AdminExerciseRow";
+import { AdminAdjustForm } from "./AdminAdjustForm";
 
 export default async function AdminPage({
   params,
@@ -143,6 +144,15 @@ export default async function AdminPage({
                     </Box>
                   </Box>
                 </Box>
+                <Box sx={{ mt: 1.5 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "text.secondary", display: "block", mb: 0.5 }}
+                  >
+                    {t("adjust.title")}
+                  </Typography>
+                  <AdminAdjustForm userId={u.id} size="stacked" />
+                </Box>
               </Card>
             ))}
           </Box>
@@ -172,6 +182,9 @@ export default async function AdminPage({
                     <TableCell align="right" sx={{ fontWeight: 500, color: "text.secondary" }}>
                       Münzen
                     </TableCell>
+                    <TableCell sx={{ fontWeight: 500, color: "text.secondary" }}>
+                      {t("adjust.title")}
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -182,6 +195,9 @@ export default async function AdminPage({
                       <TableCell>{u.role}</TableCell>
                       <TableCell align="right">
                         <MuenzenBadge amount={u.muenzen} size="sm" />
+                      </TableCell>
+                      <TableCell>
+                        <AdminAdjustForm userId={u.id} />
                       </TableCell>
                     </TableRow>
                   ))}

@@ -162,7 +162,25 @@
     "email": "Email",
     "preferredLanguage": "Preferred language",
     "save": "Save changes",
-    "saved": "Profile updated."
+    "saved": "Profile updated.",
+    "historyLink": "Münzen history",
+    "history": {
+      "title": "Münzen history",
+      "empty": "No transactions yet.",
+      "filterAll": "All",
+      "filterLabel": "Filter",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page}",
+      "reason": {
+        "EXERCISE_COMPLETE": "Exercise completed",
+        "PERFECT_SCORE_BONUS": "Perfect score bonus",
+        "DAILY_STREAK": "Daily streak",
+        "SPENT_AI_REVIEW": "AI review",
+        "ADMIN_ADJUSTMENT": "Adjustment",
+        "BONUS": "Bonus"
+      }
+    }
   },
   "admin": {
     "title": "Admin panel",
@@ -170,7 +188,13 @@
     "users": "Users",
     "approve": "Approve",
     "reject": "Reject",
-    "noPermission": "You don't have access to this page."
+    "noPermission": "You don't have access to this page.",
+    "adjust": {
+      "title": "Adjust Münzen",
+      "amount": "Amount",
+      "note": "Note (optional)",
+      "apply": "Apply"
+    }
   },
   "common": {
     "loading": "Loading…",

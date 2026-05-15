@@ -66,19 +66,65 @@ export async function debit(
 }
 
 /**
- * Compute the reward for a completed exercise and whether a daily-
- * streak bonus applies. Doesn't mutate anything — call `credit` with
- * the returned amount.
+ * Compute the reward for a completed exercise. Returns the three reward
+ * components separately so each can be written as its own
+ * `MuenzenTransaction` (`EXERCISE_COMPLETE`, `PERFECT_SCORE_BONUS`,
+ * `DAILY_STREAK`). Doesn't mutate anything — the caller decides whether
+ * to credit each non-zero component.
  */
 export function computeReward(
   score: number,
   isFirstOfDay: boolean,
-): { reward: number; streakBonus: number } {
+): { base: number; perfect: number; streakBonus: number } {
   const passed = score >= 60;
   const base = passed ? MUENZEN_RULES.exerciseComplete : 0;
-  const bonus = score === 100 ? MUENZEN_RULES.perfectBonus : 0;
+  const perfect = score === 100 ? MUENZEN_RULES.perfectBonus : 0;
   const streakBonus = isFirstOfDay && passed ? MUENZEN_RULES.dailyStreak : 0;
-  return { reward: base + bonus, streakBonus };
+  return { base, perfect, streakBonus };
+}
+
+/**
+ * Admin tool. Apply an adjustment (positive or negative) to a user's
+ * balance, recording an `ADMIN_ADJUSTMENT` transaction. Idempotent only
+ * within the caller's session — callers are responsible for not
+ * double-applying. Throws `InsufficientFundsError` if a negative
+ * adjustment would drive the balance below zero.
+ *
+ * The optional `note` is stored in the existing `refId` column. This
+ * overloads `refId`'s usual purpose (foreign-key-ish exerciseId /
+ * aiReviewRequestId) but avoids a schema migration — fine for now, and
+ * the history page distinguishes by `reason`.
+ */
+export async function adminAdjust(
+  userId: string,
+  delta: number,
+  note?: string,
+): Promise<void> {
+  if (!Number.isInteger(delta) || delta === 0) {
+    throw new Error("adminAdjust() expects a non-zero integer delta");
+  }
+  await prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { muenzen: true },
+    });
+    if (!user) throw new Error("User not found");
+    if (delta < 0 && user.muenzen + delta < 0) {
+      throw new InsufficientFundsError();
+    }
+    await tx.user.update({
+      where: { id: userId },
+      data: { muenzen: { increment: delta } },
+    });
+    await tx.muenzenTransaction.create({
+      data: {
+        userId,
+        amount: delta,
+        reason: "ADMIN_ADJUSTMENT",
+        refId: note?.trim() ? note.trim() : null,
+      },
+    });
+  });
 }
 
 export function isSameCalendarDay(a: Date, b: Date): boolean {

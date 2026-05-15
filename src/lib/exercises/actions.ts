@@ -91,9 +91,14 @@ export async function submitExerciseAttempt(
   });
   const alreadyEarned = Boolean(priorSuccess);
 
-  const { reward, streakBonus } = alreadyEarned
-    ? { reward: 0, streakBonus: 0 }
+  const { base, perfect, streakBonus } = alreadyEarned
+    ? { base: 0, perfect: 0, streakBonus: 0 }
     : computeReward(score, isFirstOfDay);
+  // The legacy `reward` surface in the SubmitResult bundles the
+  // exercise-completion credit + perfect-score bonus into one figure for
+  // the UI banner. We still write them as two separate transactions in
+  // the DB so the history page can show them as distinct rows.
+  const reward = base + perfect;
 
   await prisma.$transaction(async (tx) => {
     await tx.userExercise.create({
@@ -109,7 +114,8 @@ export async function submitExerciseAttempt(
       where: { id: userId },
       data: { lastActiveAt: now, streak: newStreak },
     });
-    if (reward > 0) await credit(userId, reward, "EXERCISE_COMPLETE", exerciseId, tx);
+    if (base > 0) await credit(userId, base, "EXERCISE_COMPLETE", exerciseId, tx);
+    if (perfect > 0) await credit(userId, perfect, "PERFECT_SCORE_BONUS", exerciseId, tx);
     if (streakBonus > 0) await credit(userId, streakBonus, "DAILY_STREAK", exerciseId, tx);
   });
 

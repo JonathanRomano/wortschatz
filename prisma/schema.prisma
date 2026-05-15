@@ -57,8 +57,10 @@ enum ExerciseStatus {
 
 enum MuenzenReason {
   EXERCISE_COMPLETE
+  PERFECT_SCORE_BONUS
   DAILY_STREAK
   SPENT_AI_REVIEW
+  ADMIN_ADJUSTMENT
   BONUS
 }
 

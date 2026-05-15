@@ -162,7 +162,25 @@
     "email": "E-posta",
     "preferredLanguage": "Tercih edilen dil",
     "save": "Değişiklikleri kaydet",
-    "saved": "Profil güncellendi."
+    "saved": "Profil güncellendi.",
+    "historyLink": "Münzen geçmişi",
+    "history": {
+      "title": "Münzen geçmişi",
+      "empty": "Henüz işlem yok.",
+      "filterAll": "Tümü",
+      "filterLabel": "Filtrele",
+      "previous": "Önceki",
+      "next": "Sonraki",
+      "page": "Sayfa {page}",
+      "reason": {
+        "EXERCISE_COMPLETE": "Alıştırma tamamlandı",
+        "PERFECT_SCORE_BONUS": "Mükemmel skor bonusu",
+        "DAILY_STREAK": "Günlük seri",
+        "SPENT_AI_REVIEW": "Yapay zeka incelemesi",
+        "ADMIN_ADJUSTMENT": "Düzeltme",
+        "BONUS": "Bonus"
+      }
+    }
   },
   "admin": {
     "title": "Yönetim paneli",
@@ -170,7 +188,13 @@
     "users": "Kullanıcılar",
     "approve": "Onayla",
     "reject": "Reddet",
-    "noPermission": "Bu sayfaya erişiminiz yok."
+    "noPermission": "Bu sayfaya erişiminiz yok.",
+    "adjust": {
+      "title": "Münzen ayarla",
+      "amount": "Miktar",
+      "note": "Not (isteğe bağlı)",
+      "apply": "Uygula"
+    }
   },
   "common": {
     "loading": "Yükleniyor…",

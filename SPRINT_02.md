@@ -350,3 +350,44 @@ would have inflated the diff without value.
 ### Bugs fixed during review/test
 1. Mount effect was unconditionally overwriting `defaultMode`/legacy `mode` props with `readStoredMode()`. Fixed by only applying the stored value when one is actually present.
 2. Same mount effect was clobbering the DOM-seeded `systemMode` even when `matchMedia` was unavailable. Fixed by leaving `systemMode` alone when the live system query has nothing to report.
+
+## Task 4 — Münzen transactions (shipped)
+
+Extends the Münzen system with richer transaction reasons, an admin
+adjustment surface, and a paginated user-facing history view.
+
+- **Enum extension.** `MuenzenReason` in `prisma/schema.prisma` now
+  includes `PERFECT_SCORE_BONUS` and `ADMIN_ADJUSTMENT`. The legacy
+  `BONUS` value is retained so existing rows keep validating.
+  `prisma/migrations/20260515120000_muenzen_reason_extension/migration.sql`
+  uses idempotent `ALTER TYPE ... ADD VALUE IF NOT EXISTS` for both new
+  values. `prisma/migrations/migration_lock.toml` was added with
+  `provider = "postgresql"`.
+- **`computeReward` shape change.** `src/lib/muenzen.ts`'s `computeReward`
+  now returns `{ base, perfect, streakBonus }` instead of a single
+  number. `submitExerciseAttempt` in `src/lib/exercises/actions.ts`
+  consumes the split and writes **three separate transactions**
+  (`EXERCISE_COMPLETE`, `PERFECT_SCORE_BONUS`, `DAILY_STREAK`) on a
+  100-score first-pass that's also the first of the day — total still
+  35 Münzen, but now itemized.
+- **`adminAdjust` helper.** New `adminAdjust(userId, delta, note?)` in
+  `src/lib/muenzen.ts`: atomic, balance-checked, optional note stored in
+  `refId`. Zero and non-integer deltas are rejected.
+- **Admin UI row.** `src/app/[locale]/admin/AdminAdjustForm.tsx` +
+  `actions.ts` + the admin page expose a delta + note + apply control
+  per user, with validation caps (±100 000 delta, 280-char note).
+- **`/profile/historico`.** New page at
+  `src/app/[locale]/profile/historico/page.tsx` with pagination
+  (20/page), a single-value type filter, and `Intl.DateTimeFormat(locale)`
+  date rendering. The profile page (`profile/page.tsx`) links to it.
+- **Backfill script.** `scripts/seed-muenzen-history.ts` (npm script
+  `db:seed-muenzen-history`) writes a one-shot `ADMIN_ADJUSTMENT` row
+  equal to `user.muenzen` for users with `> 0` balance and no
+  transactions, so historical balances get an audit trail.
+- **i18n.** `messages/{en,pt,tr,uk}.json` gained `profile.history.*`,
+  `profile.historyLink`, and `admin.adjust.*` blocks.
+- **Live DB caveat.** No live Postgres in this environment — the
+  migration SQL was written by hand under `prisma/migrations/` and will
+  be picked up on the next `prisma migrate dev/deploy`.
+- **Tests.** 49 new tests landed; 147 total. `src/lib/muenzen.ts` is at
+  100 % coverage.

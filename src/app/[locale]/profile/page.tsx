@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import Container from "@mui/material/Container";
+import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { Card } from "@/components/ui/Card";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { ProfileForm } from "./ProfileForm";
 
 export default async function ProfilePage({
@@ -36,6 +38,16 @@ export default async function ProfilePage({
           preferredLanguage={user.preferredLanguage}
         />
       </Card>
+      <Stack sx={{ mt: 3, alignItems: { xs: "stretch", sm: "flex-start" } }}>
+        <ButtonLink
+          href="/profile/historico"
+          variant="outlined"
+          color="primary"
+          sx={{ width: { xs: "100%", sm: "auto" }, minHeight: 44 }}
+        >
+          {t("historyLink")}
+        </ButtonLink>
+      </Stack>
     </Container>
   );
 }

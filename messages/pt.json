@@ -162,7 +162,25 @@
     "email": "E-mail",
     "preferredLanguage": "Idioma preferido",
     "save": "Salvar alterações",
-    "saved": "Perfil atualizado."
+    "saved": "Perfil atualizado.",
+    "historyLink": "Histórico de Münzen",
+    "history": {
+      "title": "Histórico de Münzen",
+      "empty": "Nenhuma transação ainda.",
+      "filterAll": "Todas",
+      "filterLabel": "Filtrar",
+      "previous": "Anterior",
+      "next": "Próxima",
+      "page": "Página {page}",
+      "reason": {
+        "EXERCISE_COMPLETE": "Exercício concluído",
+        "PERFECT_SCORE_BONUS": "Bônus de pontuação perfeita",
+        "DAILY_STREAK": "Sequência diária",
+        "SPENT_AI_REVIEW": "Revisão por IA",
+        "ADMIN_ADJUSTMENT": "Ajuste",
+        "BONUS": "Bônus"
+      }
+    }
   },
   "admin": {
     "title": "Painel administrativo",
@@ -170,7 +188,13 @@
     "users": "Usuários",
     "approve": "Aprovar",
     "reject": "Rejeitar",
-    "noPermission": "Você não tem acesso a esta página."
+    "noPermission": "Você não tem acesso a esta página.",
+    "adjust": {
+      "title": "Ajustar Münzen",
+      "amount": "Quantia",
+      "note": "Nota (opcional)",
+      "apply": "Aplicar"
+    }
   },
   "common": {
     "loading": "Carregando…",

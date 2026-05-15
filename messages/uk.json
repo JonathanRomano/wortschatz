@@ -162,7 +162,25 @@
     "email": "Електронна пошта",
     "preferredLanguage": "Бажана мова",
     "save": "Зберегти зміни",
-    "saved": "Профіль оновлено."
+    "saved": "Профіль оновлено.",
+    "historyLink": "Історія Münzen",
+    "history": {
+      "title": "Історія Münzen",
+      "empty": "Поки що немає транзакцій.",
+      "filterAll": "Усі",
+      "filterLabel": "Фільтр",
+      "previous": "Попередня",
+      "next": "Наступна",
+      "page": "Сторінка {page}",
+      "reason": {
+        "EXERCISE_COMPLETE": "Вправу виконано",
+        "PERFECT_SCORE_BONUS": "Бонус за ідеальний результат",
+        "DAILY_STREAK": "Щоденна серія",
+        "SPENT_AI_REVIEW": "Перевірка ШІ",
+        "ADMIN_ADJUSTMENT": "Коригування",
+        "BONUS": "Бонус"
+      }
+    }
   },
   "admin": {
     "title": "Адмінпанель",
@@ -170,7 +188,13 @@
     "users": "Користувачі",
     "approve": "Затвердити",
     "reject": "Відхилити",
-    "noPermission": "Ви не маєте доступу до цієї сторінки."
+    "noPermission": "Ви не маєте доступу до цієї сторінки.",
+    "adjust": {
+      "title": "Налаштувати Münzen",
+      "amount": "Сума",
+      "note": "Нотатка (необов'язково)",
+      "apply": "Застосувати"
+    }
   },
   "common": {
     "loading": "Завантаження…",

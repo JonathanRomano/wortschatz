@@ -129,9 +129,23 @@ messages/*.json                     UI translations (incl. `renderers` block)
   German `content`/`solution` stays in German regardless of locale.
 - **Münzen are awarded only on the FIRST passing attempt** (`score ≥ 60`)
   per user+exercise. `submitExerciseAttempt` always records the attempt.
+  As of Sprint 02 Task 4, the perfect-score bonus is written as a
+  separate `PERFECT_SCORE_BONUS` transaction (not folded into
+  `EXERCISE_COMPLETE`), and admins can adjust user balances via the
+  `ADMIN_ADJUSTMENT` reason from `src/app/[locale]/admin/`.
 - **No hardcoded English/German UI strings in renderers.** Labels live in
   the `renderers` block in `messages/*.json`. (German is allowed only for
   the _content being learned_.)
+
+### Münzen transactions
+
+- Every Münzen balance change writes a `MuenzenTransaction` row. Always
+  use `credit` / `debit` / `adminAdjust` from `@/lib/muenzen` — never
+  mutate `user.muenzen` directly.
+- Reason enum: `EXERCISE_COMPLETE`, `PERFECT_SCORE_BONUS`, `DAILY_STREAK`,
+  `SPENT_AI_REVIEW`, `ADMIN_ADJUSTMENT`, `BONUS` (legacy, retained).
+- History UI lives at `/profile/historico` (same path across all four
+  locales).
 
 ## Testing
 
