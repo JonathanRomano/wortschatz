@@ -17,6 +17,7 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import { Link, usePathname } from "@/i18n/navigation";
 import { LocaleSwitcher } from "./LocaleSwitcher";
+import { ColorModeToggle } from "./ColorModeToggle";
 
 type NavLink = { href: string; label: string };
 
@@ -136,14 +137,24 @@ export function MobileMenu({ isAuthed, links, signOutSlot, labels }: Props) {
 
         <Divider />
         <Stack spacing={2} sx={{ px: 2, py: 2 }}>
-          <Box>
-            <Typography
-              variant="overline"
-              sx={{ color: "text.secondary", display: "block", mb: 1 }}
-            >
-              {labels.language}
-            </Typography>
-            <LocaleSwitcher />
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 1,
+            }}
+          >
+            <Box sx={{ flex: 1 }}>
+              <Typography
+                variant="overline"
+                sx={{ color: "text.secondary", display: "block", mb: 1 }}
+              >
+                {labels.language}
+              </Typography>
+              <LocaleSwitcher />
+            </Box>
+            <ColorModeToggle />
           </Box>
           {signOutSlot ? <Box>{signOutSlot}</Box> : null}
         </Stack>

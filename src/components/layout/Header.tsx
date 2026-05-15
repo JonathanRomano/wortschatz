@@ -13,6 +13,7 @@ import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
 import { StreakFlame } from "@/components/ui/StreakFlame";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { MobileMenu } from "./MobileMenu";
+import { ColorModeToggle } from "./ColorModeToggle";
 import {
   HeaderBrandLink,
   HeaderLoginButton,
@@ -108,6 +109,9 @@ export async function Header() {
                 ))}
                 <Box sx={{ ml: 1 }}>{signOutForm}</Box>
                 <Box sx={{ ml: 1 }}>
+                  <ColorModeToggle />
+                </Box>
+                <Box>
                   <LocaleSwitcher />
                 </Box>
               </>
@@ -116,6 +120,9 @@ export async function Header() {
                 <HeaderLoginButton>{t("login")}</HeaderLoginButton>
                 <HeaderRegisterButton>{t("register")}</HeaderRegisterButton>
                 <Box sx={{ ml: 1 }}>
+                  <ColorModeToggle />
+                </Box>
+                <Box>
                   <LocaleSwitcher />
                 </Box>
               </>

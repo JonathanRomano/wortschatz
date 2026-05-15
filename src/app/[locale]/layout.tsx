@@ -33,6 +33,19 @@ export const viewport = {
   maximumScale: 5,
 };
 
+// Blocking inline script that resolves the user's color-mode preference
+// before React hydrates. Reads `localStorage["wortschatz:color-mode"]`
+// (one of "light" | "dark" | "system"; defaults to "system") and falls
+// back to `prefers-color-scheme` when the choice is "system". Writes the
+// result to `documentElement.dataset.colorMode` and `style.colorScheme`
+// so the first paint matches the active palette and native scrollbars /
+// form controls render with the right base scheme.
+//
+// Must be self-contained and dependency-free: no `process.env`, no
+// imports. Wrapped in try/catch so Safari private mode and other
+// `localStorage`-throwing browsers degrade to the system preference.
+const COLOR_MODE_BOOT_SCRIPT = `(function(){try{var k='wortschatz:color-mode';var s=null;try{s=window.localStorage.getItem(k);}catch(e){}if(s!=='light'&&s!=='dark'&&s!=='system')s='system';var r=s;if(r==='system'){r=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}var d=document.documentElement;d.dataset.colorMode=r;d.style.colorScheme=r;}catch(e){}})();`;
+
 export default async function LocaleLayout({
   children,
   params,
@@ -48,8 +61,19 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={`${inter.variable} ${fraunces.variable}`}>
+      <head>
+        {/*
+          Runs synchronously before <body> paints. Resolves the persisted
+          color-mode choice (or `prefers-color-scheme` for "system") and
+          stamps it onto <html> so first paint matches. See the script
+          definition above for the contract.
+        */}
+        <script
+          dangerouslySetInnerHTML={{ __html: COLOR_MODE_BOOT_SCRIPT }}
+        />
+      </head>
       <body>
-        <AppThemeProvider mode="light">
+        <AppThemeProvider>
           <NextIntlClientProvider messages={messages} locale={locale}>
             <Box
               sx={{

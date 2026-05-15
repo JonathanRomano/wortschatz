@@ -17,7 +17,12 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
-      include: ["src/theme/**/*.{ts,tsx}", "src/components/ui/**/*.{ts,tsx}"],
+      include: [
+        "src/theme/**/*.{ts,tsx}",
+        "src/components/ui/**/*.{ts,tsx}",
+        "src/hooks/**/*.{ts,tsx}",
+        "src/components/layout/ColorModeToggle.tsx",
+      ],
       exclude: ["**/*.test.{ts,tsx}", "**/__tests__/**", "src/test/**"],
     },
   },

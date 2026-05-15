@@ -16,9 +16,12 @@ per task.
 - [x] **Task 1** — MUI v9 migration + centralized Palette System
   (`src/theme/`), full UI re-skin, `vitest` setup, 80 tests, 100%
   coverage on `src/theme/**`.
-- [ ] **Task 2** — Dark mode toggle: lift `mode` out of `Provider.tsx`,
-  add a context + `localStorage` + `prefers-color-scheme`, ship the
-  header switch.
+- [x] **Task 2** — Dark mode toggle: `useColorMode` hook +
+  `ColorModeContext` + `ColorModeToggle` (three-state light/dark/system
+  cycle), `localStorage` persistence under `wortschatz:color-mode`, a
+  blocking inline script in the root layout for anti-FOUC, header +
+  mobile-menu toggle, and `nav.colorMode.*` i18n in all four locales.
+  18 new tests (98 total).
 - [ ] **Task 3** — Real Anthropic API calls in `src/lib/ai.ts` with
   caching + a rate limiter (supersedes "What's NOT done" item 1 below).
 - [ ] **Task 4** — Münzen extension (history view, richer transaction
@@ -155,8 +158,11 @@ Not configured yet. Minimum required steps:
 **Status:** `vitest` is wired (jsdom + `@testing-library/react` +
 coverage v8) as of Sprint 02 Task 1, with helpers in `src/test/` and
 tests under `__tests__/` directories beside source. The theme
-(`src/theme/**`) and the shared UI primitives are covered (80 tests,
-100% on the theme).
+(`src/theme/**`) and the shared UI primitives are covered. Task 2 added
+the color-mode surface — `useColorMode` hook, `ColorModeContext`,
+`ColorModeToggle`, and the `Provider` mode-resolution logic — bringing
+the total to 98 tests (100 % on the hook/context/toggle, 87.7 %
+statements on `Provider.tsx`).
 
 Still uncovered:
 

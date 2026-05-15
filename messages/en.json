@@ -16,7 +16,13 @@
     "menu": "Menu",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "language": "Language"
+    "language": "Language",
+    "colorMode": {
+      "toggle": "Toggle color mode",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    }
   },
   "landing": {
     "heroTitle": "Learn German with AI-powered exercises",

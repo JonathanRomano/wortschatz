@@ -16,7 +16,13 @@
     "menu": "Menü",
     "openMenu": "Menüyü aç",
     "closeMenu": "Menüyü kapat",
-    "language": "Dil"
+    "language": "Dil",
+    "colorMode": {
+      "toggle": "Renk modunu değiştir",
+      "light": "Açık",
+      "dark": "Koyu",
+      "system": "Sistem"
+    }
   },
   "landing": {
     "heroTitle": "Yapay zeka destekli alıştırmalarla Almanca öğrenin",

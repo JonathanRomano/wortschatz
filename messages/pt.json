@@ -16,7 +16,13 @@
     "menu": "Menu",
     "openMenu": "Abrir menu",
     "closeMenu": "Fechar menu",
-    "language": "Idioma"
+    "language": "Idioma",
+    "colorMode": {
+      "toggle": "Alternar modo de cor",
+      "light": "Claro",
+      "dark": "Escuro",
+      "system": "Sistema"
+    }
   },
   "landing": {
     "heroTitle": "Aprenda alemão com exercícios gerados por IA",

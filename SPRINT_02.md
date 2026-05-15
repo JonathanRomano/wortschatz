@@ -338,3 +338,15 @@ would have inflated the diff without value.
   uncovered.
 - React 19 RC + MUI v9 required `--legacy-peer-deps` on install.
   Document in the repo README if friction returns.
+
+## Task 2 — Dark mode (shipped)
+
+- New: `useColorMode` hook, `ColorModeContext`, `ColorModeToggle`. Three-state cycle (light/dark/system).
+- `localStorage` key: `wortschatz:color-mode`.
+- Anti-FOUC: blocking inline script in the root layout writes `<html data-color-mode>` and `color-scheme` before hydration; the Provider seeds `systemMode` from that DOM attribute so dark-mode users never see a light flash even during React hydration.
+- i18n: new `nav.colorMode.{toggle,light,dark,system}` keys across en/pt/tr/uk.
+- Tests added: 18 new (98 total). Coverage on Task-2 files: hook 100 %, context 100 %, toggle 100 %, Provider 87.7 % statements.
+
+### Bugs fixed during review/test
+1. Mount effect was unconditionally overwriting `defaultMode`/legacy `mode` props with `readStoredMode()`. Fixed by only applying the stored value when one is actually present.
+2. Same mount effect was clobbering the DOM-seeded `systemMode` even when `matchMedia` was unavailable. Fixed by leaving `systemMode` alone when the live system query has nothing to report.

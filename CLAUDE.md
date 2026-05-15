@@ -24,8 +24,7 @@ All color, typography, radius, shadow, and shape tokens live in
 outside `src/theme/`.**
 
 - **Palettes.** `src/theme/palette.ts` defines both `lightPalette` and
-  `darkPalette`. Light is active for now; the mode toggle (persistence +
-  `prefers-color-scheme` + header switch) ships in Task 2.
+  `darkPalette`. Mode selection is wired (see "Color modes" below).
 - **Typography.** Headings use Fraunces via CSS var `--font-fraunces`,
   body uses Inter via `--font-inter`. MUI's `<Typography>` is the only
   way to set type — do not use Tailwind `font-*` classes.
@@ -37,6 +36,29 @@ outside `src/theme/`.**
   use `hover:opacity-90`.
 - **Shape.** Inputs/buttons use the small radius from `shape`; cards use
   `RADIUS_CARD`; pills/chips use `borderRadius: 999` via MUI defaults.
+
+### Color modes
+
+- The user picks `'light' | 'dark' | 'system'`. Default is `'system'` on
+  first visit; persisted in `localStorage` under `wortschatz:color-mode`
+  (exported as `COLOR_MODE_STORAGE_KEY` from
+  `src/theme/ColorModeContext.tsx`).
+- Use `useColorMode()` from `@/hooks/useColorMode` to read or change the
+  mode. It returns `{ mode, resolvedMode, setMode, toggle }`. Don't access
+  `localStorage` directly.
+- The blocking inline script in `src/app/[locale]/layout.tsx` writes
+  `<html data-color-mode="…">` and `<html style="color-scheme: …">`
+  before React hydrates, so first paint matches the user's preference.
+  The Provider keeps both in sync afterward and seeds `systemMode` from
+  the DOM attribute so dark-mode users never flash a light palette during
+  hydration. Script errors are swallowed (Safari private mode).
+- All new UI must work in both modes. Use `theme.palette.X` (or
+  `sx={{ color: 'text.primary' }}` etc.) — never reference a specific
+  palette mode in a component.
+- The header `<ColorModeToggle />` cycles
+  `light → dark → system → light` with a distinct icon and localized
+  `aria-label`/tooltip per state. It's already rendered in both desktop
+  and mobile menus.
 
 ## MUI ↔ Tailwind coexistence (mandatory rule)
 
@@ -117,7 +139,10 @@ messages/*.json                     UI translations (incl. `renderers` block)
 the source they cover. Run `npm test`, `npm run test:watch`, or
 `npm run test:coverage`. Theme + UI primitives are covered as of
 Sprint 02 Task 1. Use the `renderWithTheme` helper from `src/test/` to
-mount components inside the real theme.
+mount components inside the real theme. Color-mode tests live in
+`src/hooks/__tests__/useColorMode.test.tsx`,
+`src/theme/__tests__/Provider.test.tsx`, and
+`src/components/layout/__tests__/ColorModeToggle.test.tsx`.
 
 ## Multi-agent workflow (Sprint 02+)
 
