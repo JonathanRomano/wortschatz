@@ -174,6 +174,33 @@ mount components inside the real theme. Color-mode tests live in
 - Colors come from `theme.palette` exclusively. No hex anywhere in
   `src/components/dashboard/` or `src/lib/dashboard/`.
 
+## User model
+
+The `User` row carries profile + preferences alongside the auth fields.
+As of Sprint 02 Task 6 it includes `bio` (string, max 280),
+`nativeLanguage` (string, ISO code), `learningLevel` (`CefrLevel?`),
+`dailyGoal` (`Int`, default 5), and `avatarUrl` (string, optional).
+The dashboard's daily-goal ring reads `user.dailyGoal ?? DAILY_GOAL_DEFAULT`
+and the review page reads `user.learningLevel ?? 'B1'` — no more
+hardcoded CEFR levels.
+
+## Avatar uploads
+
+- **Endpoint.** `POST /api/profile/avatar` (auth required,
+  `multipart/form-data`, field name `file`). `DELETE` on the same path
+  removes the current avatar.
+- **Storage.** Local filesystem at `public/uploads/avatars/`. Fine for
+  dev and simple self-hosted; **must be swapped for Vercel Blob or S3
+  before deploying on an ephemeral filesystem** (Vercel/Netlify). The
+  swap site is marked with a `TODO` in the route handler.
+- **Pipeline.** All processing lives in `src/lib/profile/avatar.ts`:
+  size check (2 MB cap) → mime allowlist (jpeg/png/webp/gif) → spoof
+  defense via `sharp().metadata()` re-decode → rotate → resize 512×512
+  cover → WebP encode (quality 88) → write with random 6-byte hex
+  filename suffix. Output is always 512×512 WebP regardless of input.
+- **Path traversal hardening.** The route handler rejects any filename
+  segment containing `/` or `..` after the reviewer pass.
+
 ## Multi-agent workflow (Sprint 02+)
 
 Each task flows `@coder` → `@reviewer` → `@tester` → `@docs`. Coder

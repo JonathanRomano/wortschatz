@@ -5,3 +5,9 @@ node_modules
 *.tsbuildinfo
 coverage
 .DS_Store
+
+# User-uploaded files (avatars, etc). Stored on the local FS for dev
+# and simple self-hosted deploys; the .gitkeep below ensures the dir
+# itself ships with the repo. Swap for object storage before deploying
+# to an ephemeral platform (Vercel/Netlify).
+public/uploads/

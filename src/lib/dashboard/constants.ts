@@ -1,7 +1,9 @@
 // Dashboard configuration knobs. Kept dependency-free so the
 // aggregation helpers (and any future tests) can import them without
-// pulling in Prisma or React. Task 6 will swap `DAILY_GOAL_DEFAULT`
-// for `User.dailyGoal` once that column is added.
+// pulling in Prisma or React. As of Sprint 02 Task 6 the per-user
+// `dailyGoal` column on `User` is the source of truth — this constant
+// is the fallback the dashboard reaches for if that value is somehow
+// null/undefined, and also the DB-side default for new accounts.
 
 export const DAILY_GOAL_DEFAULT = 5;
 export const HEATMAP_DAYS = 90;

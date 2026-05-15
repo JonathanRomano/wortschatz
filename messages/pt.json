@@ -181,9 +181,38 @@
     "name": "Nome",
     "email": "E-mail",
     "preferredLanguage": "Idioma preferido",
-    "save": "Salvar alterações",
-    "saved": "Perfil atualizado.",
+    "save": "Salvar",
+    "saved": "Salvo",
+    "saveError": "Não foi possível salvar. Tente novamente.",
     "historyLink": "Histórico de Münzen",
+    "placeholder": "—",
+    "bio": {
+      "label": "Sobre você",
+      "placeholder": "Uma biografia curta (até 280 caracteres)",
+      "charsLeft": "{count} caracteres restantes"
+    },
+    "nativeLanguage": {
+      "label": "Idioma nativo"
+    },
+    "learningLevel": {
+      "label": "Seu nível"
+    },
+    "dailyGoal": {
+      "label": "Meta diária"
+    },
+    "avatar": {
+      "uploadLabel": "Alterar foto",
+      "removeLabel": "Remover foto",
+      "errorTooLarge": "Arquivo muito grande (máx. 2 MB)",
+      "errorMime": "Tipo de arquivo não suportado",
+      "errorInvalid": "Imagem inválida"
+    },
+    "stats": {
+      "title": "Suas estatísticas",
+      "totalExercises": "Exercícios totais",
+      "currentStreak": "Sequência atual",
+      "totalMuenzen": "Total de Münzen"
+    },
     "history": {
       "title": "Histórico de Münzen",
       "empty": "Nenhuma transação ainda.",

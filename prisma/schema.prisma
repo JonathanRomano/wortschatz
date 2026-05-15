@@ -82,6 +82,16 @@ model User {
   streak            Int           @default(0)
   lastActiveAt      DateTime?
 
+  // Sprint 02 Task 6 — profile fields. `bio` is capped to 280 chars in
+  // the save action; `nativeLanguage` is an ISO 639-1 code (free-form
+  // here so future locales don't require a migration); `learningLevel`
+  // and `dailyGoal` drive the dashboard ring and the AI review prompt.
+  bio               String?
+  nativeLanguage    String?
+  learningLevel     CefrLevel?
+  dailyGoal         Int           @default(5)
+  avatarUrl         String?
+
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 

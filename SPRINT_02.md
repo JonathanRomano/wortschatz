@@ -527,3 +527,90 @@ name (forces a new key) or run a one-shot
 47 new tests; **226 total**. 100 % coverage on `src/config/limits.ts`,
 `src/lib/ai-cache.ts`, and `src/lib/ai-rate-limit.ts`; 96 %+ on
 `src/lib/ai.ts`.
+
+## Task 6 — Profile expanded + avatar upload (shipped)
+
+Adds preferences (bio, native language, CEFR level, daily goal) and an
+avatar upload pipeline on top of the existing profile page. The Task 5
+`DAILY_GOAL_DEFAULT` fallback becomes the *actual* default for users
+who don't pick a value.
+
+### Schema additions
+
+Five new columns on `User`: `bio` (string, max 280), `nativeLanguage`
+(string, ISO code), `learningLevel` (`CefrLevel?`), `dailyGoal` (`Int`
+default 5), `avatarUrl` (string, optional). Hand-written migration at
+`prisma/migrations/20260515140000_user_profile_fields/migration.sql` —
+**not yet applied** (no live DB); will run on the next
+`prisma migrate dev/deploy`.
+
+### Storage decision
+
+Avatars are written to the local filesystem under
+`public/uploads/avatars/` for now. Trade-off: simple in dev and on
+self-hosted boxes, but **doesn't survive Vercel/Netlify ephemeral
+filesystems**. The swap site (to Vercel Blob or S3) is marked with a
+`TODO` in the route handler. No env var needed yet; a commented
+`STORAGE_DRIVER` line is proposed in `.env.example` as a forward-looking
+hint without forcing a default.
+
+### Upload pipeline
+
+`POST /api/profile/avatar` accepts `multipart/form-data` with a `file`
+field; `DELETE` on the same path removes the current avatar. All
+processing happens in `src/lib/profile/avatar.ts`:
+
+1. Size validation (2 MB cap).
+2. Mime allowlist (`image/jpeg`, `image/png`, `image/webp`, `image/gif`).
+3. **Spoof defense.** Re-decode header via `sharp().metadata()` and
+   reject mismatched content — a `.png` claiming to be a PDF never
+   reaches disk.
+4. Sharp pipeline: `rotate()` (honor EXIF) → `resize(512, 512, { fit: 'cover' })`
+   → `webp({ quality: 88 })`. Output is always 512×512 WebP regardless
+   of input format.
+5. Write to disk with a random 6-byte hex filename suffix to avoid
+   collisions and predictable URLs.
+
+### Path traversal hardening (review pass)
+
+The original route accepted the avatar filename as a path segment;
+during review the handler was tightened to reject any segment that
+contains `/` **or** `..` so an authenticated user cannot delete a file
+outside `public/uploads/avatars/`.
+
+### Profile page redesign
+
+Profile page replaced the ad-hoc form with MUI primitives: an
+`<Avatar>` plus upload/remove controls, an inline-editable bio
+`<TextField multiline>` with a character counter, a native-language
+`<Select>`, a CEFR `<Select>`, and a daily-goal `<Slider>`. Save
+actions surface inline feedback through a `<Snackbar>`. A stats card
+sits below showing total exercises, current streak, and total Münzen.
+
+### Daily-goal wiring
+
+The dashboard now reads `user.dailyGoal ?? DAILY_GOAL_DEFAULT` and
+hands it to `<DailyGoalRing>`. `saveProfile` calls
+`revalidatePath('/dashboard')` so changing the goal in `/profile` is
+reflected the next time the dashboard renders without a manual reload.
+The Task 5 fallback constant remains, but exists now only for users
+who haven't set an explicit value.
+
+### Review page
+
+Now reads `user.learningLevel ?? 'B1'` instead of the previously
+hardcoded `'B1'`. The `B1` fallback is preserved for users who haven't
+set a level.
+
+### Session augmentation
+
+`avatarUrl` was added to both the JWT and session callbacks so the
+header chip can render the user's image without an extra fetch. Known
+limitation: the JWT isn't refreshed after a fresh upload, so the
+Header chip only picks up a new avatar at the next sign-in. The
+dashboard's `revalidatePath` covers the rest.
+
+### Tests
+
+47 new tests; **273 total**. 100 % coverage on `src/lib/profile/avatar.ts`
+and the profile `actions.ts`.

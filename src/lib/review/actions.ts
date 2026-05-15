@@ -26,7 +26,7 @@ export async function submitReviewRequest(text: string): Promise<ReviewResult> {
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    select: { muenzen: true, preferredLanguage: true },
+    select: { muenzen: true, preferredLanguage: true, learningLevel: true },
   });
 
   // Cheap pre-check; the debit transaction repeats it atomically.
@@ -34,12 +34,13 @@ export async function submitReviewRequest(text: string): Promise<ReviewResult> {
     return { ok: false, error: "insufficient_funds" };
   }
 
-  // We default user level to B1 for the AI prompt — once we track level
-  // explicitly on the User model, swap that in here. Pass userId so the
-  // call counts against the user's daily quota.
+  // Use the user's chosen level (set on the profile page) for the AI
+  // prompt; legacy users without a level keep the previous B1 default
+  // so the prompt behavior is unchanged for them.
+  const level = user.learningLevel ?? "B1";
   let ai;
   try {
-    ai = await reviewText(trimmed, "B1", userId);
+    ai = await reviewText(trimmed, level, userId);
   } catch (err) {
     if (err instanceof AiRateLimitedError) {
       return { ok: false, error: "rate_limited" };

@@ -181,9 +181,38 @@
     "name": "İsim",
     "email": "E-posta",
     "preferredLanguage": "Tercih edilen dil",
-    "save": "Değişiklikleri kaydet",
-    "saved": "Profil güncellendi.",
+    "save": "Kaydet",
+    "saved": "Kaydedildi",
+    "saveError": "Kaydedilemedi. Tekrar deneyin.",
     "historyLink": "Münzen geçmişi",
+    "placeholder": "—",
+    "bio": {
+      "label": "Hakkınızda",
+      "placeholder": "Kısa bir biyografi (en fazla 280 karakter)",
+      "charsLeft": "{count} karakter kaldı"
+    },
+    "nativeLanguage": {
+      "label": "Ana dil"
+    },
+    "learningLevel": {
+      "label": "Seviyeniz"
+    },
+    "dailyGoal": {
+      "label": "Günlük hedef"
+    },
+    "avatar": {
+      "uploadLabel": "Fotoğrafı değiştir",
+      "removeLabel": "Fotoğrafı kaldır",
+      "errorTooLarge": "Dosya çok büyük (en fazla 2 MB)",
+      "errorMime": "Desteklenmeyen dosya türü",
+      "errorInvalid": "Geçersiz görüntü"
+    },
+    "stats": {
+      "title": "İstatistikleriniz",
+      "totalExercises": "Toplam alıştırma",
+      "currentStreak": "Mevcut seri",
+      "totalMuenzen": "Toplam Münzen"
+    },
     "history": {
       "title": "Münzen geçmişi",
       "empty": "Henüz işlem yok.",

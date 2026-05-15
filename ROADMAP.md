@@ -68,8 +68,25 @@ per task.
   **Recharts 3.8.1** added as a dep (lazy-loaded via
   `next/dynamic({ ssr: false })`). 32 new tests (179 total); 100 %
   coverage on `src/lib/dashboard/aggregations.ts`.
-- [ ] **Task 6** — Profile page expansion (preferences, CEFR level on
-  `User`).
+- [x] **Task 6** — Profile expansion + avatar upload: five new `User`
+  columns (`bio`, `nativeLanguage`, `learningLevel`, `dailyGoal`,
+  `avatarUrl`) with a hand-written migration at
+  `prisma/migrations/20260515140000_user_profile_fields/` (**not yet
+  applied** — no live DB). Avatar pipeline in
+  `src/lib/profile/avatar.ts` (2 MB cap, mime allowlist + sharp
+  re-decode spoof defense, rotate → 512×512 cover → WebP quality 88,
+  random 6-byte hex filename) behind `POST/DELETE /api/profile/avatar`;
+  path-traversal hardened during review. Local FS storage at
+  `public/uploads/avatars/` — **swap to Vercel Blob/S3 before deploying
+  on an ephemeral filesystem** (TODO in the route handler). Profile
+  page redesigned around MUI primitives (Avatar, bio with char counter,
+  native-language + CEFR Selects, daily-goal Slider, Snackbar feedback)
+  plus a stats card. Daily-goal wiring: dashboard reads
+  `user.dailyGoal ?? DAILY_GOAL_DEFAULT` and `saveProfile` revalidates
+  `/dashboard`. Review page now reads `user.learningLevel ?? 'B1'`
+  instead of hardcoding `'B1'`. Session augmented with `avatarUrl`
+  (JWT + session callbacks). 47 new tests (273 total); 100 % coverage
+  on `src/lib/profile/avatar.ts` and the profile `actions.ts`.
 - [ ] **Task 7** — Exercise comments / discussion.
 - [ ] **Task 8** — Per-exercise-type intros.
 
@@ -90,6 +107,13 @@ per task.
   mapping is exercised, the named-palette branches are uncovered.
 - React 19 RC + MUI v9 required `--legacy-peer-deps` on install. Friction
   to document in the repo README if it recurs.
+- **Avatar storage (Task 6)** is local-FS only. Migrate to Vercel Blob
+  or S3 before deploying on an ephemeral filesystem. The swap site is
+  marked with a `TODO` in `src/app/api/profile/avatar/route.ts`.
+- **JWT not refreshed after avatar upload (Task 6).** `saveProfile`
+  calls `revalidatePath('/dashboard')` so the dashboard picks up the
+  new image, but the Header chip — which reads `session.user.avatarUrl`
+  from the JWT — only updates at the next sign-in.
 
 ---
 
@@ -201,9 +225,12 @@ added **47 more** across the AI surface — three new test files
 (`src/config/__tests__/limits.test.ts`,
 `src/lib/__tests__/ai-cache.test.ts`,
 `src/lib/__tests__/ai-rate-limit.test.ts`) plus expanded coverage of
-`src/lib/ai.ts` — total **226 tests** with 100 % coverage on
+`src/lib/ai.ts` — bringing the count to **226** with 100 % coverage on
 `src/config/limits.ts`, `src/lib/ai-cache.ts`, `src/lib/ai-rate-limit.ts`
-and 96 %+ on `src/lib/ai.ts`.
+and 96 %+ on `src/lib/ai.ts`. Task 6 added **47 more** across the
+profile + avatar surface (`src/lib/profile/avatar.ts` and the profile
+`actions.ts`) — total **273 tests** with 100 % coverage on
+`src/lib/profile/avatar.ts` and `actions.ts`.
 
 Still uncovered:
 

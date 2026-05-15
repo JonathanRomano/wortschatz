@@ -47,6 +47,7 @@ export const authConfig = {
       if (user) {
         token.id = user.id;
         token.role = user.role ?? "USER";
+        token.avatarUrl = user.avatarUrl ?? null;
       }
       return token;
     },
@@ -54,6 +55,7 @@ export const authConfig = {
       if (session.user) {
         session.user.id = token.id ?? session.user.id;
         session.user.role = token.role;
+        session.user.avatarUrl = token.avatarUrl ?? null;
       }
       return session;
     },

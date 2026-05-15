@@ -181,9 +181,38 @@
     "name": "Ім'я",
     "email": "Електронна пошта",
     "preferredLanguage": "Бажана мова",
-    "save": "Зберегти зміни",
-    "saved": "Профіль оновлено.",
+    "save": "Зберегти",
+    "saved": "Збережено",
+    "saveError": "Не вдалося зберегти. Спробуйте ще раз.",
     "historyLink": "Історія Münzen",
+    "placeholder": "—",
+    "bio": {
+      "label": "Про вас",
+      "placeholder": "Коротка біографія (до 280 символів)",
+      "charsLeft": "Залишилось {count} символів"
+    },
+    "nativeLanguage": {
+      "label": "Рідна мова"
+    },
+    "learningLevel": {
+      "label": "Ваш рівень"
+    },
+    "dailyGoal": {
+      "label": "Щоденна ціль"
+    },
+    "avatar": {
+      "uploadLabel": "Змінити фото",
+      "removeLabel": "Видалити фото",
+      "errorTooLarge": "Файл занадто великий (макс. 2 МБ)",
+      "errorMime": "Непідтримуваний тип файлу",
+      "errorInvalid": "Недійсне зображення"
+    },
+    "stats": {
+      "title": "Ваша статистика",
+      "totalExercises": "Усього вправ",
+      "currentStreak": "Поточна серія",
+      "totalMuenzen": "Усього Münzen"
+    },
     "history": {
       "title": "Історія Münzen",
       "empty": "Поки що немає транзакцій.",

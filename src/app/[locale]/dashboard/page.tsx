@@ -63,7 +63,7 @@ export default async function DashboardPage({
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    select: { muenzen: true, streak: true, name: true },
+    select: { muenzen: true, streak: true, name: true, dailyGoal: true },
   });
 
   const now = new Date();
@@ -152,10 +152,13 @@ export default async function DashboardPage({
     RADAR_LAST_N,
   );
   // `chartData.todayCount` already comes from a dedicated COUNT
-  // query — `countToday` in aggregations.ts is exported for the unit
-  // tests / future Task-6 wiring rather than re-derived here.
+  // query — `countToday` in aggregations.ts is exported here for the
+  // unit tests rather than re-derived. The user's `dailyGoal` is now
+  // configurable from the profile page; `DAILY_GOAL_DEFAULT` is only
+  // a fallback if the column is somehow null (defensive — the DB
+  // default is the same number).
   const doneToday = chartData.todayCount;
-  const dailyGoal = DAILY_GOAL_DEFAULT;
+  const dailyGoal = user.dailyGoal ?? DAILY_GOAL_DEFAULT;
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 5 } }}>
