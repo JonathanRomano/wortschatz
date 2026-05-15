@@ -614,3 +614,87 @@ dashboard's `revalidatePath` covers the rest.
 
 47 new tests; **273 total**. 100 % coverage on `src/lib/profile/avatar.ts`
 and the profile `actions.ts`.
+
+## Task 8 — Exercise intros (shipped)
+
+Each exercise type now ships with a static intro screen that explains
+what the type asks, how to interact with it, and a worked example. The
+intro appears the first time a user visits a type runner; "Don't show
+again" persists per-user-per-type and the intro can always be revisited.
+
+### Schema additions
+
+New `UserPreference` table (`prisma/schema.prisma`) with `userId`,
+`key: ExerciseType`, `skipIntro: Boolean`, `createdAt`. Unique index on
+`(userId, key)`; FK to `User` with `ON DELETE CASCADE`. Hand-written
+migration at
+`prisma/migrations/20260515150000_user_preferences/migration.sql` —
+**not yet applied** (no live DB in this environment); will run on the
+next `prisma migrate dev/deploy`.
+
+Note: `key` overloads the existing `ExerciseType` enum for now because
+intros are the first and only preference type. When more preference
+kinds arrive, promote `key` to a dedicated `Pref` enum rather than
+expanding `ExerciseType` further. Tracked under "Discovered debt" in
+`ROADMAP.md`.
+
+### Static intro content
+
+Per-type intro copy lives in `src/content/exercise-intros/` — one file
+per exercise type (10 total), aggregated into
+`EXERCISE_INTROS: Record<ExerciseType, ExerciseIntro>` alongside the
+shared `ExerciseIntro` type. Every field
+(`whatItAsks`, `howToInteract`, `example.prompt`,
+`example.solvedExplanation`) is `LocalizedText` (en/pt/tr/uk) and is
+read with the existing `pickLocalized` helper. No AI calls — copy is
+edited in source.
+
+### Server action
+
+`src/lib/preferences/actions.ts` exposes:
+
+- `setSkipIntro(type, skip)` — auth-gated upsert (when `skip` is true)
+  or delete (when `skip` is false). Used by the intro screen's checkbox.
+- `getSkipIntro(userId, type)` — read helper used by the type-runner
+  server page to decide whether to render the intro inline.
+
+### Components
+
+- `src/components/exercises/IntroScreen.tsx` — the screen body
+  (heading, sections, worked example, "don't show again" checkbox,
+  "Let's go" CTA).
+- `src/components/exercises/IntroModal.tsx` — Dialog wrapper that
+  reuses the screen body for the modal context.
+
+### Routing wiring
+
+- **Type runner** (`/exercises/<TYPE>`): the server page fetches
+  `getSkipIntro(userId, type)`; when false, the inline intro renders in
+  place of the exercise. Clicking "Let's go" reveals the exercise.
+- **Single exercise** (`/exercises/<id>`): the page header now includes
+  `<ExerciseHelpButton>`, a question-mark icon that opens the intro
+  modal.
+- **Keyboard shortcut.** Pressing `?` (Shift+/) opens the intro from
+  either context. The shortcut is suppressed while focus is on
+  `input` / `textarea` / `contentEditable` so users can still type a
+  literal `?` into a writing exercise.
+
+### Accessibility (review pass)
+
+The intro screen originally used `h1`/`h2` in a way that broke the
+surrounding page hierarchy. During review, headings were demoted
+(`h1`→`h2`, `h2`→`h3`) so the intro slots cleanly under the page's
+existing `h1`.
+
+### i18n
+
+New `exerciseIntros` block in all four message files:
+`whatItAsks`, `howToInteract`, `example`, `exampleAnswer`,
+`dontShowAgain`, `letsGo`, `openHelp`. Per-type strings remain in the
+content files themselves (since they're `LocalizedText` keyed by exercise
+type, not in `messages/*.json`).
+
+### Tests
+
+75 new tests; **348 total**. 100 % coverage on
+`src/lib/preferences/actions.ts`.

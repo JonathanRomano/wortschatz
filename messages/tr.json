@@ -160,6 +160,15 @@
     "listeningAudioMissing": "Ses yakında geliyor — şimdilik aşağıdaki transkripti okuyun.",
     "listeningAnswerPlaceholder": "Cevabınız…"
   },
+  "exerciseIntros": {
+    "whatItAsks": "Ne yapacaksın",
+    "howToInteract": "Nasıl çalışır",
+    "example": "Örnek",
+    "exampleAnswer": "Cevap:",
+    "dontShowAgain": "Bu tür için tekrar gösterme.",
+    "letsGo": "Hadi başlayalım!",
+    "openHelp": "Açıklamayı göster"
+  },
   "filters": {
     "level": "Seviye",
     "all": "Tüm seviyeler",

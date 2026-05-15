@@ -139,6 +139,26 @@ messages/*.json                     UI translations (incl. `renderers` block)
   the `renderers` block in `messages/*.json`. (German is allowed only for
   the _content being learned_.)
 
+### Exercise intros
+
+- Each exercise type has a static intro at
+  `src/content/exercise-intros/<type>.ts`, aggregated into
+  `EXERCISE_INTROS: Record<ExerciseType, ExerciseIntro>`. Each entry has
+  `whatItAsks`, `howToInteract`, `example.prompt`, and
+  `example.solvedExplanation`, all `LocalizedText` (en/pt/tr/uk). Edit
+  those files to update copy — no AI calls.
+- "Don't show again" is per-user-per-type, stored in the `UserPreference`
+  table. Use `setSkipIntro` / `getSkipIntro` from
+  `@/lib/preferences/actions` — never mutate the table directly.
+- The intro is shown inline on the type runner (`/exercises/<TYPE>`) the
+  first time; revisit later via the `?` keyboard shortcut (Shift+/,
+  suppressed while focus is on `input`/`textarea`/`contentEditable`) or
+  the help-icon button in the single-exercise header.
+- `UserPreference` is the first row in a deliberately-narrow preference
+  table. Its `key` column currently reuses `ExerciseType`; when more
+  preference kinds arrive, promote `key` to a dedicated `Pref` enum
+  rather than overloading `ExerciseType` further.
+
 ### Münzen transactions
 
 - Every Münzen balance change writes a `MuenzenTransaction` row. Always

@@ -160,6 +160,15 @@
     "listeningAudioMissing": "Audio is coming soon — read the transcript below for now.",
     "listeningAnswerPlaceholder": "Your answer…"
   },
+  "exerciseIntros": {
+    "whatItAsks": "What you'll do",
+    "howToInteract": "How it works",
+    "example": "Example",
+    "exampleAnswer": "Answer:",
+    "dontShowAgain": "Don't show this again for this type.",
+    "letsGo": "Let's go!",
+    "openHelp": "Show explanation"
+  },
   "filters": {
     "level": "Level",
     "all": "All levels",

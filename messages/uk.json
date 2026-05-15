@@ -160,6 +160,15 @@
     "listeningAudioMissing": "Аудіо буде доступне згодом — прочитайте розшифровку нижче.",
     "listeningAnswerPlaceholder": "Ваша відповідь…"
   },
+  "exerciseIntros": {
+    "whatItAsks": "Що ви робитимете",
+    "howToInteract": "Як це працює",
+    "example": "Приклад",
+    "exampleAnswer": "Відповідь:",
+    "dontShowAgain": "Більше не показувати для цього типу.",
+    "letsGo": "Поїхали!",
+    "openHelp": "Показати пояснення"
+  },
   "filters": {
     "level": "Рівень",
     "all": "Усі рівні",

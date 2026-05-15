@@ -12,6 +12,7 @@ import { prisma } from "@/lib/db";
 import type { Locale } from "@/i18n/config";
 import { pickLocalized } from "@/lib/exercises/i18n";
 import { getRandomExerciseOfType } from "@/lib/exercises/actions";
+import { getSkipIntro } from "@/lib/preferences/actions";
 import { Card } from "@/components/ui/Card";
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
 import { InlineLink } from "@/components/ui/InlineLink";
@@ -19,6 +20,7 @@ import { LevelChip } from "@/components/ui/LevelChip";
 import { LevelFilter } from "./LevelFilter";
 import { TypeRunner, type LoadedExercise } from "./TypeRunner";
 import { ExerciseRunner } from "./ExerciseRunner";
+import { ExerciseHelpButton } from "./ExerciseHelpButton";
 
 const TYPES: ExerciseType[] = [
   "FILL_IN_THE_BLANK",
@@ -106,7 +108,10 @@ export default async function ExerciseSlugPage({
 
   // Type page: random exercise + Next button.
   if (type) {
-    const picked = await getRandomExerciseOfType(type, undefined, level);
+    const [picked, skipIntro] = await Promise.all([
+      getRandomExerciseOfType(type, undefined, level),
+      getSkipIntro(session.user.id, type),
+    ]);
     const initial = picked
       ? await loadExercise(picked.id, locale as Locale, session.user.id)
       : null;
@@ -170,7 +175,12 @@ export default async function ExerciseSlugPage({
         </Box>
 
         {initial ? (
-          <TypeRunner type={type} level={level} initialExercise={initial} />
+          <TypeRunner
+            type={type}
+            level={level}
+            initialExercise={initial}
+            initialSkipIntro={skipIntro}
+          />
         ) : (
           <Card padding="lg" sx={{ mt: 4, textAlign: "center" }}>
             <Typography variant="body2" sx={{ color: "text.secondary" }}>
@@ -194,6 +204,7 @@ export default async function ExerciseSlugPage({
   // the mistakes list).
   const detail = await loadExercise(slug, locale as Locale, session.user.id);
   if (!detail) notFound();
+  const skipIntroDetail = await getSkipIntro(session.user.id, detail.type);
 
   return (
     <Container maxWidth="md" sx={{ py: { xs: 4, sm: 5 } }}>
@@ -214,18 +225,29 @@ export default async function ExerciseSlugPage({
       </InlineLink>
 
       <Box component="header" sx={{ mt: 2 }}>
-        <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-          <LevelChip level={detail.level} />
-          <Typography
-            variant="overline"
-            sx={{
-              fontFamily:
-                'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
-              color: "text.secondary",
-            }}
-          >
-            {tt(detail.type)}
-          </Typography>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: "center",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}
+        >
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
+            <LevelChip level={detail.level} />
+            <Typography
+              variant="overline"
+              sx={{
+                fontFamily:
+                  'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+                color: "text.secondary",
+              }}
+            >
+              {tt(detail.type)}
+            </Typography>
+          </Stack>
+          <ExerciseHelpButton type={detail.type} initialSkip={skipIntroDetail} />
         </Stack>
         <Typography
           variant="h2"

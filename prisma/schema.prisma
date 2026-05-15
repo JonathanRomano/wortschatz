@@ -101,6 +101,24 @@ model User {
   attempts          UserExercise[]
   transactions      MuenzenTransaction[]
   reviewRequests    AIReviewRequest[]
+  preferences       UserPreference[]
+}
+
+// Sprint 02 Task 8 — per-exercise-type user preferences. Currently used
+// for the "don't show the intro again" toggle on the type runner. The
+// row's existence alone is the signal — `skipIntro` is a placeholder
+// for future bools to live on this same row.
+model UserPreference {
+  id          String       @id @default(cuid())
+  userId      String
+  key         ExerciseType
+  skipIntro   Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@index([userId])
 }
 
 model Exercise {

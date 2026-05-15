@@ -160,6 +160,15 @@
     "listeningAudioMissing": "O áudio chega em breve — leia a transcrição abaixo por enquanto.",
     "listeningAnswerPlaceholder": "Sua resposta…"
   },
+  "exerciseIntros": {
+    "whatItAsks": "O que você fará",
+    "howToInteract": "Como funciona",
+    "example": "Exemplo",
+    "exampleAnswer": "Resposta:",
+    "dontShowAgain": "Não mostrar novamente para este tipo.",
+    "letsGo": "Vamos lá!",
+    "openHelp": "Mostrar explicação"
+  },
   "filters": {
     "level": "Nível",
     "all": "Todos os níveis",

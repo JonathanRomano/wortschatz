@@ -88,7 +88,23 @@ per task.
   (JWT + session callbacks). 47 new tests (273 total); 100 % coverage
   on `src/lib/profile/avatar.ts` and the profile `actions.ts`.
 - [ ] **Task 7** — Exercise comments / discussion.
-- [ ] **Task 8** — Per-exercise-type intros.
+- [x] **Task 8** — Per-exercise-type intros: new `UserPreference` table
+  (`userId`, `key: ExerciseType`, `skipIntro`, unique on `(userId, key)`,
+  FK to `User` with `ON DELETE CASCADE`) with hand-written migration at
+  `prisma/migrations/20260515150000_user_preferences/` (**not yet applied**
+  — no live DB). Static intro content per type × 4 locales in
+  `src/content/exercise-intros/` (one file per type, aggregated into
+  `EXERCISE_INTROS`, each entry `whatItAsks` / `howToInteract` /
+  `example.prompt` / `example.solvedExplanation` as `LocalizedText`).
+  `setSkipIntro` / `getSkipIntro` server action in
+  `src/lib/preferences/actions.ts`. `IntroScreen` + `IntroModal`
+  components: the type runner renders the intro inline on first visit;
+  the single-exercise page exposes a help-icon button in its header; the
+  `?` keyboard shortcut (Shift+/, suppressed in form fields) opens the
+  intro from either context. New `exerciseIntros.*` i18n block across
+  all four locales. Heading-hierarchy fix applied during review
+  (h1→h2, h2→h3). 75 new tests (348 total); 100 % coverage on
+  `src/lib/preferences/actions.ts`.
 
 ### New dependencies
 
@@ -114,6 +130,11 @@ per task.
   calls `revalidatePath('/dashboard')` so the dashboard picks up the
   new image, but the Header chip — which reads `session.user.avatarUrl`
   from the JWT — only updates at the next sign-in.
+- **`UserPreference.key` overloads `ExerciseType` (Task 8).** Intros are
+  currently the only preference type, so the `key` column reuses the
+  `ExerciseType` enum. When a second preference kind arrives, promote
+  `key` to a dedicated `Pref` enum rather than further overloading
+  `ExerciseType`.
 
 ---
 
@@ -229,8 +250,12 @@ added **47 more** across the AI surface — three new test files
 `src/config/limits.ts`, `src/lib/ai-cache.ts`, `src/lib/ai-rate-limit.ts`
 and 96 %+ on `src/lib/ai.ts`. Task 6 added **47 more** across the
 profile + avatar surface (`src/lib/profile/avatar.ts` and the profile
-`actions.ts`) — total **273 tests** with 100 % coverage on
-`src/lib/profile/avatar.ts` and `actions.ts`.
+`actions.ts`) — bringing the count to 273 with 100 % coverage on
+`src/lib/profile/avatar.ts` and `actions.ts`. Task 8 added **75 more**
+across the exercise-intros surface (`src/lib/preferences/actions.ts`,
+the static intro content, and the `IntroScreen` / `IntroModal`
+components) — total **348 tests** with 100 % coverage on
+`src/lib/preferences/actions.ts`.
 
 Still uncovered:
 
