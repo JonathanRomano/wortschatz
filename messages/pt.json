@@ -1,0 +1,184 @@
+{
+  "app": {
+    "name": "Wortschatz",
+    "tagline": "Construa seu vocabulário alemão, uma palavra de cada vez."
+  },
+  "nav": {
+    "dashboard": "Painel",
+    "exercises": "Exercícios",
+    "mistakes": "Meus erros",
+    "review": "Revisão de texto",
+    "profile": "Perfil",
+    "admin": "Administração",
+    "login": "Entrar",
+    "logout": "Sair",
+    "register": "Cadastrar-se",
+    "menu": "Menu",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu",
+    "language": "Idioma"
+  },
+  "landing": {
+    "heroTitle": "Aprenda alemão com exercícios gerados por IA",
+    "heroBody": "Wortschatz se adapta ao seu nível. Ganhe Münzen praticando e gaste-as em feedback personalizado de IA.",
+    "ctaPrimary": "Começar gratuitamente",
+    "ctaSecondary": "Já tenho uma conta",
+    "feature1Title": "Exercícios gerados por IA",
+    "feature1Body": "Dez tipos de exercícios cobrindo gramática, vocabulário, escuta e escrita.",
+    "feature2Title": "Ganhe Münzen",
+    "feature2Body": "Complete exercícios e mantenha sua sequência viva para ganhar a moeda interna.",
+    "feature3Title": "Tutor de IA pessoal",
+    "feature3Body": "Envie seus próprios textos em alemão e receba feedback detalhado de gramática e estilo."
+  },
+  "auth": {
+    "loginTitle": "Bem-vindo de volta",
+    "registerTitle": "Crie sua conta",
+    "email": "E-mail",
+    "password": "Senha",
+    "name": "Nome",
+    "submitLogin": "Entrar",
+    "submitRegister": "Criar conta",
+    "googleLogin": "Continuar com Google",
+    "or": "ou",
+    "noAccount": "Ainda não tem uma conta?",
+    "haveAccount": "Já tem uma conta?",
+    "errorInvalidCredentials": "E-mail ou senha inválidos.",
+    "errorAlreadyRegistered": "Já existe uma conta com esse e-mail.",
+    "errorGeneric": "Algo deu errado. Tente novamente."
+  },
+  "dashboard": {
+    "title": "Seu painel",
+    "muenzenBalance": "Saldo de Münzen",
+    "currentStreak": "Sequência atual",
+    "streakDays": "{days, plural, one {# dia} other {# dias}}",
+    "exercisesTotal": "Exercícios completados",
+    "exercisesThisWeek": "Esta semana",
+    "exercisesThisMonth": "Este mês",
+    "toReview": "Exercícios para revisar",
+    "reviewMistakes": "Revisar erros",
+    "byLevel": "Progresso por nível",
+    "byType": "Progresso por tipo de exercício",
+    "recentActivity": "Atividade recente",
+    "noActivity": "Nenhuma atividade ainda. Tente seu primeiro exercício!"
+  },
+  "exercises": {
+    "browseTitle": "Exercícios",
+    "browseSubtitle": "Escolha um tipo de exercício para praticar.",
+    "back": "Voltar para exercícios",
+    "practice": "Praticar",
+    "available": "{count, plural, =0 {Nenhum exercício} one {# exercício} other {# exercícios}}",
+    "stats": "Completados: {completed} · Precisão: {accuracy}%",
+    "noExercises": "Ainda não há exercícios disponíveis.",
+    "filterType": "Tipo",
+    "filterLevel": "Nível",
+    "filterAll": "Todos",
+    "submit": "Enviar resposta",
+    "next": "Próximo exercício",
+    "score": "Nota",
+    "feedback": "Feedback",
+    "explanation": "Explicação",
+    "loading": "Carregando…",
+    "empty": "Nenhum exercício corresponde aos filtros.",
+    "completed": "Completado",
+    "alreadyEarned": "Você já ganhou Münzen por este exercício.",
+    "rewardEarned": "+{amount} Münzen ganhas"
+  },
+  "mistakes": {
+    "title": "Meus erros",
+    "subtitle": "Exercícios em que sua última tentativa teve nota abaixo de 60.",
+    "empty": "Nenhum erro para revisar — bom trabalho!",
+    "retry": "Tentar novamente",
+    "lastScore": "Última nota: {score}/100",
+    "lastTry": "Última tentativa: {date}"
+  },
+  "exerciseTypes": {
+    "FILL_IN_THE_BLANK": "Complete a lacuna",
+    "MULTIPLE_CHOICE": "Múltipla escolha",
+    "TRANSLATION": "Tradução",
+    "WORD_ORDER": "Ordem das palavras",
+    "MATCHING": "Associação",
+    "LISTENING_COMPREHENSION": "Escuta",
+    "READING_COMPREHENSION": "Leitura",
+    "VERB_CONJUGATION": "Conjugação verbal",
+    "ERROR_CORRECTION": "Correção de erro",
+    "FREE_WRITING": "Escrita livre"
+  },
+  "exerciseTypeDescriptions": {
+    "FILL_IN_THE_BLANK": "Complete frases com a palavra que falta.",
+    "MULTIPLE_CHOICE": "Escolha a resposta certa entre quatro opções.",
+    "TRANSLATION": "Traduza uma frase para o alemão.",
+    "WORD_ORDER": "Reorganize as palavras em uma frase correta.",
+    "MATCHING": "Combine palavras alemãs com suas traduções.",
+    "LISTENING_COMPREHENSION": "Ouça um trecho curto e responda.",
+    "READING_COMPREHENSION": "Leia um texto e responda a uma pergunta.",
+    "VERB_CONJUGATION": "Conjugue um verbo no tempo e pessoa pedidos.",
+    "ERROR_CORRECTION": "Identifique e corrija o erro em uma frase.",
+    "FREE_WRITING": "Escreva um texto curto — avaliado por IA."
+  },
+  "renderers": {
+    "hint": "Dica",
+    "blankAria": "Lacuna {n}",
+    "wordOrderEmpty": "Toque nas palavras abaixo para formar a frase.",
+    "wordOrderUndo": "Desfazer",
+    "wordOrderReset": "Reiniciar",
+    "matchingPlaceholder": "— escolha uma tradução —",
+    "matchingAria": "Tradução para {term}",
+    "conjugationOriginal": "Conjugar",
+    "conjugationPlaceholder": "forma conjugada",
+    "errorOriginal": "Original",
+    "errorCorrectedPlaceholder": "Versão corrigida…",
+    "translationLabelSource": "Origem",
+    "translationPlaceholder": "Escreva a tradução em alemão…",
+    "freeWritingPrompt": "Tema",
+    "freeWritingPlaceholder": "Escreva seu texto aqui…",
+    "freeWritingWordCount": "{count} / {min} palavras",
+    "listeningAudioMissing": "O áudio chega em breve — leia a transcrição abaixo por enquanto.",
+    "listeningAnswerPlaceholder": "Sua resposta…"
+  },
+  "filters": {
+    "level": "Nível",
+    "all": "Todos os níveis",
+    "clearLevel": "Mostrar todos os níveis"
+  },
+  "review": {
+    "title": "Revisão de texto por IA",
+    "subtitle": "Envie um texto em alemão e receba uma revisão detalhada de gramática e estilo. Custa {cost} Münzen.",
+    "placeholder": "Cole seu texto em alemão aqui…",
+    "submit": "Solicitar revisão",
+    "insufficientFunds": "Você não tem Münzen suficientes para uma revisão.",
+    "feedbackHeading": "Feedback da IA",
+    "history": "Revisões anteriores",
+    "balanceLine": "Saldo: {balance} M · Custo: {cost} M"
+  },
+  "profile": {
+    "title": "Seu perfil",
+    "name": "Nome",
+    "email": "E-mail",
+    "preferredLanguage": "Idioma preferido",
+    "save": "Salvar alterações",
+    "saved": "Perfil atualizado."
+  },
+  "admin": {
+    "title": "Painel administrativo",
+    "exercises": "Exercícios",
+    "users": "Usuários",
+    "approve": "Aprovar",
+    "reject": "Rejeitar",
+    "noPermission": "Você não tem acesso a esta página."
+  },
+  "common": {
+    "loading": "Carregando…",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "back": "Voltar",
+    "comingSoon": "Em breve",
+    "home": "Início"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Esta página não existe."
+  },
+  "footer": {
+    "madeWith": "Feito com carinho para estudantes de alemão no mundo todo."
+  }
+}

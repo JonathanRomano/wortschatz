@@ -1,0 +1,208 @@
+// Wortschatz - Prisma schema
+//
+// Run `npm run db:push` after editing for fast local iteration, or
+// `npm run db:migrate -- --name <change>` to generate a migration.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Enums --------------------------------------------------------------
+
+enum UserRole {
+  USER
+  TEACHER
+  ADMIN
+}
+
+enum UiLanguage {
+  PT
+  EN
+  TR
+  UK
+}
+
+enum CefrLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+enum ExerciseType {
+  FILL_IN_THE_BLANK
+  MULTIPLE_CHOICE
+  TRANSLATION
+  WORD_ORDER
+  MATCHING
+  LISTENING_COMPREHENSION
+  READING_COMPREHENSION
+  VERB_CONJUGATION
+  ERROR_CORRECTION
+  FREE_WRITING
+}
+
+enum ExerciseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MuenzenReason {
+  EXERCISE_COMPLETE
+  DAILY_STREAK
+  SPENT_AI_REVIEW
+  BONUS
+}
+
+// --- App models ---------------------------------------------------------
+
+model User {
+  id                String        @id @default(cuid())
+  email             String        @unique
+  name              String?
+  image             String?
+  // bcrypt hash. Null when the account was created via OAuth only.
+  password          String?
+  role              UserRole      @default(USER)
+  preferredLanguage UiLanguage    @default(EN)
+
+  // The "ü" in "Münzen" is preserved on the web side; the column itself
+  // uses an ASCII name so DB tooling stays portable.
+  muenzen           Int           @default(0)
+  streak            Int           @default(0)
+  lastActiveAt      DateTime?
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  accounts          Account[]
+  sessions          Session[]
+  authoredExercises Exercise[]    @relation("ExerciseAuthor")
+  attempts          UserExercise[]
+  transactions      MuenzenTransaction[]
+  reviewRequests    AIReviewRequest[]
+}
+
+model Exercise {
+  id             String         @id @default(cuid())
+  type           ExerciseType
+  title          String
+  // Per-locale strings: { en, pt, tr, uk }. Read with pickLocalized()
+  // from src/lib/exercises/i18n.ts so missing locales fall back to en.
+  instructions   Json
+  // ISO 639-1, defaulting to German. Kept on the row in case future
+  // exercises target other languages.
+  targetLanguage String         @default("de")
+  level          CefrLevel
+  // Type-specific payload. See src/lib/exercises/schemas.ts for the
+  // discriminated union of acceptable shapes.
+  content        Json
+  solution       Json
+  // Per-locale strings — same shape as `instructions`.
+  explanation    Json
+  tags           String[]       @default([])
+  status         ExerciseStatus @default(DRAFT)
+
+  authorId       String?
+  author         User?          @relation("ExerciseAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  attempts       UserExercise[]
+
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([type, level, status])
+  @@index([status])
+}
+
+model UserExercise {
+  id          String   @id @default(cuid())
+  userId      String
+  exerciseId  String
+  // Whatever the user submitted, in the shape the renderer produced.
+  answer      Json
+  // 0-100. AI- or rule-evaluated.
+  score       Int
+  feedback    String
+  completedAt DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise    Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@index([userId, completedAt])
+  @@index([exerciseId])
+}
+
+model MuenzenTransaction {
+  id        String        @id @default(cuid())
+  userId    String
+  // Positive = earned, negative = spent.
+  amount    Int
+  reason    MuenzenReason
+  // Free-form context, e.g. exerciseId or aiReviewRequestId.
+  refId     String?
+  createdAt DateTime      @default(now())
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model AIReviewRequest {
+  id          String   @id @default(cuid())
+  userId      String
+  inputText   String
+  feedback    String
+  muenzenCost Int
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+// --- NextAuth tables ----------------------------------------------------
+// Standard schema from @auth/prisma-adapter.
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

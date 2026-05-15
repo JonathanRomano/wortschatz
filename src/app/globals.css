@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+/* ----------------------------------------------------------------------
+ * Tinte & Bernstein — Wortschatz design tokens.
+ * Warm paper background, ink-blue primary, amber accent.
+ * ---------------------------------------------------------------------- */
+
+:root {
+  --background: #fbf7ef;        /* Papier */
+  --surface: #ffffff;           /* card surface */
+  --surface-alt: #f3ece0;       /* subtle alt fill */
+  --muted: #efe6d6;             /* muted surface */
+  --muted-foreground: #78716c;  /* secondary text */
+  --foreground: #1c1917;        /* body text */
+  --border: #e3d9c5;            /* warm sand */
+
+  --primary: #1e3a5f;           /* Tinte — ink blue */
+  --primary-foreground: #fbf7ef;
+  --accent: #c2860a;            /* Bernstein — amber */
+  --accent-foreground: #1c1917;
+  --accent-soft: #f5e6c2;       /* amber tint for backgrounds */
+
+  --success: #047857;
+  --success-soft: #d1fae5;
+  --danger: #b91c1c;
+  --danger-soft: #fee2e2;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  /* Font families are injected from next/font in src/app/[locale]/layout.tsx
+     via CSS variables, so the @theme reference just forwards them. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0c0a09;       /* stone-950 */
+    --surface: #1c1917;          /* stone-900 */
+    --surface-alt: #292524;      /* stone-800 */
+    --muted: #1c1917;
+    --muted-foreground: #a8a29e; /* stone-400 */
+    --foreground: #fafaf9;
+    --border: #3f3a32;
+
+    --primary: #93c5fd;          /* sky-300 */
+    --primary-foreground: #0c0a09;
+    --accent: #fbbf24;           /* amber-400 */
+    --accent-foreground: #0c0a09;
+    --accent-soft: #4d3d10;
+
+    --success: #34d399;
+    --success-soft: #052e1c;
+    --danger: #fca5a5;
+    --danger-soft: #3b0a0a;
+  }
+}
+
+html, body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Body-only horizontal clip prevents accidental overflow without breaking
+   sticky header / drawer positioning. */
+body {
+  overflow-x: clip;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* iOS Safari zooms on any input < 16px on focus. Lock to 16px. */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+/* Custom selection — amber-tinted, in keeping with the theme. */
+::selection {
+  background: var(--accent-soft);
+  color: var(--foreground);
+}
+
+/* Subtle paper-grain ambience: a faint repeating gradient gives the
+   background a warmth that flat hex alone can't reach. Cheap (no image). */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(1200px 600px at 12% -10%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%),
+    radial-gradient(900px 500px at 100% 110%, color-mix(in srgb, var(--primary) 5%, transparent), transparent 60%);
+}

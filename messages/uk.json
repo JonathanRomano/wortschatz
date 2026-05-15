@@ -1,0 +1,184 @@
+{
+  "app": {
+    "name": "Wortschatz",
+    "tagline": "Будуйте свій німецький словниковий запас, слово за словом."
+  },
+  "nav": {
+    "dashboard": "Панель",
+    "exercises": "Вправи",
+    "mistakes": "Мої помилки",
+    "review": "Огляд тексту",
+    "profile": "Профіль",
+    "admin": "Адмінпанель",
+    "login": "Увійти",
+    "logout": "Вийти",
+    "register": "Зареєструватися",
+    "menu": "Меню",
+    "openMenu": "Відкрити меню",
+    "closeMenu": "Закрити меню",
+    "language": "Мова"
+  },
+  "landing": {
+    "heroTitle": "Вивчайте німецьку зі вправами на основі ШІ",
+    "heroBody": "Wortschatz адаптується до вашого рівня. Заробляйте Münzen під час практики та витрачайте їх на персоналізований відгук від ШІ.",
+    "ctaPrimary": "Почати безкоштовно",
+    "ctaSecondary": "У мене вже є акаунт",
+    "feature1Title": "Вправи, згенеровані ШІ",
+    "feature1Body": "Десять типів вправ: граматика, словниковий запас, аудіювання та письмо.",
+    "feature2Title": "Заробляйте Münzen",
+    "feature2Body": "Виконуйте вправи та підтримуйте серію, щоб заробляти внутрішню валюту.",
+    "feature3Title": "Особистий ШІ-репетитор",
+    "feature3Body": "Надсилайте власні німецькі тексти й отримуйте детальний відгук щодо граматики та стилю."
+  },
+  "auth": {
+    "loginTitle": "З поверненням",
+    "registerTitle": "Створіть акаунт",
+    "email": "Електронна пошта",
+    "password": "Пароль",
+    "name": "Ім'я",
+    "submitLogin": "Увійти",
+    "submitRegister": "Створити акаунт",
+    "googleLogin": "Продовжити з Google",
+    "or": "або",
+    "noAccount": "Ще немає акаунта?",
+    "haveAccount": "Вже маєте акаунт?",
+    "errorInvalidCredentials": "Неправильна пошта або пароль.",
+    "errorAlreadyRegistered": "Акаунт із цією поштою вже існує.",
+    "errorGeneric": "Щось пішло не так. Спробуйте ще раз."
+  },
+  "dashboard": {
+    "title": "Ваша панель",
+    "muenzenBalance": "Баланс Münzen",
+    "currentStreak": "Поточна серія",
+    "streakDays": "{days, plural, one {# день} few {# дні} other {# днів}}",
+    "exercisesTotal": "Виконано вправ",
+    "exercisesThisWeek": "Цього тижня",
+    "exercisesThisMonth": "Цього місяця",
+    "toReview": "Вправи для повторення",
+    "reviewMistakes": "Повторити помилки",
+    "byLevel": "Прогрес за рівнем",
+    "byType": "Прогрес за типом вправи",
+    "recentActivity": "Остання активність",
+    "noActivity": "Поки що немає активності. Спробуйте першу вправу!"
+  },
+  "exercises": {
+    "browseTitle": "Вправи",
+    "browseSubtitle": "Оберіть тип вправи для практики.",
+    "back": "Назад до вправ",
+    "practice": "Практикувати",
+    "available": "{count, plural, =0 {Немає вправ} one {# вправа} few {# вправи} other {# вправ}}",
+    "stats": "Виконано: {completed} · Точність: {accuracy}%",
+    "noExercises": "Поки що вправ немає.",
+    "filterType": "Тип",
+    "filterLevel": "Рівень",
+    "filterAll": "Усі",
+    "submit": "Надіслати відповідь",
+    "next": "Наступна вправа",
+    "score": "Оцінка",
+    "feedback": "Відгук",
+    "explanation": "Пояснення",
+    "loading": "Завантаження…",
+    "empty": "Жодна вправа не відповідає фільтрам.",
+    "completed": "Виконано",
+    "alreadyEarned": "Ви вже заробили Münzen за цю вправу.",
+    "rewardEarned": "+{amount} Münzen зароблено"
+  },
+  "mistakes": {
+    "title": "Мої помилки",
+    "subtitle": "Вправи, де ваша остання спроба отримала менше 60.",
+    "empty": "Помилок для повторення немає — чудова робота!",
+    "retry": "Спробувати знову",
+    "lastScore": "Остання оцінка: {score}/100",
+    "lastTry": "Остання спроба: {date}"
+  },
+  "exerciseTypes": {
+    "FILL_IN_THE_BLANK": "Заповнити пропуск",
+    "MULTIPLE_CHOICE": "Множинний вибір",
+    "TRANSLATION": "Переклад",
+    "WORD_ORDER": "Порядок слів",
+    "MATCHING": "Зіставлення",
+    "LISTENING_COMPREHENSION": "Аудіювання",
+    "READING_COMPREHENSION": "Читання",
+    "VERB_CONJUGATION": "Відмінювання дієслова",
+    "ERROR_CORRECTION": "Виправлення помилки",
+    "FREE_WRITING": "Вільне письмо"
+  },
+  "exerciseTypeDescriptions": {
+    "FILL_IN_THE_BLANK": "Доповніть речення пропущеним словом.",
+    "MULTIPLE_CHOICE": "Виберіть правильну відповідь з чотирьох варіантів.",
+    "TRANSLATION": "Перекладіть речення німецькою.",
+    "WORD_ORDER": "Розставте слова у правильному порядку.",
+    "MATCHING": "Зіставте німецькі слова з їх перекладом.",
+    "LISTENING_COMPREHENSION": "Прослухайте короткий уривок і дайте відповідь.",
+    "READING_COMPREHENSION": "Прочитайте текст і дайте відповідь на запитання.",
+    "VERB_CONJUGATION": "Провідміняйте дієслово в потрібному часі та особі.",
+    "ERROR_CORRECTION": "Знайдіть і виправте помилку в реченні.",
+    "FREE_WRITING": "Напишіть короткий текст — оцінюється ШІ."
+  },
+  "renderers": {
+    "hint": "Підказка",
+    "blankAria": "Пропуск {n}",
+    "wordOrderEmpty": "Натискайте слова нижче, щоб скласти речення.",
+    "wordOrderUndo": "Скасувати",
+    "wordOrderReset": "Скинути",
+    "matchingPlaceholder": "— оберіть переклад —",
+    "matchingAria": "Переклад для {term}",
+    "conjugationOriginal": "Провідміняти",
+    "conjugationPlaceholder": "форма дієслова",
+    "errorOriginal": "Оригінал",
+    "errorCorrectedPlaceholder": "Виправлена версія…",
+    "translationLabelSource": "Джерело",
+    "translationPlaceholder": "Напишіть німецький переклад…",
+    "freeWritingPrompt": "Тема",
+    "freeWritingPlaceholder": "Пишіть свій текст тут…",
+    "freeWritingWordCount": "{count} / {min} слів",
+    "listeningAudioMissing": "Аудіо буде доступне згодом — прочитайте розшифровку нижче.",
+    "listeningAnswerPlaceholder": "Ваша відповідь…"
+  },
+  "filters": {
+    "level": "Рівень",
+    "all": "Усі рівні",
+    "clearLevel": "Показати всі рівні"
+  },
+  "review": {
+    "title": "Огляд тексту від ШІ",
+    "subtitle": "Надішліть німецький текст і отримайте детальний огляд граматики й стилю. Коштує {cost} Münzen.",
+    "placeholder": "Вставте свій німецький текст тут…",
+    "submit": "Замовити огляд",
+    "insufficientFunds": "У вас недостатньо Münzen для огляду.",
+    "feedbackHeading": "Відгук ШІ",
+    "history": "Минулі огляди",
+    "balanceLine": "Баланс: {balance} M · Вартість: {cost} M"
+  },
+  "profile": {
+    "title": "Ваш профіль",
+    "name": "Ім'я",
+    "email": "Електронна пошта",
+    "preferredLanguage": "Бажана мова",
+    "save": "Зберегти зміни",
+    "saved": "Профіль оновлено."
+  },
+  "admin": {
+    "title": "Адмінпанель",
+    "exercises": "Вправи",
+    "users": "Користувачі",
+    "approve": "Затвердити",
+    "reject": "Відхилити",
+    "noPermission": "Ви не маєте доступу до цієї сторінки."
+  },
+  "common": {
+    "loading": "Завантаження…",
+    "save": "Зберегти",
+    "cancel": "Скасувати",
+    "back": "Назад",
+    "comingSoon": "Незабаром",
+    "home": "Головна"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Ця сторінка не існує."
+  },
+  "footer": {
+    "madeWith": "Зроблено з турботою для тих, хто вивчає німецьку у всьому світі."
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "app": {
+    "name": "Wortschatz",
+    "tagline": "Build your German vocabulary, one Wort at a time."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "exercises": "Exercises",
+    "mistakes": "My mistakes",
+    "review": "Text Review",
+    "profile": "Profile",
+    "admin": "Admin",
+    "login": "Sign in",
+    "logout": "Sign out",
+    "register": "Sign up",
+    "menu": "Menu",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "language": "Language"
+  },
+  "landing": {
+    "heroTitle": "Learn German with AI-powered exercises",
+    "heroBody": "Wortschatz adapts to your level. Earn Münzen as you practice and spend them on personalized AI feedback.",
+    "ctaPrimary": "Start free",
+    "ctaSecondary": "I already have an account",
+    "feature1Title": "AI-generated exercises",
+    "feature1Body": "Ten exercise types covering grammar, vocabulary, listening, and writing.",
+    "feature2Title": "Earn Münzen",
+    "feature2Body": "Complete exercises and keep your streak alive to earn the in-app currency.",
+    "feature3Title": "Personal AI tutor",
+    "feature3Body": "Submit your own German texts and get detailed grammar and style feedback."
+  },
+  "auth": {
+    "loginTitle": "Welcome back",
+    "registerTitle": "Create your account",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "submitLogin": "Sign in",
+    "submitRegister": "Create account",
+    "googleLogin": "Continue with Google",
+    "or": "or",
+    "noAccount": "No account yet?",
+    "haveAccount": "Already have an account?",
+    "errorInvalidCredentials": "Invalid email or password.",
+    "errorAlreadyRegistered": "An account with that email already exists.",
+    "errorGeneric": "Something went wrong. Please try again."
+  },
+  "dashboard": {
+    "title": "Your dashboard",
+    "muenzenBalance": "Münzen balance",
+    "currentStreak": "Current streak",
+    "streakDays": "{days, plural, one {# day} other {# days}}",
+    "exercisesTotal": "Exercises completed",
+    "exercisesThisWeek": "This week",
+    "exercisesThisMonth": "This month",
+    "toReview": "Exercises to review",
+    "reviewMistakes": "Review mistakes",
+    "byLevel": "Progress by level",
+    "byType": "Progress by exercise type",
+    "recentActivity": "Recent activity",
+    "noActivity": "No activity yet. Try your first exercise!"
+  },
+  "exercises": {
+    "browseTitle": "Exercises",
+    "browseSubtitle": "Pick an exercise type to practice.",
+    "back": "Back to exercises",
+    "practice": "Practice",
+    "available": "{count, plural, =0 {No exercises} one {# exercise} other {# exercises}}",
+    "stats": "Completed: {completed} · Accuracy: {accuracy}%",
+    "noExercises": "No exercises available yet.",
+    "filterType": "Type",
+    "filterLevel": "Level",
+    "filterAll": "All",
+    "submit": "Submit answer",
+    "next": "Next exercise",
+    "score": "Score",
+    "feedback": "Feedback",
+    "explanation": "Explanation",
+    "loading": "Loading…",
+    "empty": "No exercises match your filters.",
+    "completed": "Completed",
+    "alreadyEarned": "You already earned Münzen for this exercise.",
+    "rewardEarned": "+{amount} Münzen earned"
+  },
+  "mistakes": {
+    "title": "My mistakes",
+    "subtitle": "Exercises where your last attempt scored below 60.",
+    "empty": "No mistakes to review — great work!",
+    "retry": "Retry",
+    "lastScore": "Last score: {score}/100",
+    "lastTry": "Last attempt: {date}"
+  },
+  "exerciseTypes": {
+    "FILL_IN_THE_BLANK": "Fill in the blank",
+    "MULTIPLE_CHOICE": "Multiple choice",
+    "TRANSLATION": "Translation",
+    "WORD_ORDER": "Word order",
+    "MATCHING": "Matching",
+    "LISTENING_COMPREHENSION": "Listening",
+    "READING_COMPREHENSION": "Reading",
+    "VERB_CONJUGATION": "Verb conjugation",
+    "ERROR_CORRECTION": "Error correction",
+    "FREE_WRITING": "Free writing"
+  },
+  "exerciseTypeDescriptions": {
+    "FILL_IN_THE_BLANK": "Complete sentences with the missing word.",
+    "MULTIPLE_CHOICE": "Pick the right answer from four options.",
+    "TRANSLATION": "Translate a sentence into German.",
+    "WORD_ORDER": "Rearrange the words into a correct sentence.",
+    "MATCHING": "Match German words with their translations.",
+    "LISTENING_COMPREHENSION": "Listen to a short passage and answer.",
+    "READING_COMPREHENSION": "Read a text and answer a question about it.",
+    "VERB_CONJUGATION": "Conjugate a verb in the requested tense and person.",
+    "ERROR_CORRECTION": "Spot and fix the mistake in a sentence.",
+    "FREE_WRITING": "Write a short text — graded by AI."
+  },
+  "renderers": {
+    "hint": "Hint",
+    "blankAria": "Blank {n}",
+    "wordOrderEmpty": "Tap words below to build the sentence.",
+    "wordOrderUndo": "Undo",
+    "wordOrderReset": "Reset",
+    "matchingPlaceholder": "— pick a translation —",
+    "matchingAria": "Translation for {term}",
+    "conjugationOriginal": "Conjugate",
+    "conjugationPlaceholder": "conjugated form",
+    "errorOriginal": "Original",
+    "errorCorrectedPlaceholder": "Corrected version…",
+    "translationLabelSource": "Source",
+    "translationPlaceholder": "Write the German translation…",
+    "freeWritingPrompt": "Prompt",
+    "freeWritingPlaceholder": "Write your text here…",
+    "freeWritingWordCount": "{count} / {min} words",
+    "listeningAudioMissing": "Audio is coming soon — read the transcript below for now.",
+    "listeningAnswerPlaceholder": "Your answer…"
+  },
+  "filters": {
+    "level": "Level",
+    "all": "All levels",
+    "clearLevel": "Show all levels"
+  },
+  "review": {
+    "title": "AI text review",
+    "subtitle": "Submit a German text and get a detailed grammar and style review. Costs {cost} Münzen.",
+    "placeholder": "Paste your German text here…",
+    "submit": "Request review",
+    "insufficientFunds": "You don't have enough Münzen for a review.",
+    "feedbackHeading": "AI feedback",
+    "history": "Past reviews",
+    "balanceLine": "Balance: {balance} M · Cost: {cost} M"
+  },
+  "profile": {
+    "title": "Your profile",
+    "name": "Name",
+    "email": "Email",
+    "preferredLanguage": "Preferred language",
+    "save": "Save changes",
+    "saved": "Profile updated."
+  },
+  "admin": {
+    "title": "Admin panel",
+    "exercises": "Exercises",
+    "users": "Users",
+    "approve": "Approve",
+    "reject": "Reject",
+    "noPermission": "You don't have access to this page."
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "comingSoon": "Coming soon",
+    "home": "Home"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "This page does not exist."
+  },
+  "footer": {
+    "madeWith": "Made with care for German learners worldwide."
+  }
+}

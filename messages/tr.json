@@ -1,0 +1,184 @@
+{
+  "app": {
+    "name": "Wortschatz",
+    "tagline": "Almanca kelime hazinenizi tek tek inşa edin."
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "exercises": "Alıştırmalar",
+    "mistakes": "Hatalarım",
+    "review": "Metin değerlendirmesi",
+    "profile": "Profil",
+    "admin": "Yönetim",
+    "login": "Giriş yap",
+    "logout": "Çıkış yap",
+    "register": "Kayıt ol",
+    "menu": "Menü",
+    "openMenu": "Menüyü aç",
+    "closeMenu": "Menüyü kapat",
+    "language": "Dil"
+  },
+  "landing": {
+    "heroTitle": "Yapay zeka destekli alıştırmalarla Almanca öğrenin",
+    "heroBody": "Wortschatz seviyenize uyum sağlar. Pratik yaparak Münzen kazanın ve kişisel AI geri bildirimi için harcayın.",
+    "ctaPrimary": "Ücretsiz başla",
+    "ctaSecondary": "Zaten hesabım var",
+    "feature1Title": "AI tarafından üretilen alıştırmalar",
+    "feature1Body": "Dilbilgisi, kelime, dinleme ve yazmayı kapsayan on alıştırma türü.",
+    "feature2Title": "Münzen kazanın",
+    "feature2Body": "Alıştırmaları tamamlayın ve serinizi sürdürerek uygulama içi parayı kazanın.",
+    "feature3Title": "Kişisel AI öğretmeni",
+    "feature3Body": "Kendi Almanca metinlerinizi gönderin ve ayrıntılı dilbilgisi ile üslup geri bildirimi alın."
+  },
+  "auth": {
+    "loginTitle": "Tekrar hoş geldiniz",
+    "registerTitle": "Hesabınızı oluşturun",
+    "email": "E-posta",
+    "password": "Şifre",
+    "name": "İsim",
+    "submitLogin": "Giriş yap",
+    "submitRegister": "Hesap oluştur",
+    "googleLogin": "Google ile devam et",
+    "or": "veya",
+    "noAccount": "Hesabınız yok mu?",
+    "haveAccount": "Zaten hesabınız var mı?",
+    "errorInvalidCredentials": "Geçersiz e-posta veya şifre.",
+    "errorAlreadyRegistered": "Bu e-postayla bir hesap zaten var.",
+    "errorGeneric": "Bir hata oluştu. Lütfen tekrar deneyin."
+  },
+  "dashboard": {
+    "title": "Paneliniz",
+    "muenzenBalance": "Münzen bakiyesi",
+    "currentStreak": "Mevcut seri",
+    "streakDays": "{days, plural, one {# gün} other {# gün}}",
+    "exercisesTotal": "Tamamlanan alıştırmalar",
+    "exercisesThisWeek": "Bu hafta",
+    "exercisesThisMonth": "Bu ay",
+    "toReview": "Gözden geçirilecek alıştırmalar",
+    "reviewMistakes": "Hataları gözden geçir",
+    "byLevel": "Seviyeye göre ilerleme",
+    "byType": "Alıştırma türüne göre ilerleme",
+    "recentActivity": "Son etkinlik",
+    "noActivity": "Henüz etkinlik yok. İlk alıştırmanızı deneyin!"
+  },
+  "exercises": {
+    "browseTitle": "Alıştırmalar",
+    "browseSubtitle": "Pratik yapmak için bir alıştırma türü seçin.",
+    "back": "Alıştırmalara dön",
+    "practice": "Pratik yap",
+    "available": "{count, plural, =0 {Alıştırma yok} one {# alıştırma} other {# alıştırma}}",
+    "stats": "Tamamlanan: {completed} · Doğruluk: %{accuracy}",
+    "noExercises": "Henüz alıştırma yok.",
+    "filterType": "Tür",
+    "filterLevel": "Seviye",
+    "filterAll": "Tümü",
+    "submit": "Cevabı gönder",
+    "next": "Sonraki alıştırma",
+    "score": "Puan",
+    "feedback": "Geri bildirim",
+    "explanation": "Açıklama",
+    "loading": "Yükleniyor…",
+    "empty": "Filtrelerinize uyan alıştırma yok.",
+    "completed": "Tamamlandı",
+    "alreadyEarned": "Bu alıştırma için Münzen'i zaten kazandınız.",
+    "rewardEarned": "+{amount} Münzen kazanıldı"
+  },
+  "mistakes": {
+    "title": "Hatalarım",
+    "subtitle": "Son denemenizin 60'ın altında puan aldığı alıştırmalar.",
+    "empty": "Gözden geçirilecek hata yok — harika iş!",
+    "retry": "Tekrar dene",
+    "lastScore": "Son puan: {score}/100",
+    "lastTry": "Son deneme: {date}"
+  },
+  "exerciseTypes": {
+    "FILL_IN_THE_BLANK": "Boşluk doldurma",
+    "MULTIPLE_CHOICE": "Çoktan seçmeli",
+    "TRANSLATION": "Çeviri",
+    "WORD_ORDER": "Kelime sırası",
+    "MATCHING": "Eşleştirme",
+    "LISTENING_COMPREHENSION": "Dinleme",
+    "READING_COMPREHENSION": "Okuma",
+    "VERB_CONJUGATION": "Fiil çekimi",
+    "ERROR_CORRECTION": "Hata düzeltme",
+    "FREE_WRITING": "Serbest yazma"
+  },
+  "exerciseTypeDescriptions": {
+    "FILL_IN_THE_BLANK": "Cümleleri eksik kelimeyle tamamlayın.",
+    "MULTIPLE_CHOICE": "Dört seçenek arasından doğru cevabı seçin.",
+    "TRANSLATION": "Bir cümleyi Almancaya çevirin.",
+    "WORD_ORDER": "Kelimeleri doğru bir cümle olacak şekilde yeniden sıralayın.",
+    "MATCHING": "Almanca kelimeleri çevirileriyle eşleştirin.",
+    "LISTENING_COMPREHENSION": "Kısa bir parçayı dinleyin ve cevaplayın.",
+    "READING_COMPREHENSION": "Bir metni okuyun ve hakkındaki soruyu cevaplayın.",
+    "VERB_CONJUGATION": "Bir fiili istenen zaman ve şahısta çekin.",
+    "ERROR_CORRECTION": "Cümledeki hatayı bulun ve düzeltin.",
+    "FREE_WRITING": "Kısa bir metin yazın — AI tarafından değerlendirilir."
+  },
+  "renderers": {
+    "hint": "İpucu",
+    "blankAria": "{n}. boşluk",
+    "wordOrderEmpty": "Cümleyi oluşturmak için aşağıdaki kelimelere dokunun.",
+    "wordOrderUndo": "Geri al",
+    "wordOrderReset": "Sıfırla",
+    "matchingPlaceholder": "— bir çeviri seçin —",
+    "matchingAria": "{term} için çeviri",
+    "conjugationOriginal": "Çekin",
+    "conjugationPlaceholder": "çekilmiş hali",
+    "errorOriginal": "Özgün",
+    "errorCorrectedPlaceholder": "Düzeltilmiş hali…",
+    "translationLabelSource": "Kaynak",
+    "translationPlaceholder": "Almanca çeviriyi yazın…",
+    "freeWritingPrompt": "Konu",
+    "freeWritingPlaceholder": "Metninizi buraya yazın…",
+    "freeWritingWordCount": "{count} / {min} kelime",
+    "listeningAudioMissing": "Ses yakında geliyor — şimdilik aşağıdaki transkripti okuyun.",
+    "listeningAnswerPlaceholder": "Cevabınız…"
+  },
+  "filters": {
+    "level": "Seviye",
+    "all": "Tüm seviyeler",
+    "clearLevel": "Tüm seviyeleri göster"
+  },
+  "review": {
+    "title": "AI metin değerlendirmesi",
+    "subtitle": "Bir Almanca metin gönderin ve ayrıntılı bir dilbilgisi ve üslup değerlendirmesi alın. {cost} Münzen tutar.",
+    "placeholder": "Almanca metninizi buraya yapıştırın…",
+    "submit": "Değerlendirme iste",
+    "insufficientFunds": "Bir değerlendirme için yeterli Münzen'iniz yok.",
+    "feedbackHeading": "AI geri bildirimi",
+    "history": "Geçmiş değerlendirmeler",
+    "balanceLine": "Bakiye: {balance} M · Maliyet: {cost} M"
+  },
+  "profile": {
+    "title": "Profiliniz",
+    "name": "İsim",
+    "email": "E-posta",
+    "preferredLanguage": "Tercih edilen dil",
+    "save": "Değişiklikleri kaydet",
+    "saved": "Profil güncellendi."
+  },
+  "admin": {
+    "title": "Yönetim paneli",
+    "exercises": "Alıştırmalar",
+    "users": "Kullanıcılar",
+    "approve": "Onayla",
+    "reject": "Reddet",
+    "noPermission": "Bu sayfaya erişiminiz yok."
+  },
+  "common": {
+    "loading": "Yükleniyor…",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "back": "Geri",
+    "comingSoon": "Yakında",
+    "home": "Ana sayfa"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Bu sayfa mevcut değil."
+  },
+  "footer": {
+    "madeWith": "Dünyadaki Almanca öğrenenler için özenle yapıldı."
+  }
+}
