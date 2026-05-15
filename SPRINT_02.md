@@ -391,3 +391,71 @@ adjustment surface, and a paginated user-facing history view.
   be picked up on the next `prisma migrate dev/deploy`.
 - **Tests.** 49 new tests landed; 147 total. `src/lib/muenzen.ts` is at
   100 % coverage.
+
+## Task 5 — Dashboard charts (shipped)
+
+Four charts now live on the dashboard, fed by a single parallel data
+fetch and pure aggregation helpers.
+
+### Library decision: Recharts 3.8.1
+
+Recharts plays nicely with MUI's emotion-based theming because it
+exposes `stroke`/`fill` as plain props, so colors come from `useTheme()`
+cleanly. Tremor was the alternative but is Tailwind-first and would have
+undermined the MUI-owns-theming coexistence rule established in Task 1.
+Recharts is also significantly smaller and lazy-loadable.
+
+### What landed
+
+- **Münzen evolution area chart** — 30-day running balance with
+  amber fill, clamped at ≥ 0.
+- **90-day SVG activity heatmap** — hand-rolled (no extra dep), one
+  cell per UTC day, ICU-plural tooltip ("1 exercise" / "N exercises").
+- **10-axis proficiency radar** — last 10 graded attempts bucketed by
+  exercise type, Recharts `RadarChart`.
+- **Daily-goal ring** — MUI `CircularProgress` stacked (track + ring)
+  with the daily count vs. `DAILY_GOAL_DEFAULT` (5).
+
+Dashboard layout: row 1 = Münzen series + daily-goal ring (md+ side
+by side), row 2 = heatmap full-width, row 3 = radar + by-level card
+(md+ side by side); full type breakdown and recent activity below.
+
+### Code shape
+
+- `src/lib/dashboard/constants.ts` — `DAILY_GOAL_DEFAULT = 5`,
+  `HEATMAP_DAYS = 90`, `MUENZEN_SERIES_DAYS = 30`, `RADAR_LAST_N = 10`,
+  `RADAR_FETCH_LIMIT = 200`.
+- `src/lib/dashboard/aggregations.ts` — `buildMuenzenSeries`,
+  `buildHeatmap`, `buildRadar`, `countToday`, `toUtcDayKey`. All UTC-day
+  bucketing. `buildMuenzenSeries` clamps the running balance at ≥ 0.
+  100 % test coverage.
+- `src/lib/dashboard/queries.ts` — `fetchDashboardChartData(userId, now)`
+  runs five DB calls in **one `Promise.all`**; the page hands the result
+  straight to the pure aggregators.
+- `src/components/dashboard/` — four chart components plus a `ChartCard`
+  wrapper.
+
+### SSR strategy
+
+Recharts charts are split into a base `*Chart.tsx` plus a
+`*.client.tsx` `next/dynamic({ ssr: false })` wrapper, because
+`ResponsiveContainer` touches `ResizeObserver` on import. The SVG
+heatmap and `CircularProgress` ring render server-safe and do not need
+the wrapper.
+
+### Theming
+
+Every color flows through `theme.palette`: `secondary.main` for amber
+(Münzen series, heatmap activity), `primary.main` for ink-blue (radar
+stroke), `surfaceAlt.main` for the heatmap zero bucket. Zero hex in
+`src/components/dashboard/` or `src/lib/dashboard/`. Light and dark mode
+both work without component-level branching.
+
+### Notes
+
+- Daily goal is hardcoded to 5 via `DAILY_GOAL_DEFAULT`. **Task 6** will
+  swap it for `User.dailyGoal` once the column lands.
+- i18n: new `dashboard.charts.*` block across `en/pt/tr/uk`, including
+  an ICU plural for `activity.tooltip`.
+- **32 new tests; 179 total.** 100 % coverage on
+  `src/lib/dashboard/aggregations.ts`.

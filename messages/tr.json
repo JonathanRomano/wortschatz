@@ -65,7 +65,26 @@
     "byLevel": "Seviyeye göre ilerleme",
     "byType": "Alıştırma türüne göre ilerleme",
     "recentActivity": "Son etkinlik",
-    "noActivity": "Henüz etkinlik yok. İlk alıştırmanızı deneyin!"
+    "noActivity": "Henüz etkinlik yok. İlk alıştırmanızı deneyin!",
+    "charts": {
+      "muenzenSeries": {
+        "title": "Zaman içinde Münzen",
+        "empty": "Münzen kazanmaya başlamak için bazı alıştırmalar tamamlayın."
+      },
+      "activity": {
+        "title": "Etkinlik (son 90 gün)",
+        "tooltip": "{date} tarihinde {count, plural, =0 {alıştırma yok} one {1 alıştırma} other {# alıştırma}}"
+      },
+      "radar": {
+        "title": "Türe göre yetkinlik",
+        "empty": "Güçlü yönlerinizi haritalamak için bazı alıştırmalar tamamlayın."
+      },
+      "dailyGoal": {
+        "title": "Bugünün hedefi",
+        "progress": "{done} / {goal}",
+        "complete": "Bugün için tamamlandı!"
+      }
+    }
   },
   "exercises": {
     "browseTitle": "Alıştırmalar",

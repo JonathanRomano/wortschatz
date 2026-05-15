@@ -111,11 +111,13 @@ src/
   components/layout/                Header, Footer, LocaleSwitcher, MobileMenu
   components/ui/                    Shared design-system primitives
   components/exercises/renderers/   10 exercise type renderers
+  components/dashboard/             Dashboard chart components (Recharts + SVG)
   theme/                            Palette system: palette, typography,
                                     shape, shadows, augmentation, Provider
   test/                             vitest setup + renderWithTheme helper
   i18n/                             next-intl config + typed nav helpers
   lib/                              db, ai, muenzen, exercises/, review/
+  lib/dashboard/                    Pure aggregations + parallel Prisma queries
 prisma/schema.prisma                All models + enums
 messages/*.json                     UI translations (incl. `renderers` block)
 ```
@@ -157,6 +159,20 @@ mount components inside the real theme. Color-mode tests live in
 `src/hooks/__tests__/useColorMode.test.tsx`,
 `src/theme/__tests__/Provider.test.tsx`, and
 `src/components/layout/__tests__/ColorModeToggle.test.tsx`.
+
+## Dashboard charts
+
+- The dashboard pulls all chart data through
+  `fetchDashboardChartData(userId, now)` in `src/lib/dashboard/queries.ts`.
+  New charts must funnel through the same parallel batch — don't add
+  ad-hoc Prisma calls on the dashboard page.
+- Pure aggregations live in `src/lib/dashboard/aggregations.ts`. Tests
+  pin every branch. If you add a new chart, add a pure helper alongside.
+- Charts that use Recharts must be split into a base file (`*Chart.tsx`)
+  and a `.client.tsx` `next/dynamic({ ssr: false })` wrapper. The server
+  page imports the `.client.tsx` only.
+- Colors come from `theme.palette` exclusively. No hex anywhere in
+  `src/components/dashboard/` or `src/lib/dashboard/`.
 
 ## Multi-agent workflow (Sprint 02+)
 

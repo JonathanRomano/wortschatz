@@ -15,6 +15,22 @@ import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
 import { StreakFlame } from "@/components/ui/StreakFlame";
 import { LevelChip } from "@/components/ui/LevelChip";
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
+import { ChartCard } from "@/components/dashboard/ChartCard";
+import { MuenzenSeriesChart } from "@/components/dashboard/MuenzenSeriesChart.client";
+import { ProficiencyRadar } from "@/components/dashboard/ProficiencyRadar.client";
+import { ActivityHeatmap } from "@/components/dashboard/ActivityHeatmap";
+import { DailyGoalRing } from "@/components/dashboard/DailyGoalRing";
+import { fetchDashboardChartData } from "@/lib/dashboard/queries";
+import {
+  buildHeatmap,
+  buildMuenzenSeries,
+  buildRadar,
+} from "@/lib/dashboard/aggregations";
+import {
+  DAILY_GOAL_DEFAULT,
+  HEATMAP_DAYS,
+  RADAR_LAST_N,
+} from "@/lib/dashboard/constants";
 
 const LEVELS: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 const TYPES: ExerciseType[] = [
@@ -39,6 +55,7 @@ export default async function DashboardPage({
   setRequestLocale(locale);
   const t = await getTranslations();
   const tt = await getTranslations("exerciseTypes");
+  const tCharts = await getTranslations("dashboard.charts");
 
   const session = await auth();
   if (!session?.user?.id) redirect(`/${locale}/login`);
@@ -55,35 +72,44 @@ export default async function DashboardPage({
   const monthAgo = new Date(now);
   monthAgo.setUTCMonth(monthAgo.getUTCMonth() - 1);
 
-  const [total, week, month, attemptsByLevel, attemptsByType, recent, mistakesRows] =
-    await Promise.all([
-      prisma.userExercise.count({ where: { userId } }),
-      prisma.userExercise.count({ where: { userId, completedAt: { gte: weekAgo } } }),
-      prisma.userExercise.count({ where: { userId, completedAt: { gte: monthAgo } } }),
-      prisma.userExercise.findMany({
-        where: { userId },
-        select: { exercise: { select: { level: true } } },
-      }),
-      prisma.userExercise.findMany({
-        where: { userId },
-        select: { exercise: { select: { type: true } } },
-      }),
-      prisma.userExercise.findMany({
-        where: { userId },
-        orderBy: { completedAt: "desc" },
-        take: 8,
-        include: { exercise: { select: { title: true, type: true, level: true } } },
-      }),
-      prisma.$queryRaw<{ count: bigint }[]>`
-        SELECT COUNT(*)::bigint AS count FROM (
-          SELECT DISTINCT ON ("exerciseId") "exerciseId", "score"
-          FROM "UserExercise"
-          WHERE "userId" = ${userId}
-          ORDER BY "exerciseId", "completedAt" DESC
-        ) latest
-        WHERE latest."score" < 60
-      `,
-    ]);
+  const [
+    total,
+    week,
+    month,
+    attemptsByLevel,
+    attemptsByType,
+    recent,
+    mistakesRows,
+    chartData,
+  ] = await Promise.all([
+    prisma.userExercise.count({ where: { userId } }),
+    prisma.userExercise.count({ where: { userId, completedAt: { gte: weekAgo } } }),
+    prisma.userExercise.count({ where: { userId, completedAt: { gte: monthAgo } } }),
+    prisma.userExercise.findMany({
+      where: { userId },
+      select: { exercise: { select: { level: true } } },
+    }),
+    prisma.userExercise.findMany({
+      where: { userId },
+      select: { exercise: { select: { type: true } } },
+    }),
+    prisma.userExercise.findMany({
+      where: { userId },
+      orderBy: { completedAt: "desc" },
+      take: 8,
+      include: { exercise: { select: { title: true, type: true, level: true } } },
+    }),
+    prisma.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*)::bigint AS count FROM (
+        SELECT DISTINCT ON ("exerciseId") "exerciseId", "score"
+        FROM "UserExercise"
+        WHERE "userId" = ${userId}
+        ORDER BY "exerciseId", "completedAt" DESC
+      ) latest
+      WHERE latest."score" < 60
+    `,
+    fetchDashboardChartData(userId, now),
+  ]);
 
   const mistakesCount = Number(mistakesRows[0]?.count ?? 0n);
 
@@ -95,6 +121,41 @@ export default async function DashboardPage({
   const typeCounts = {} as Record<ExerciseType, number>;
   for (const tp of TYPES) typeCounts[tp] = 0;
   for (const a of attemptsByType) typeCounts[a.exercise.type] += 1;
+
+  // Build chart-ready data from the raw rows. Done in the server
+  // component so the client bundle never sees the raw transactions.
+  const muenzenSeries = buildMuenzenSeries(
+    chartData.muenzenTxnsInWindow,
+    chartData.muenzenStartingBalance,
+    chartData.muenzenWindowStart,
+    chartData.muenzenWindowEnd,
+  );
+  const heatmap = buildHeatmap(
+    chartData.heatmapAttempts,
+    HEATMAP_DAYS,
+    chartData.now,
+  );
+  const typeLabels = TYPES.reduce(
+    (acc, type) => {
+      acc[type] = tt(type);
+      return acc;
+    },
+    {} as Record<ExerciseType, string>,
+  );
+  const radar = buildRadar(
+    chartData.radarAttempts.map((r) => ({
+      type: r.exercise.type,
+      score: r.score,
+      completedAt: r.completedAt,
+    })),
+    typeLabels,
+    RADAR_LAST_N,
+  );
+  // `chartData.todayCount` already comes from a dedicated COUNT
+  // query — `countToday` in aggregations.ts is exported for the unit
+  // tests / future Task-6 wiring rather than re-derived here.
+  const doneToday = chartData.todayCount;
+  const dailyGoal = DAILY_GOAL_DEFAULT;
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 5 } }}>
@@ -176,15 +237,60 @@ export default async function DashboardPage({
         </ButtonLink>
       </Box>
 
+      {/* Row 1 — Münzen series + daily goal ring */}
       <Box
         component="section"
         sx={{
-          mt: 4,
+          mt: { xs: 3, sm: 4 },
           display: "grid",
           gap: { xs: 2, sm: 3 },
-          gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" },
+          gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" },
         }}
       >
+        <ChartCard title={tCharts("muenzenSeries.title")}>
+          <MuenzenSeriesChart
+            data={muenzenSeries}
+            locale={locale}
+            emptyMessage={tCharts("muenzenSeries.empty")}
+          />
+        </ChartCard>
+        <ChartCard title={tCharts("dailyGoal.title")}>
+          <DailyGoalRing
+            done={doneToday}
+            goal={dailyGoal}
+            progressLabel={tCharts("dailyGoal.progress", {
+              done: doneToday,
+              goal: dailyGoal,
+            })}
+            completeLabel={tCharts("dailyGoal.complete")}
+          />
+        </ChartCard>
+      </Box>
+
+      {/* Row 2 — Activity heatmap (full width) */}
+      <Box component="section" sx={{ mt: { xs: 2, sm: 3 } }}>
+        <ChartCard title={tCharts("activity.title")}>
+          <ActivityHeatmap data={heatmap} locale={locale} />
+        </ChartCard>
+      </Box>
+
+      {/* Row 3 — Radar + by-level + by-type cards */}
+      <Box
+        component="section"
+        sx={{
+          mt: { xs: 2, sm: 3 },
+          display: "grid",
+          gap: { xs: 2, sm: 3 },
+          gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
+        }}
+      >
+        <ChartCard title={tCharts("radar.title")}>
+          <ProficiencyRadar
+            data={radar}
+            emptyMessage={tCharts("radar.empty")}
+          />
+        </ChartCard>
+
         <Card>
           <Typography variant="h4">{t("dashboard.byLevel")}</Typography>
           <Stack spacing={1.5} sx={{ mt: 2 }}>
@@ -218,7 +324,10 @@ export default async function DashboardPage({
             ))}
           </Stack>
         </Card>
+      </Box>
 
+      {/* By type — full width because 10 rows of label+bar is tall */}
+      <Box component="section" sx={{ mt: { xs: 2, sm: 3 } }}>
         <Card>
           <Typography variant="h4">{t("dashboard.byType")}</Typography>
           <Stack spacing={1.5} sx={{ mt: 2 }}>

@@ -44,12 +44,26 @@ per task.
     if we want `/profile/history` on `en` etc.
   - A `description` column on `MuenzenTransaction` was discussed but
     skipped; admin notes are overloaded onto `refId` instead.
-- [ ] **Task 5** — Charts on the dashboard (progress over time, accuracy
-  by exercise type).
+- [x] **Task 5** — Dashboard charts: Münzen 30-day area, 90-day SVG
+  activity heatmap, 10-axis proficiency radar, and a daily-goal
+  `CircularProgress` ring, all fed by a single `Promise.all` in
+  `fetchDashboardChartData` with pure aggregators alongside.
+  **Recharts 3.8.1** added as a dep (lazy-loaded via
+  `next/dynamic({ ssr: false })`). 32 new tests (179 total); 100 %
+  coverage on `src/lib/dashboard/aggregations.ts`.
 - [ ] **Task 6** — Profile page expansion (preferences, CEFR level on
   `User`).
 - [ ] **Task 7** — Exercise comments / discussion.
 - [ ] **Task 8** — Per-exercise-type intros.
+
+### New dependencies
+
+- **Recharts 3.8.1** (Task 5) — used for the Münzen area chart and the
+  proficiency radar; lazy-loaded via `next/dynamic({ ssr: false })`
+  from `.client.tsx` wrappers because `ResponsiveContainer` touches
+  `ResizeObserver`. The 90-day heatmap is hand-rolled SVG (no extra
+  dep). The original sprint's "no new deps" rule is officially relaxed —
+  any further additions should still be justified in the task brief.
 
 ### Discovered debt
 
@@ -182,8 +196,12 @@ the color-mode surface — `useColorMode` hook, `ColorModeContext`,
 the count to 98 (100 % on the hook/context/toggle, 87.7 % statements on
 `Provider.tsx`). Task 4 added 49 more across `src/lib/muenzen.ts`
 (`computeReward`, `credit`, `debit`, `adminAdjust`), the admin adjust
-form + action, and the `/profile/historico` page — total **147 tests**
-with 100 % coverage on `muenzen.ts`.
+form + action, and the `/profile/historico` page — bringing the count
+to 147 with 100 % coverage on `muenzen.ts`. Task 5 added **32 more**
+across the dashboard data plumbing — `src/lib/dashboard/aggregations.ts`
+(`buildMuenzenSeries`, `buildHeatmap`, `buildRadar`, `countToday`,
+`toUtcDayKey`) and the four chart components — total **179 tests** with
+100 % coverage on `src/lib/dashboard/aggregations.ts`.
 
 Still uncovered:
 

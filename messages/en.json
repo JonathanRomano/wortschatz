@@ -65,7 +65,26 @@
     "byLevel": "Progress by level",
     "byType": "Progress by exercise type",
     "recentActivity": "Recent activity",
-    "noActivity": "No activity yet. Try your first exercise!"
+    "noActivity": "No activity yet. Try your first exercise!",
+    "charts": {
+      "muenzenSeries": {
+        "title": "Münzen over time",
+        "empty": "Complete some exercises to start earning Münzen."
+      },
+      "activity": {
+        "title": "Activity (last 90 days)",
+        "tooltip": "{count, plural, =0 {No exercises} one {1 exercise} other {# exercises}} on {date}"
+      },
+      "radar": {
+        "title": "Proficiency by type",
+        "empty": "Complete some exercises to map your strengths."
+      },
+      "dailyGoal": {
+        "title": "Today's goal",
+        "progress": "{done} / {goal}",
+        "complete": "Done for today!"
+      }
+    }
   },
   "exercises": {
     "browseTitle": "Exercises",
