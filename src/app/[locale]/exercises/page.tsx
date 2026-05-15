@@ -1,13 +1,17 @@
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ExerciseType } from "@prisma/client";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import LinearProgress from "@mui/material/LinearProgress";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { Link } from "@/i18n/navigation";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card } from "@/components/ui/Card";
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
-import { buttonClasses } from "@/components/ui/buttonClasses";
 
 const TYPES: ExerciseType[] = [
   "FILL_IN_THE_BLANK",
@@ -65,17 +69,31 @@ export default async function ExercisesPage({
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
-      <header>
-        <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+    <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 5 } }}>
+      <Box component="header">
+        <Typography variant="h1" sx={{ fontSize: { xs: "2rem", sm: "2.5rem" } }}>
           {t("browseTitle")}
-        </h1>
-        <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+        </Typography>
+        <Typography variant="body1" sx={{ mt: 1.5, color: "text.secondary" }}>
           {t("browseSubtitle")}
-        </p>
-      </header>
+        </Typography>
+      </Box>
 
-      <ul className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+      <Box
+        component="ul"
+        sx={{
+          mt: 4,
+          p: 0,
+          listStyle: "none",
+          display: "grid",
+          gap: { xs: 2, sm: 2.5 },
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "repeat(2, 1fr)",
+            lg: "repeat(3, 1fr)",
+          },
+        }}
+      >
         {TYPES.map((tp) => {
           const stats = userByType[tp];
           const accuracy =
@@ -83,66 +101,131 @@ export default async function ExercisesPage({
           const available = counts[tp];
           const disabled = available === 0;
           return (
-            <li key={tp}>
-              <Card className="flex h-full flex-col">
-                <div className="flex items-start justify-between gap-3">
-                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-primary">
-                    <ExerciseTypeIcon type={tp} size={22} />
-                  </span>
-                  <span className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+            <Box component="li" key={tp}>
+              <Card sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                <Stack
+                  direction="row"
+                  spacing={1.5}
+                  sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
+                >
+                  <Box
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: 40,
+                      width: 40,
+                      flexShrink: 0,
+                      borderRadius: "50%",
+                      backgroundColor: "accentSoft.main",
+                      color: "primary.main",
+                    }}
+                  >
+                    <ExerciseTypeIcon type={tp} size={22} color="inherit" />
+                  </Box>
+                  <Typography
+                    variant="overline"
+                    sx={{
+                      fontFamily:
+                        'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+                      color: "text.secondary",
+                    }}
+                  >
                     {t("available", { count: available })}
-                  </span>
-                </div>
-                <h2 className="mt-4 font-display text-xl font-semibold">
+                  </Typography>
+                </Stack>
+                <Typography variant="h4" sx={{ mt: 2 }}>
                   {tt(tp)}
-                </h2>
-                <p className="mt-1.5 flex-1 text-sm leading-relaxed text-muted-foreground">
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ mt: 0.75, flex: 1, color: "text.secondary", lineHeight: 1.6 }}
+                >
                   {td(tp)}
-                </p>
+                </Typography>
 
-                <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="font-mono">{stats.total}</span>
-                  <span>·</span>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ mt: 2, alignItems: "center", color: "text.secondary" }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontFamily:
+                        'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+                    }}
+                  >
+                    {stats.total}
+                  </Typography>
+                  <Typography variant="caption">·</Typography>
                   <AccuracyMeter value={accuracy} attempts={stats.total} />
-                </div>
+                </Stack>
 
-                <Link
+                <ButtonLink
                   href={`/exercises/${tp}`}
                   aria-disabled={disabled}
-                  className={`mt-5 ${buttonClasses(
-                    disabled ? "secondary" : "primary",
-                    "md",
-                    "w-full" + (disabled ? " pointer-events-none cursor-not-allowed opacity-60" : ""),
-                  )}`}
+                  variant={disabled ? "outlined" : "contained"}
+                  color="primary"
+                  fullWidth
+                  sx={{
+                    mt: 2.5,
+                    ...(disabled
+                      ? {
+                          pointerEvents: "none",
+                          cursor: "not-allowed",
+                          opacity: 0.6,
+                        }
+                      : {}),
+                  }}
                 >
                   {t("practice")}
-                </Link>
+                </ButtonLink>
               </Card>
-            </li>
+            </Box>
           );
         })}
-      </ul>
-    </div>
+      </Box>
+    </Container>
   );
 }
 
 function AccuracyMeter({ value, attempts }: { value: number; attempts: number }) {
   if (attempts === 0) {
-    return <span className="text-muted-foreground">—</span>;
+    return <Typography variant="caption" sx={{ color: "text.secondary" }}>—</Typography>;
   }
-  const tone =
-    value >= 80 ? "text-success" : value >= 60 ? "text-accent-foreground" : "text-danger";
+  const toneColor =
+    value >= 80
+      ? "success.main"
+      : value >= 60
+        ? "secondary.main"
+        : "error.main";
   return (
-    <span className="flex items-center gap-2">
-      <span className="inline-block h-1.5 w-16 overflow-hidden rounded-full bg-muted">
-        <span
-          className={`block h-full ${
-            value >= 80 ? "bg-success" : value >= 60 ? "bg-accent" : "bg-danger"
-          }`}
-          style={{ width: `${value}%` }}
-        />
-      </span>
-      <span className={`font-mono ${tone}`}>{value}%</span>
-    </span>
+    <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+      <LinearProgress
+        variant="determinate"
+        value={value}
+        sx={{
+          width: 64,
+          height: 6,
+          borderRadius: 9999,
+          backgroundColor: "surfaceAlt.main",
+          "& .MuiLinearProgress-bar": {
+            backgroundColor: toneColor,
+            borderRadius: 9999,
+          },
+        }}
+      />
+      <Typography
+        variant="caption"
+        sx={{
+          fontFamily:
+            'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+          color: toneColor,
+        }}
+      >
+        {value}%
+      </Typography>
+    </Stack>
   );
 }

@@ -1,40 +1,92 @@
+"use client";
+
+import Chip from "@mui/material/Chip";
+import { useTheme } from "@mui/material/styles";
+
 type Size = "sm" | "md" | "lg";
 
-const sizeMap: Record<Size, { wrap: string; icon: number }> = {
-  sm: { wrap: "px-2 py-0.5 text-xs gap-1", icon: 14 },
-  md: { wrap: "px-2.5 py-1 text-sm gap-1.5", icon: 16 },
-  lg: { wrap: "px-3.5 py-1.5 text-base gap-2", icon: 20 },
+const sizeMap: Record<Size, { iconPx: number; chipSize: "small" | "medium"; fontPx: number; height: number }> = {
+  sm: { iconPx: 14, chipSize: "small", fontPx: 12, height: 24 },
+  md: { iconPx: 16, chipSize: "small", fontPx: 14, height: 28 },
+  lg: { iconPx: 20, chipSize: "medium", fontPx: 16, height: 36 },
 };
 
-export function StreakFlame({
-  days,
-  size = "md",
-  className = "",
-  label,
-}: {
+type Props = {
   days: number;
   size?: Size;
   className?: string;
   label?: string;
-}) {
+};
+
+/**
+ * Streak pill. Active streaks read in amber; zero-streak falls back to
+ * a muted stone tone so users can see the difference at a glance.
+ */
+export function StreakFlame({ days, size = "md", className, label }: Props) {
   const s = sizeMap[size];
   const active = days > 0;
+  const theme = useTheme();
+
+  const flameFill = active
+    ? theme.palette.secondary.main
+    : theme.palette.text.secondary;
+  const flameStroke = active
+    ? theme.palette.secondary.contrastText
+    : theme.palette.text.secondary;
+
   return (
-    <span
+    <Chip
+      className={className}
+      size={s.chipSize}
+      variant="filled"
+      icon={
+        <FlameIcon
+          size={s.iconPx}
+          fill={flameFill}
+          stroke={flameStroke}
+          active={active}
+        />
+      }
+      label={
+        <span style={{ fontVariantNumeric: "tabular-nums", fontSize: s.fontPx }}>
+          {days}
+        </span>
+      }
       aria-label={label ?? `${days} day streak`}
-      className={`inline-flex items-center rounded-full font-medium tabular-nums ${s.wrap} ${
-        active
-          ? "border border-accent/40 bg-accent-soft/60 text-accent-foreground"
-          : "border border-border bg-muted text-muted-foreground"
-      } ${className}`}
-    >
-      <FlameIcon size={s.icon} active={active} />
-      <span>{days}</span>
-    </span>
+      sx={{
+        height: s.height,
+        bgcolor: active ? "accentSoft.main" : "surfaceAlt.main",
+        color: active ? "accentSoft.contrastText" : "text.secondary",
+        border: 1,
+        borderStyle: "solid",
+        borderColor: active ? "secondary.main" : "divider",
+        borderRadius: 9999,
+        fontWeight: 500,
+        "& .MuiChip-icon": {
+          marginLeft: "6px",
+          marginRight: "-2px",
+          color: "inherit",
+        },
+        "& .MuiChip-label": {
+          paddingLeft: "6px",
+          paddingRight: "10px",
+        },
+      }}
+    />
   );
 }
 
-function FlameIcon({ size, active }: { size: number; active: boolean }) {
+function FlameIcon({
+  size,
+  fill,
+  stroke,
+  active,
+}: {
+  size: number;
+  fill: string;
+  stroke: string;
+  active: boolean;
+}) {
   return (
     <svg
       width={size}
@@ -45,8 +97,8 @@ function FlameIcon({ size, active }: { size: number; active: boolean }) {
     >
       <path
         d="M12 2.5c1.5 3.2 4.5 5.4 4.5 9.2a4.5 4.5 0 1 1-9 0c0-1.6.6-2.6 1.5-3.5C8.5 11 9.5 13 12 13c0-2.2-1.5-5 0-10.5z"
-        fill={active ? "var(--accent)" : "currentColor"}
-        stroke={active ? "var(--accent-foreground)" : "currentColor"}
+        fill={fill}
+        stroke={stroke}
         strokeOpacity={active ? 0.25 : 0.6}
         strokeWidth="1"
         strokeLinejoin="round"

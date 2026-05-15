@@ -1,6 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
 
 import type { RendererProps } from "../types";
 
@@ -11,30 +15,67 @@ export function ListeningComprehensionRenderer({ content, value, onChange, disab
   const question = String(content.question ?? "");
 
   return (
-    <div className="space-y-4">
+    <Stack spacing={2}>
       {audioUrl ? (
-        <audio controls src={audioUrl} className="block w-full max-w-full">
+        <Box
+          component="audio"
+          controls
+          src={audioUrl}
+          sx={{ display: "block", width: "100%", maxWidth: "100%" }}
+        >
           <track kind="captions" />
-        </audio>
+        </Box>
       ) : (
-        <div className="rounded-xl border border-dashed border-border bg-surface-alt p-4 text-sm leading-relaxed sm:p-5">
-          <p className="text-muted-foreground">{t("listeningAudioMissing")}</p>
-          <p className="mt-3 break-words font-display text-base italic text-foreground sm:text-lg">
+        <Box
+          sx={{
+            borderRadius: 3,
+            border: 1,
+            borderStyle: "dashed",
+            borderColor: "divider",
+            backgroundColor: "surfaceAlt.main",
+            p: { xs: 2, sm: 2.5 },
+          }}
+        >
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            {t("listeningAudioMissing")}
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              mt: 1.5,
+              fontStyle: "italic",
+              wordBreak: "break-word",
+              fontFamily: "var(--font-fraunces), serif",
+              color: "text.primary",
+              fontSize: { xs: "1rem", sm: "1.125rem" },
+            }}
+          >
             “{transcript}”
-          </p>
-        </div>
+          </Typography>
+        </Box>
       )}
-      <p className="font-display text-lg font-semibold leading-relaxed sm:text-xl">
+      <Typography
+        variant="h5"
+        component="p"
+        sx={{
+          fontSize: { xs: "1.125rem", sm: "1.25rem" },
+          fontFamily: "var(--font-fraunces), serif",
+          fontWeight: 600,
+          lineHeight: 1.5,
+        }}
+      >
         {question}
-      </p>
-      <textarea
-        rows={4}
+      </Typography>
+      <TextField
+        multiline
+        minRows={4}
         placeholder={t("listeningAnswerPlaceholder")}
         disabled={disabled}
         value={String(value.answer ?? "")}
         onChange={(e) => onChange({ answer: e.target.value })}
-        className="block w-full resize-y rounded-md border border-border bg-surface px-3 py-2.5 text-base leading-relaxed shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+        fullWidth
+        slotProps={{ htmlInput: { "aria-label": t("listeningAnswerPlaceholder") } }}
       />
-    </div>
+    </Stack>
   );
 }

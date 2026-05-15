@@ -1,6 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
 
 import type { RendererProps } from "../types";
 
@@ -14,31 +19,55 @@ export function MatchingRenderer({ content, value, onChange, disabled }: Rendere
     onChange({ pairs: { ...pairs, [g]: choice } });
 
   return (
-    <div className="space-y-3">
+    <Stack spacing={1.5}>
       {german.map((g) => (
-        <div
+        <Stack
           key={g}
-          className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-3 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:p-4"
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1.5}
+          sx={{
+            borderRadius: 3,
+            border: 1,
+            borderStyle: "solid",
+            borderColor: "divider",
+            backgroundColor: "background.paper",
+            p: { xs: 1.5, sm: 2 },
+            boxShadow: 1,
+            alignItems: { xs: "stretch", sm: "center" },
+          }}
         >
-          <span className="min-w-0 break-words font-display text-lg font-semibold sm:w-44 sm:shrink-0 sm:text-xl">
-            {g}
-          </span>
-          <select
+          <Box sx={{ width: { sm: 176 }, flexShrink: { sm: 0 }, minWidth: 0 }}>
+            <Typography
+              variant="h5"
+              component="span"
+              sx={{
+                fontFamily: "var(--font-fraunces), serif",
+                fontWeight: 600,
+                fontSize: { xs: "1.125rem", sm: "1.25rem" },
+                wordBreak: "break-word",
+                display: "block",
+              }}
+            >
+              {g}
+            </Typography>
+          </Box>
+          <TextField
+            select
             value={pairs[g] ?? ""}
             disabled={disabled}
             onChange={(e) => setPair(g, e.target.value)}
-            className="block min-h-11 w-full rounded-md border border-border bg-background px-3 py-2 text-base transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60 sm:flex-1"
-            aria-label={t("matchingAria", { term: g })}
+            slotProps={{ htmlInput: { "aria-label": t("matchingAria", { term: g }) } }}
+            sx={{ flex: { sm: 1 } }}
           >
-            <option value="">{t("matchingPlaceholder")}</option>
+            <MenuItem value="">{t("matchingPlaceholder")}</MenuItem>
             {translations.map((tr) => (
-              <option key={tr} value={tr}>
+              <MenuItem key={tr} value={tr}>
                 {tr}
-              </option>
+              </MenuItem>
             ))}
-          </select>
-        </div>
+          </TextField>
+        </Stack>
       ))}
-    </div>
+    </Stack>
   );
 }

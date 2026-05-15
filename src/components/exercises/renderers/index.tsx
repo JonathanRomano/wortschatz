@@ -1,6 +1,8 @@
 "use client";
 
 import type { ExerciseType } from "@prisma/client";
+import Typography from "@mui/material/Typography";
+
 import type { RendererProps } from "../types";
 
 import { FillInTheBlankRenderer } from "./FillInTheBlank";
@@ -31,9 +33,9 @@ export function ExerciseRenderer(props: RendererProps) {
   const Component = registry[props.type];
   if (!Component) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <Typography variant="body2" sx={{ color: "text.secondary" }}>
         Renderer for {props.type} is not implemented yet.
-      </p>
+      </Typography>
     );
   }
   return <Component {...props} />;

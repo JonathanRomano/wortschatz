@@ -3,10 +3,14 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import type { CefrLevel, ExerciseStatus, ExerciseType } from "@prisma/client";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
 
 import { LevelChip } from "@/components/ui/LevelChip";
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
-import { buttonClasses } from "@/components/ui/buttonClasses";
 import { setExerciseStatus } from "./actions";
 
 export function AdminExerciseRow({
@@ -34,57 +38,106 @@ export function AdminExerciseRow({
     });
 
   return (
-    <li className="flex flex-col gap-3 py-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
+    <Stack
+      direction={{ xs: "column", sm: "row" }}
+      spacing={1.5}
+      sx={{
+        py: 1.5,
+        alignItems: { xs: "stretch", sm: "center" },
+        justifyContent: "space-between",
+      }}
+    >
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ flexWrap: "wrap", alignItems: "center" }}
+        >
           <LevelChip level={level} size="sm" />
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-            <ExerciseTypeIcon type={type} size={14} />
-            {tt(type)}
-          </span>
-        </div>
-        <p className="mt-1 break-words font-medium">{title}</p>
-      </div>
+          <Stack
+            direction="row"
+            spacing={0.5}
+            sx={{ alignItems: "center", color: "text.secondary" }}
+          >
+            <ExerciseTypeIcon type={type} size={14} color="inherit" />
+            <Typography variant="caption">{tt(type)}</Typography>
+          </Stack>
+        </Stack>
+        <Typography
+          variant="body2"
+          sx={{ mt: 0.5, fontWeight: 500, wordBreak: "break-word" }}
+        >
+          {title}
+        </Typography>
+      </Box>
 
-      <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{ flexWrap: "wrap", alignItems: "center", flexShrink: { sm: 0 } }}
+      >
         <StatusBadge status={status} />
         {status === "DRAFT" ? (
-          <div className="flex flex-wrap gap-2">
-            <button
+          <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+            <Button
               type="button"
+              variant="contained"
+              color="primary"
+              size="small"
               disabled={pending}
               onClick={() => change("PUBLISHED")}
-              className={buttonClasses("primary", "sm")}
             >
               {t("approve")}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outlined"
+              size="small"
               disabled={pending}
               onClick={() => change("ARCHIVED")}
-              className={buttonClasses("secondary", "sm")}
             >
               {t("reject")}
-            </button>
-          </div>
+            </Button>
+          </Stack>
         ) : null}
-      </div>
-    </li>
+      </Stack>
+    </Stack>
   );
 }
 
 function StatusBadge({ status }: { status: ExerciseStatus }) {
-  const cls =
+  const styling =
     status === "PUBLISHED"
-      ? "border-success/40 bg-success-soft/60 text-success"
+      ? {
+          bgcolor: "successSoft.main",
+          color: "success.main",
+          borderColor: "success.main",
+        }
       : status === "ARCHIVED"
-        ? "border-border bg-muted text-muted-foreground"
-        : "border-accent/40 bg-accent-soft text-accent-foreground";
+        ? {
+            bgcolor: "surfaceAlt.main",
+            color: "text.secondary",
+            borderColor: "divider",
+          }
+        : {
+            bgcolor: "accentSoft.main",
+            color: "accentSoft.contrastText",
+            borderColor: "secondary.main",
+          };
   return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide ${cls}`}
-    >
-      {status}
-    </span>
+    <Chip
+      label={status}
+      size="small"
+      variant="outlined"
+      sx={{
+        borderRadius: 9999,
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+        fontWeight: 600,
+        fontSize: "0.625rem",
+        height: 22,
+        ...styling,
+      }}
+    />
   );
 }

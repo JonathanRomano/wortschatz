@@ -1,13 +1,18 @@
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ExerciseType } from "@prisma/client";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { Link } from "@/i18n/navigation";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card } from "@/components/ui/Card";
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
-import { buttonClasses } from "@/components/ui/buttonClasses";
+import { InlineLink } from "@/components/ui/InlineLink";
 
 type Row = {
   exerciseId: string;
@@ -61,68 +66,111 @@ export default async function MistakesPage({
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
-      <Link
+    <Container maxWidth="md" sx={{ py: { xs: 4, sm: 5 } }}>
+      <InlineLink
         href="/exercises"
-        className="inline-flex min-h-9 items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary"
+        tone="muted"
+        sx={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 0.5,
+          minHeight: 36,
+        }}
       >
-        ← {te("back")}
-      </Link>
+        <ArrowBackIcon fontSize="small" />
+        <Typography component="span" variant="body2">
+          {te("back")}
+        </Typography>
+      </InlineLink>
 
-      <header className="mt-4">
-        <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+      <Box component="header" sx={{ mt: 2 }}>
+        <Typography variant="h1" sx={{ fontSize: { xs: "2rem", sm: "2.5rem" } }}>
           {t("title")}
-        </h1>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+        </Typography>
+        <Typography variant="body1" sx={{ mt: 1.5, color: "text.secondary" }}>
           {t("subtitle")}
-        </p>
-      </header>
+        </Typography>
+      </Box>
 
       {mistakes.length === 0 ? (
-        <Card className="mt-8 text-center" padding="lg">
-          <p className="text-sm text-muted-foreground sm:text-base">{t("empty")}</p>
+        <Card padding="lg" sx={{ mt: 4, textAlign: "center" }}>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            {t("empty")}
+          </Typography>
         </Card>
       ) : (
-        <div className="mt-8 space-y-6">
+        <Stack spacing={3} sx={{ mt: 4 }}>
           {[...grouped.entries()].map(([type, rows]) => (
             <Card key={type}>
-              <h2 className="flex items-center gap-2 font-display text-lg font-semibold sm:text-xl">
-                <span className="text-primary">
-                  <ExerciseTypeIcon type={type} size={20} />
-                </span>
-                {tt(type)}
-              </h2>
-              <ul className="mt-4 divide-y divide-border">
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ alignItems: "center" }}
+              >
+                <Box sx={{ color: "primary.main", display: "flex" }}>
+                  <ExerciseTypeIcon type={type} size={20} color="inherit" />
+                </Box>
+                <Typography variant="h5" component="h2">
+                  {tt(type)}
+                </Typography>
+              </Stack>
+              <Stack
+                divider={<Box sx={{ borderTop: 1, borderColor: "divider" }} />}
+                sx={{ mt: 2 }}
+              >
                 {rows.map((r) => (
-                  <li
+                  <Stack
                     key={r.exerciseId}
-                    className="flex flex-col gap-3 py-3 text-sm first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={1.5}
+                    sx={{
+                      py: 1.5,
+                      alignItems: { xs: "stretch", sm: "center" },
+                      justifyContent: "space-between",
+                    }}
                   >
-                    <div className="min-w-0 flex-1">
-                      <p className="break-words font-medium">{r.title}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        <span className="font-mono text-danger">
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500, wordBreak: "break-word" }}>
+                        {r.title}
+                      </Typography>
+                      <Stack
+                        direction="row"
+                        spacing={0.75}
+                        sx={{ mt: 0.5, color: "text.secondary", alignItems: "center" }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            fontFamily:
+                              'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+                            color: "error.main",
+                          }}
+                        >
                           {t("lastScore", { score: r.lastScore })}
-                        </span>
-                        <span className="mx-1.5">·</span>
-                        {t("lastTry", {
-                          date: new Date(r.lastAttempt).toLocaleDateString(locale),
-                        })}
-                      </p>
-                    </div>
-                    <Link
+                        </Typography>
+                        <Typography variant="caption">·</Typography>
+                        <Typography variant="caption">
+                          {t("lastTry", {
+                            date: new Date(r.lastAttempt).toLocaleDateString(locale),
+                          })}
+                        </Typography>
+                      </Stack>
+                    </Box>
+                    <ButtonLink
                       href={`/exercises/${r.exerciseId}`}
-                      className={buttonClasses("primary", "sm")}
+                      variant="contained"
+                      color="primary"
+                      size="small"
                     >
                       {t("retry")}
-                    </Link>
-                  </li>
+                    </ButtonLink>
+                  </Stack>
                 ))}
-              </ul>
+              </Stack>
             </Card>
           ))}
-        </div>
+        </Stack>
       )}
-    </div>
+    </Container>
   );
 }

@@ -3,8 +3,12 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import type { UiLanguage } from "@prisma/client";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
+import Typography from "@mui/material/Typography";
 
-import { buttonClasses } from "@/components/ui/buttonClasses";
 import { saveProfile } from "./actions";
 
 const LANGS: { code: UiLanguage; label: string }[] = [
@@ -13,9 +17,6 @@ const LANGS: { code: UiLanguage; label: string }[] = [
   { code: "TR", label: "Türkçe" },
   { code: "UK", label: "Українська" },
 ];
-
-const inputClass =
-  "mt-1.5 block min-h-11 w-full rounded-md border border-border bg-surface px-3 py-2.5 text-base shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 export function ProfileForm({
   name: initialName,
@@ -33,61 +34,65 @@ export function ProfileForm({
   const [pending, startTransition] = useTransition();
 
   return (
-    <form
-      action={(formData) => {
+    <Stack
+      component="form"
+      action={(formData: FormData) => {
         setSaved(false);
         startTransition(async () => {
           await saveProfile(formData);
           setSaved(true);
         });
       }}
-      className="space-y-4"
+      spacing={2}
     >
-      <label className="block text-sm font-medium">
-        {t("name")}
-        <input
-          name="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          autoComplete="name"
-          className={inputClass}
-        />
-      </label>
-      <label className="block text-sm font-medium">
-        {t("email")}
-        <input
-          value={email}
-          disabled
-          className={`${inputClass} bg-muted text-muted-foreground`}
-        />
-      </label>
-      <label className="block text-sm font-medium">
-        {t("preferredLanguage")}
-        <select
-          name="preferredLanguage"
-          value={lang}
-          onChange={(e) => setLang(e.target.value as UiLanguage)}
-          className={inputClass}
-        >
-          {LANGS.map((l) => (
-            <option key={l.code} value={l.code}>
-              {l.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
-        <button
+      <TextField
+        name="name"
+        label={t("name")}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        autoComplete="name"
+      />
+      <TextField
+        label={t("email")}
+        value={email}
+        disabled
+      />
+      <TextField
+        select
+        name="preferredLanguage"
+        label={t("preferredLanguage")}
+        value={lang}
+        onChange={(e) => setLang(e.target.value as UiLanguage)}
+      >
+        {LANGS.map((l) => (
+          <MenuItem key={l.code} value={l.code}>
+            {l.label}
+          </MenuItem>
+        ))}
+      </TextField>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1.5}
+        sx={{ pt: 1, alignItems: { xs: "stretch", sm: "center" } }}
+      >
+        <Button
           type="submit"
+          variant="contained"
+          color="primary"
           disabled={pending}
-          className={buttonClasses("primary", "md", "w-full sm:w-auto")}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           {pending ? "…" : t("save")}
-        </button>
+        </Button>
         {saved ? (
-          <p className="text-sm font-medium text-success">{t("saved")}</p>
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 500, color: "success.main" }}
+          >
+            {t("saved")}
+          </Typography>
         ) : null}
-      </div>
-    </form>
+      </Stack>
+    </Stack>
   );
 }

@@ -1,16 +1,20 @@
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { CefrLevel, ExerciseType } from "@prisma/client";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import LinearProgress from "@mui/material/LinearProgress";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { Link } from "@/i18n/navigation";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card } from "@/components/ui/Card";
 import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
 import { StreakFlame } from "@/components/ui/StreakFlame";
 import { LevelChip } from "@/components/ui/LevelChip";
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
-import { buttonClasses } from "@/components/ui/buttonClasses";
 
 const LEVELS: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 const TYPES: ExerciseType[] = [
@@ -93,24 +97,46 @@ export default async function DashboardPage({
   for (const a of attemptsByType) typeCounts[a.exercise.type] += 1;
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+    <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 5 } }}>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        sx={{
+          alignItems: { xs: "flex-start", sm: "center" },
+          justifyContent: "space-between",
+        }}
+      >
+        <Box>
+          <Typography
+            variant="overline"
+            sx={{ color: "text.secondary", display: "block" }}
+          >
             {t("dashboard.title")}
-          </p>
-          <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+          </Typography>
+          <Typography variant="h1" sx={{ mt: 0.5, fontSize: { xs: "2rem", sm: "2.5rem" } }}>
             {user.name ?? session.user.email}
-          </h1>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+          </Typography>
+        </Box>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
           <MuenzenBadge amount={user.muenzen} size="lg" />
           <StreakFlame days={user.streak} size="lg" />
-        </div>
-      </header>
+        </Stack>
+      </Stack>
 
       {/* Highlights row */}
-      <section className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+      <Box
+        component="section"
+        sx={{
+          mt: 3,
+          display: "grid",
+          gap: { xs: 1.5, sm: 2 },
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "repeat(2, 1fr)",
+            lg: "repeat(4, 1fr)",
+          },
+        }}
+      >
         <Stat
           label={t("dashboard.muenzenBalance")}
           value={`${user.muenzen}`}
@@ -123,96 +149,196 @@ export default async function DashboardPage({
         />
         <Stat label={t("dashboard.exercisesThisWeek")} value={String(week)} />
         <Stat label={t("dashboard.exercisesThisMonth")} value={String(month)} />
-      </section>
+      </Box>
 
-      <section className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+      <Box
+        component="section"
+        sx={{
+          mt: 1.5,
+          display: "grid",
+          gap: { xs: 1.5, sm: 2 },
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+        }}
+      >
         <Stat label={t("dashboard.exercisesTotal")} value={String(total)} />
         <Stat
           label={t("dashboard.toReview")}
           value={String(mistakesCount)}
           accent={mistakesCount > 0}
         />
-        <Link
+        <ButtonLink
           href="/exercises/mistakes"
-          className={`${buttonClasses("secondary", "md")} w-full`}
+          variant="outlined"
+          size="large"
+          fullWidth
         >
           {t("dashboard.reviewMistakes")}
-        </Link>
-      </section>
+        </ButtonLink>
+      </Box>
 
-      <section className="mt-8 grid gap-4 sm:gap-6 lg:grid-cols-2">
+      <Box
+        component="section"
+        sx={{
+          mt: 4,
+          display: "grid",
+          gap: { xs: 2, sm: 3 },
+          gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" },
+        }}
+      >
         <Card>
-          <h2 className="font-display text-lg font-semibold sm:text-xl">
-            {t("dashboard.byLevel")}
-          </h2>
-          <ul className="mt-4 space-y-3">
+          <Typography variant="h4">{t("dashboard.byLevel")}</Typography>
+          <Stack spacing={1.5} sx={{ mt: 2 }}>
             {LEVELS.map((l) => (
-              <li key={l} className="flex items-center gap-3 text-sm">
-                <LevelChip level={l} className="w-10 justify-center" />
-                <Bar value={levelCounts[l]} max={Math.max(...Object.values(levelCounts), 1)} />
-                <span className="w-8 shrink-0 text-right font-mono text-xs text-muted-foreground sm:text-sm">
-                  {levelCounts[l]}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        <Card>
-          <h2 className="font-display text-lg font-semibold sm:text-xl">
-            {t("dashboard.byType")}
-          </h2>
-          <ul className="mt-4 space-y-3">
-            {TYPES.map((tp) => (
-              <li key={tp} className="flex items-center gap-3 text-xs sm:text-sm">
-                <span className="text-primary">
-                  <ExerciseTypeIcon type={tp} size={18} />
-                </span>
-                <span className="min-w-0 flex-1 truncate sm:w-44 sm:flex-none">{tt(tp)}</span>
-                <Bar value={typeCounts[tp]} max={Math.max(...Object.values(typeCounts), 1)} />
-                <span className="w-8 shrink-0 text-right font-mono text-muted-foreground">
-                  {typeCounts[tp]}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </section>
-
-      <section className="mt-6 sm:mt-8">
-        <Card>
-          <h2 className="font-display text-lg font-semibold sm:text-xl">
-            {t("dashboard.recentActivity")}
-          </h2>
-          {recent.length === 0 ? (
-            <p className="mt-3 rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-              {t("dashboard.noActivity")}
-            </p>
-          ) : (
-            <ul className="mt-3 divide-y divide-border">
-              {recent.map((r) => (
-                <li
-                  key={r.id}
-                  className="flex items-center justify-between gap-3 py-3 text-sm"
+              <Stack
+                key={l}
+                direction="row"
+                spacing={1.5}
+                sx={{ alignItems: "center" }}
+              >
+                <Box sx={{ width: 40, display: "flex", justifyContent: "center" }}>
+                  <LevelChip level={l} />
+                </Box>
+                <Bar
+                  value={levelCounts[l]}
+                  max={Math.max(...Object.values(levelCounts), 1)}
+                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    width: 32,
+                    textAlign: "right",
+                    fontFamily:
+                      'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+                    color: "text.secondary",
+                  }}
                 >
-                  <span className="flex min-w-0 flex-1 items-center gap-3">
+                  {levelCounts[l]}
+                </Typography>
+              </Stack>
+            ))}
+          </Stack>
+        </Card>
+
+        <Card>
+          <Typography variant="h4">{t("dashboard.byType")}</Typography>
+          <Stack spacing={1.5} sx={{ mt: 2 }}>
+            {TYPES.map((tp) => (
+              <Stack
+                key={tp}
+                direction="row"
+                spacing={1.5}
+                sx={{ alignItems: "center" }}
+              >
+                <Box sx={{ color: "primary.main", display: "flex" }}>
+                  <ExerciseTypeIcon type={tp} size={18} color="inherit" />
+                </Box>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    flex: 1,
+                    minWidth: 0,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {tt(tp)}
+                </Typography>
+                <Bar
+                  value={typeCounts[tp]}
+                  max={Math.max(...Object.values(typeCounts), 1)}
+                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    width: 32,
+                    textAlign: "right",
+                    fontFamily:
+                      'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+                    color: "text.secondary",
+                  }}
+                >
+                  {typeCounts[tp]}
+                </Typography>
+              </Stack>
+            ))}
+          </Stack>
+        </Card>
+      </Box>
+
+      <Box component="section" sx={{ mt: { xs: 3, sm: 4 } }}>
+        <Card>
+          <Typography variant="h4">{t("dashboard.recentActivity")}</Typography>
+          {recent.length === 0 ? (
+            <Box
+              sx={{
+                mt: 2,
+                p: 3,
+                textAlign: "center",
+                border: "1px dashed",
+                borderColor: "divider",
+                borderRadius: 1,
+              }}
+            >
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                {t("dashboard.noActivity")}
+              </Typography>
+            </Box>
+          ) : (
+            <Stack
+              divider={
+                <Box sx={{ borderTop: 1, borderColor: "divider" }} />
+              }
+              sx={{ mt: 1.5 }}
+            >
+              {recent.map((r) => (
+                <Stack
+                  key={r.id}
+                  direction="row"
+                  spacing={1.5}
+                  sx={{
+                    py: 1.5,
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    spacing={1.5}
+                    sx={{ flex: 1, alignItems: "center", minWidth: 0 }}
+                  >
                     <LevelChip level={r.exercise.level} size="sm" />
-                    <span className="min-w-0 flex-1 truncate">{r.exercise.title}</span>
-                  </span>
-                  <span
-                    className={`shrink-0 font-mono text-xs sm:text-sm ${
-                      r.score >= 60 ? "text-success" : "text-danger"
-                    }`}
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        flex: 1,
+                        minWidth: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {r.exercise.title}
+                    </Typography>
+                  </Stack>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      flexShrink: 0,
+                      fontFamily:
+                        'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+                      color: r.score >= 60 ? "success.main" : "error.main",
+                    }}
                   >
                     {r.score}/100
-                  </span>
-                </li>
+                  </Typography>
+                </Stack>
               ))}
-            </ul>
+            </Stack>
           )}
         </Card>
-      </section>
-    </div>
+      </Box>
+    </Container>
   );
 }
 
@@ -229,17 +355,32 @@ function Stat({
 }) {
   return (
     <Card accent={accent} padding="sm">
-      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <Typography
+        variant="overline"
+        sx={{ color: "text.secondary", display: "block" }}
+      >
         {label}
-      </div>
-      <div className="mt-1 flex items-baseline gap-1.5">
-        <span className="font-display text-2xl font-semibold sm:text-3xl">
+      </Typography>
+      <Stack
+        direction="row"
+        spacing={0.75}
+        sx={{ mt: 0.5, alignItems: "baseline" }}
+      >
+        <Typography
+          variant="h3"
+          sx={{ fontSize: { xs: "1.5rem", sm: "1.875rem" } }}
+        >
           {value}
-        </span>
+        </Typography>
         {subtle ? (
-          <span className="text-sm font-medium text-accent">{subtle}</span>
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 500, color: "secondary.main" }}
+          >
+            {subtle}
+          </Typography>
         ) : null}
-      </div>
+      </Stack>
     </Card>
   );
 }
@@ -247,11 +388,20 @@ function Stat({
 function Bar({ value, max }: { value: number; max: number }) {
   const pct = max === 0 ? 0 : Math.round((value / max) * 100);
   return (
-    <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-muted">
-      <div
-        className="h-full rounded-full bg-accent transition-all"
-        style={{ width: `${pct}%` }}
-      />
-    </div>
+    <LinearProgress
+      variant="determinate"
+      value={pct}
+      sx={{
+        flex: 1,
+        minWidth: 0,
+        height: 8,
+        borderRadius: 9999,
+        backgroundColor: "surfaceAlt.main",
+        "& .MuiLinearProgress-bar": {
+          backgroundColor: "secondary.main",
+          borderRadius: 9999,
+        },
+      }}
+    />
   );
 }

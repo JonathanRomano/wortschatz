@@ -1,6 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import IconButton from "@mui/material/IconButton";
+import Drawer from "@mui/material/Drawer";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import Divider from "@mui/material/Divider";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 
 import { Link, usePathname } from "@/i18n/navigation";
 import { LocaleSwitcher } from "./LocaleSwitcher";
@@ -25,160 +38,116 @@ export function MobileMenu({ isAuthed, links, signOutSlot, labels }: Props) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  // Close menu on route change
+  // Close menu on route change.
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
-  // Lock body scroll while menu is open
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
-
-  // Close on escape key
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
-
   return (
     <>
-      <button
-        type="button"
+      <IconButton
         aria-label={open ? labels.closeMenu : labels.openMenu}
         aria-expanded={open}
         aria-controls="mobile-menu-drawer"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-border bg-surface text-foreground transition-colors hover:bg-muted md:hidden"
+        sx={{ display: { md: "none" } }}
+        color="inherit"
       >
         {open ? <CloseIcon /> : <MenuIcon />}
-      </button>
+      </IconButton>
 
-      {/* Overlay */}
-      <div
-        aria-hidden="true"
-        onClick={() => setOpen(false)}
-        className={`fixed inset-0 z-40 bg-black/40 transition-opacity md:hidden ${
-          open ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-      />
-
-      {/* Drawer */}
-      <aside
+      <Drawer
         id="mobile-menu-drawer"
-        role="dialog"
-        aria-modal="true"
-        aria-label={labels.menu}
-        className={`fixed inset-y-0 right-0 z-50 flex w-[85vw] max-w-sm flex-col border-l border-border bg-surface shadow-2xl transition-transform duration-200 md:hidden ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
+        anchor="right"
+        open={open}
+        onClose={() => setOpen(false)}
+        slotProps={{
+          paper: {
+            sx: {
+              width: "85vw",
+              maxWidth: 384,
+              display: { md: "none" },
+            },
+            "aria-label": labels.menu,
+          },
+        }}
       >
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <span className="text-base font-semibold">{labels.menu}</span>
-          <button
-            type="button"
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            px: 2,
+            py: 1.5,
+            borderBottom: 1,
+            borderColor: "divider",
+          }}
+        >
+          <Typography variant="h6" component="span">
+            {labels.menu}
+          </Typography>
+          <IconButton
             aria-label={labels.closeMenu}
             onClick={() => setOpen(false)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted"
+            color="inherit"
           >
             <CloseIcon />
-          </button>
-        </div>
+          </IconButton>
+        </Box>
 
-        <nav className="flex-1 overflow-y-auto px-4 py-4">
+        <Box
+          component="nav"
+          sx={{ flex: 1, overflowY: "auto", px: 2, py: 2 }}
+        >
           {isAuthed ? (
-            <ul className="flex flex-col gap-1 text-base">
+            <List disablePadding>
               {links.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="flex min-h-11 items-center rounded-md px-3 py-3 hover:bg-muted hover:text-primary"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
+                <ListItem key={link.href} disablePadding>
+                  <ListItemButton component={Link} href={link.href}>
+                    <ListItemText primary={link.label} />
+                  </ListItemButton>
+                </ListItem>
               ))}
-            </ul>
+            </List>
           ) : (
-            <ul className="flex flex-col gap-2 text-base">
-              <li>
-                <Link
-                  href="/login"
-                  className="flex min-h-11 items-center justify-center rounded-md border border-border px-4 py-3 hover:bg-muted"
-                >
-                  {labels.login}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/register"
-                  className="flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-3 font-medium text-primary-foreground hover:opacity-90"
-                >
-                  {labels.register}
-                </Link>
-              </li>
-            </ul>
+            <Stack spacing={1.5}>
+              <Button
+                component={Link}
+                href="/login"
+                variant="outlined"
+                size="large"
+                fullWidth
+              >
+                {labels.login}
+              </Button>
+              <Button
+                component={Link}
+                href="/register"
+                variant="contained"
+                color="primary"
+                size="large"
+                fullWidth
+              >
+                {labels.register}
+              </Button>
+            </Stack>
           )}
-        </nav>
+        </Box>
 
-        <div className="space-y-3 border-t border-border px-4 py-4">
-          <div>
-            <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
+        <Divider />
+        <Stack spacing={2} sx={{ px: 2, py: 2 }}>
+          <Box>
+            <Typography
+              variant="overline"
+              sx={{ color: "text.secondary", display: "block", mb: 1 }}
+            >
               {labels.language}
-            </p>
+            </Typography>
             <LocaleSwitcher />
-          </div>
-          {signOutSlot ? <div>{signOutSlot}</div> : null}
-        </div>
-      </aside>
+          </Box>
+          {signOutSlot ? <Box>{signOutSlot}</Box> : null}
+        </Stack>
+      </Drawer>
     </>
-  );
-}
-
-function MenuIcon() {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="4" y1="12" x2="20" y2="12" />
-      <line x1="4" y1="18" x2="20" y2="18" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <line x1="6" y1="6" x2="18" y2="18" />
-      <line x1="18" y1="6" x2="6" y2="18" />
-    </svg>
   );
 }

@@ -1,6 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
 
 import type { RendererProps } from "../types";
 
@@ -8,23 +12,48 @@ export function ErrorCorrectionRenderer({ content, value, onChange, disabled }: 
   const t = useTranslations("renderers");
   const sentence = String(content.sentence ?? "");
   return (
-    <div className="space-y-4">
-      <div className="rounded-xl border border-danger/30 bg-danger-soft/30 p-4 sm:p-5">
-        <p className="text-xs font-medium uppercase tracking-wider text-danger">
+    <Stack spacing={2}>
+      <Box
+        sx={{
+          borderRadius: 3,
+          border: 1,
+          borderStyle: "solid",
+          borderColor: "error.main",
+          backgroundColor: "dangerSoft.main",
+          p: { xs: 2, sm: 2.5 },
+        }}
+      >
+        <Typography
+          variant="overline"
+          sx={{ fontWeight: 500, color: "error.main", display: "block" }}
+        >
           {t("errorOriginal")}
-        </p>
-        <p className="mt-2 break-words font-display text-lg leading-relaxed sm:text-xl">
+        </Typography>
+        <Typography
+          variant="h4"
+          component="p"
+          sx={{
+            mt: 1,
+            wordBreak: "break-word",
+            fontFamily: "var(--font-fraunces), serif",
+            fontSize: { xs: "1.125rem", sm: "1.25rem" },
+            fontWeight: 400,
+            lineHeight: 1.55,
+          }}
+        >
           {sentence}
-        </p>
-      </div>
-      <textarea
-        rows={3}
+        </Typography>
+      </Box>
+      <TextField
+        multiline
+        minRows={3}
         disabled={disabled}
         value={String(value.corrected ?? "")}
         onChange={(e) => onChange({ corrected: e.target.value })}
         placeholder={t("errorCorrectedPlaceholder")}
-        className="block w-full resize-y rounded-md border border-border bg-surface px-3 py-2.5 text-base leading-relaxed shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+        fullWidth
+        slotProps={{ htmlInput: { "aria-label": t("errorCorrectedPlaceholder") } }}
       />
-    </div>
+    </Stack>
   );
 }

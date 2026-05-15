@@ -1,32 +1,52 @@
-import type { HTMLAttributes } from "react";
+"use client";
 
-type CardProps = HTMLAttributes<HTMLDivElement> & {
-  // When true the card carries a subtle amber tint — used for "you'll like
-  // this" or current-balance style highlight panels.
+import { forwardRef, type ReactNode } from "react";
+import Paper, { type PaperProps } from "@mui/material/Paper";
+
+type CardProps = Omit<PaperProps, "elevation"> & {
+  // When true the card carries a subtle amber tint — used for "you'll
+  // like this" or current-balance style highlight panels.
   accent?: boolean;
   // Tighter padding for dense grids; default fits a typical content card.
-  padding?: "sm" | "md" | "lg";
+  padding?: "sm" | "md" | "lg" | "none";
+  children?: ReactNode;
 };
 
 const padMap = {
-  sm: "p-4",
-  md: "p-5 sm:p-6",
-  lg: "p-6 sm:p-8",
-};
+  none: 0,
+  sm: 2,
+  // 5px on mobile / 6px on tablet+ in the old design ≈ MUI spacing 2.5/3.
+  md: { xs: 2.5, sm: 3 },
+  lg: { xs: 3, sm: 4 },
+} as const;
 
-export function Card({
-  accent,
-  padding = "md",
-  className = "",
-  ...rest
-}: CardProps) {
-  const tone = accent
-    ? "border-accent/40 bg-accent-soft/40"
-    : "border-border bg-surface";
+/**
+ * Thin wrapper over MUI's `Paper`. Keeps the existing prop API (`accent`,
+ * `padding`) so the migration of pages is a near drop-in. All color
+ * decisions come from the theme.
+ */
+export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
+  { accent, padding = "md", sx, children, ...rest },
+  ref,
+) {
   return (
-    <div
+    <Paper
+      ref={ref}
+      elevation={1}
+      variant="elevation"
       {...rest}
-      className={`rounded-xl border shadow-sm ${tone} ${padMap[padding]} ${className}`}
-    />
+      sx={[
+        {
+          p: padMap[padding],
+          border: 1,
+          borderColor: accent ? "secondary.main" : "divider",
+          borderStyle: "solid",
+          backgroundColor: accent ? "accentSoft.main" : "background.paper",
+        },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
+    >
+      {children}
+    </Paper>
   );
-}
+});

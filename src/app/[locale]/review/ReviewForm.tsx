@@ -2,8 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import Alert from "@mui/material/Alert";
 
-import { buttonClasses } from "@/components/ui/buttonClasses";
 import { submitReviewRequest } from "@/lib/review/actions";
 
 export function ReviewForm({ balance, cost }: { balance: number; cost: number }) {
@@ -18,21 +23,32 @@ export function ReviewForm({ balance, cost }: { balance: number; cost: number })
   const tooShort = text.trim().length < 5;
 
   return (
-    <div className="space-y-4">
-      <textarea
-        rows={8}
+    <Stack spacing={2}>
+      <TextField
+        multiline
+        minRows={8}
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder={t("placeholder")}
-        className="block w-full resize-y rounded-md border border-border bg-surface px-3 py-2.5 text-base leading-relaxed shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+        fullWidth
+        slotProps={{ htmlInput: { "aria-label": t("placeholder") } }}
       />
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <span className="text-sm text-muted-foreground">
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1.5}
+        sx={{
+          alignItems: { xs: "stretch", sm: "center" },
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
           {t("balanceLine", { balance: remaining, cost })}
-        </span>
-        <button
+        </Typography>
+        <Button
           type="button"
+          variant="contained"
+          color="primary"
           disabled={pending || insufficient || tooShort}
           onClick={() => {
             setError(null);
@@ -48,39 +64,51 @@ export function ReviewForm({ balance, cost }: { balance: number; cost: number })
               }
             });
           }}
-          className={buttonClasses("primary", "md", "w-full sm:w-auto")}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           {pending ? "…" : t("submit")}
-        </button>
-      </div>
+        </Button>
+      </Stack>
 
       {insufficient ? (
-        <p
-          role="alert"
-          className="rounded-md border border-danger/40 bg-danger-soft/60 px-3 py-2 text-sm text-danger"
-        >
-          {t("insufficientFunds")}
-        </p>
+        <Alert severity="error" role="alert">{t("insufficientFunds")}</Alert>
       ) : null}
       {error ? (
-        <p
-          role="alert"
-          className="rounded-md border border-danger/40 bg-danger-soft/60 px-3 py-2 text-sm text-danger"
-        >
-          {error}
-        </p>
+        <Alert severity="error" role="alert">{error}</Alert>
       ) : null}
 
       {feedback ? (
-        <div className="rounded-xl border border-border bg-muted p-4 shadow-sm sm:p-5">
-          <h2 className="font-display text-lg font-semibold sm:text-xl">
+        <Box
+          sx={{
+            p: { xs: 2, sm: 2.5 },
+            borderRadius: 3,
+            border: 1,
+            borderStyle: "solid",
+            borderColor: "divider",
+            backgroundColor: "surfaceAlt.main",
+            boxShadow: 1,
+          }}
+        >
+          <Typography variant="h5" component="h2">
             {t("feedbackHeading")}
-          </h2>
-          <pre className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">
+          </Typography>
+          <Box
+            component="pre"
+            sx={{
+              mt: 1,
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              fontFamily: "inherit",
+              fontSize: "0.875rem",
+              lineHeight: 1.55,
+              color: "text.primary",
+              m: 0,
+            }}
+          >
             {feedback}
-          </pre>
-        </div>
+          </Box>
+        </Box>
       ) : null}
-    </div>
+    </Stack>
   );
 }

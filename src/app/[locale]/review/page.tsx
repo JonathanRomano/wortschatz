@@ -1,5 +1,13 @@
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
@@ -33,56 +41,119 @@ export default async function ReviewPage({
   ]);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
-      <header className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+    <Container maxWidth="md" sx={{ py: { xs: 4, sm: 5 } }}>
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
+      >
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="h1" sx={{ fontSize: { xs: "2rem", sm: "2.5rem" } }}>
             {t("title")}
-          </h1>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+          </Typography>
+          <Typography variant="body1" sx={{ mt: 1.5, color: "text.secondary" }}>
             {t("subtitle", { cost: MUENZEN_RULES.aiReviewCost })}
-          </p>
-        </div>
+          </Typography>
+        </Box>
         <MuenzenBadge amount={user.muenzen} size="lg" />
-      </header>
+      </Stack>
 
-      <Card className="mt-6" padding="lg">
+      <Card padding="lg" sx={{ mt: 3 }}>
         <ReviewForm balance={user.muenzen} cost={MUENZEN_RULES.aiReviewCost} />
       </Card>
 
-      <section className="mt-10">
-        <h2 className="font-display text-xl font-semibold sm:text-2xl">
-          {t("history")}
-        </h2>
-        <ul className="mt-4 space-y-3">
+      <Box component="section" sx={{ mt: 5 }}>
+        <Typography variant="h4">{t("history")}</Typography>
+        <Stack spacing={1.5} sx={{ mt: 2 }}>
           {history.length === 0 ? (
-            <Card className="text-center" padding="md">
-              <p className="text-sm text-muted-foreground">—</p>
+            <Card sx={{ textAlign: "center" }}>
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>—</Typography>
             </Card>
           ) : (
             history.map((r) => (
-              <Card key={r.id} padding="md">
-                <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <span>{r.createdAt.toLocaleString()}</span>
-                  <span>·</span>
-                  <span className="font-mono">-{r.muenzenCost} M</span>
-                </p>
-                <p className="mt-2 line-clamp-2 break-words text-sm italic text-muted-foreground">
+              <Card key={r.id}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ alignItems: "center", flexWrap: "wrap", color: "text.secondary" }}
+                >
+                  <Typography variant="caption">
+                    {r.createdAt.toLocaleString()}
+                  </Typography>
+                  <Typography variant="caption">·</Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontFamily:
+                        'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+                    }}
+                  >
+                    -{r.muenzenCost} M
+                  </Typography>
+                </Stack>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 1,
+                    fontStyle: "italic",
+                    color: "text.secondary",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    wordBreak: "break-word",
+                  }}
+                >
                   {r.inputText}
-                </p>
-                <details className="mt-3 text-sm">
-                  <summary className="inline-flex min-h-9 cursor-pointer items-center font-medium text-primary hover:underline">
-                    {t("feedbackHeading")}
-                  </summary>
-                  <pre className="mt-3 whitespace-pre-wrap break-words rounded-md bg-muted px-3 py-2 text-sm leading-relaxed text-foreground">
-                    {r.feedback}
-                  </pre>
-                </details>
+                </Typography>
+                <Accordion
+                  disableGutters
+                  elevation={0}
+                  square
+                  sx={{
+                    mt: 1.5,
+                    "&:before": { display: "none" },
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    sx={{
+                      px: 0,
+                      minHeight: 36,
+                      color: "primary.main",
+                      "& .MuiAccordionSummary-content": { my: 0.5 },
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {t("feedbackHeading")}
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ px: 0 }}>
+                    <Box
+                      component="pre"
+                      sx={{
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
+                        borderRadius: 1,
+                        backgroundColor: "surfaceAlt.main",
+                        color: "text.primary",
+                        p: 1.5,
+                        m: 0,
+                        fontFamily: "inherit",
+                        fontSize: "0.875rem",
+                        lineHeight: 1.55,
+                      }}
+                    >
+                      {r.feedback}
+                    </Box>
+                  </AccordionDetails>
+                </Accordion>
               </Card>
             ))
           )}
-        </ul>
-      </section>
-    </div>
+        </Stack>
+      </Box>
+    </Container>
   );
 }

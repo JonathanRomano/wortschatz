@@ -1,6 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
 
 import type { RendererProps } from "../types";
 
@@ -20,33 +24,81 @@ export function FillInTheBlankRenderer({ content, value, onChange, disabled }: R
 
   const parts = sentence.split("___");
   return (
-    <div className="space-y-4">
-      <p className="font-display text-lg leading-relaxed sm:text-2xl sm:leading-loose">
+    <Stack spacing={2}>
+      <Typography
+        variant="h4"
+        component="p"
+        sx={{
+          fontSize: { xs: "1.125rem", sm: "1.5rem" },
+          fontFamily: "var(--font-fraunces), serif",
+          lineHeight: 1.55,
+          fontWeight: 400,
+        }}
+      >
         {parts.map((part, i) => (
-          <span key={i} className="break-words">
+          <Box component="span" key={i} sx={{ wordBreak: "break-word" }}>
             {part}
             {i < parts.length - 1 && (
-              <input
-                type="text"
+              <TextField
+                variant="standard"
                 value={blanks[i] ?? ""}
                 onChange={(e) => setBlank(i, e.target.value)}
                 disabled={disabled}
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-                className="mx-1 inline-block min-h-10 w-full max-w-[10rem] rounded-md border-b-2 border-accent/70 bg-transparent px-2 py-1 font-sans text-base shadow-[0_2px_0_0_var(--accent-soft)] transition focus:border-accent focus:outline-none disabled:opacity-60 sm:min-h-9 sm:w-32"
-                aria-label={t("blankAria", { n: i + 1 })}
+                slotProps={{
+                  htmlInput: {
+                    autoCapitalize: "none",
+                    autoCorrect: "off",
+                    spellCheck: false,
+                    "aria-label": t("blankAria", { n: i + 1 }),
+                  },
+                }}
+                sx={{
+                  mx: 0.5,
+                  display: "inline-block",
+                  width: { xs: "10rem", sm: "8rem" },
+                  verticalAlign: "baseline",
+                  "& .MuiInputBase-root": {
+                    fontFamily: "var(--font-inter), sans-serif",
+                    fontSize: "1rem",
+                    "&:before": {
+                      borderBottomWidth: 2,
+                      borderBottomColor: "secondary.main",
+                      opacity: 0.7,
+                    },
+                    "&:hover:not(.Mui-disabled, .Mui-error):before": {
+                      borderBottomWidth: 2,
+                      borderBottomColor: "secondary.main",
+                    },
+                    "&:after": {
+                      borderBottomColor: "secondary.main",
+                    },
+                  },
+                }}
               />
             )}
-          </span>
+          </Box>
         ))}
-      </p>
+      </Typography>
       {content.hint ? (
-        <p className="rounded-md border border-accent/30 bg-accent-soft/40 px-3 py-2 text-sm text-foreground">
-          <span className="font-semibold text-accent-foreground">{t("hint")}:</span>{" "}
-          {String(content.hint)}
-        </p>
+        <Box
+          sx={{
+            borderRadius: 1,
+            border: 1,
+            borderStyle: "solid",
+            borderColor: "secondary.main",
+            backgroundColor: "accentSoft.main",
+            px: 1.5,
+            py: 1,
+          }}
+        >
+          <Typography variant="body2" sx={{ color: "text.primary" }}>
+            <Typography component="span" sx={{ fontWeight: 600, color: "secondary.main" }}>
+              {t("hint")}:
+            </Typography>{" "}
+            {String(content.hint)}
+          </Typography>
+        </Box>
       ) : null}
-    </div>
+    </Stack>
   );
 }

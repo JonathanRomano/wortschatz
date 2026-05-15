@@ -3,6 +3,11 @@
 import { useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { CefrLevel, ExerciseType } from "@prisma/client";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Alert from "@mui/material/Alert";
 
 import { ExerciseRenderer } from "@/components/exercises/renderers";
 import { ExerciseResult } from "@/components/exercises/ExerciseResult";
@@ -13,7 +18,6 @@ import {
 import type { Locale } from "@/i18n/config";
 import { Card } from "@/components/ui/Card";
 import { LevelChip } from "@/components/ui/LevelChip";
-import { buttonClasses } from "@/components/ui/buttonClasses";
 import { fetchNextExerciseOfType } from "./actions";
 
 export type LoadedExercise = {
@@ -65,26 +69,40 @@ export function TypeRunner({ type, level, initialExercise }: Props) {
   };
 
   return (
-    <Card className="mt-8" padding="lg">
-      <header>
-        <div className="flex flex-wrap items-center gap-2">
+    <Card padding="lg" sx={{ mt: 4 }}>
+      <Box component="header">
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
           <LevelChip level={exercise.level} />
-        </div>
-        <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+        </Stack>
+        <Typography
+          variant="h2"
+          sx={{ mt: 1.5, fontSize: { xs: "1.5rem", sm: "1.875rem" } }}
+        >
           {exercise.title}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
+        </Typography>
+        <Typography variant="body1" sx={{ mt: 1, color: "text.secondary" }}>
           {exercise.instructions}
-        </p>
-      </header>
+        </Typography>
+      </Box>
 
       {exercise.alreadyEarned ? (
-        <p className="mt-5 rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
+        <Alert
+          severity="info"
+          icon={false}
+          sx={{
+            mt: 2.5,
+            backgroundColor: "surfaceAlt.main",
+            color: "text.secondary",
+            border: 1,
+            borderColor: "divider",
+            borderStyle: "solid",
+          }}
+        >
           {t("alreadyEarned")}
-        </p>
+        </Alert>
       ) : null}
 
-      <div className="mt-6">
+      <Box sx={{ mt: 3 }}>
         <ExerciseRenderer
           type={type}
           content={exercise.content}
@@ -92,30 +110,29 @@ export function TypeRunner({ type, level, initialExercise }: Props) {
           onChange={setAnswer}
           disabled={submitted}
         />
-      </div>
+      </Box>
 
       {!submitted ? (
-        <button
+        <Button
           type="button"
+          variant="contained"
+          color="primary"
           disabled={submitting}
           onClick={onSubmit}
-          className={`mt-6 ${buttonClasses("primary", "md", "w-full sm:w-auto")}`}
+          sx={{ mt: 3, width: { xs: "100%", sm: "auto" } }}
         >
           {submitting ? t("loading") : t("submit")}
-        </button>
+        </Button>
       ) : null}
 
       {result && !result.ok ? (
-        <p
-          role="alert"
-          className="mt-6 rounded-md border border-danger/40 bg-danger-soft/60 px-3 py-2 text-sm text-danger"
-        >
+        <Alert severity="error" role="alert" sx={{ mt: 3 }}>
           {result.error}
-        </p>
+        </Alert>
       ) : null}
 
       {result?.ok ? (
-        <div className="mt-6 space-y-4">
+        <Stack spacing={2} sx={{ mt: 3 }}>
           <ExerciseResult
             score={result.score}
             feedback={result.feedback}
@@ -124,15 +141,17 @@ export function TypeRunner({ type, level, initialExercise }: Props) {
             streakBonus={result.streakBonus}
             alreadyEarned={result.alreadyEarned}
           />
-          <button
+          <Button
             type="button"
-            onClick={onNext}
+            variant="contained"
+            color="primary"
             disabled={loadingNext}
-            className={buttonClasses("primary", "md", "w-full sm:w-auto")}
+            onClick={onNext}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             {loadingNext ? t("loading") : t("next")}
-          </button>
-        </div>
+          </Button>
+        </Stack>
       ) : null}
     </Card>
   );

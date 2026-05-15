@@ -1,11 +1,24 @@
 import { getTranslations } from "next-intl/server";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import Container from "@mui/material/Container";
+import Stack from "@mui/material/Stack";
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+
 import { auth, signOut } from "@/auth";
-import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
 import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
 import { StreakFlame } from "@/components/ui/StreakFlame";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { MobileMenu } from "./MobileMenu";
+import {
+  HeaderBrandLink,
+  HeaderLoginButton,
+  HeaderNavLink,
+  HeaderRegisterButton,
+} from "./HeaderLinks";
 
 export async function Header() {
   const t = await getTranslations("nav");
@@ -39,105 +52,133 @@ export async function Header() {
         await signOut({ redirectTo: "/" });
       }}
     >
-      <button
+      <Button
         type="submit"
-        className="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium transition-all hover:-translate-y-px hover:bg-muted sm:w-auto"
+        variant="outlined"
+        size="small"
+        fullWidth
+        sx={{ minHeight: 44 }}
       >
         {t("logout")}
-      </button>
+      </Button>
     </form>
   );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <Link
-          href="/"
-          className="flex shrink-0 items-center gap-2 font-display text-lg font-semibold tracking-tight sm:text-xl"
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        borderBottom: 1,
+        borderColor: "divider",
+        backdropFilter: "blur(8px)",
+      }}
+    >
+      <Container maxWidth="lg" disableGutters>
+        <Toolbar
+          sx={{
+            px: { xs: 2, sm: 3 },
+            py: 1,
+            gap: 1.5,
+            justifyContent: "space-between",
+          }}
         >
-          <Wordmark />
-        </Link>
+          <HeaderBrandLink>
+            <Wordmark />
+          </HeaderBrandLink>
 
-        {/* Desktop nav (md+) */}
-        <nav className="hidden items-center gap-1 text-sm md:flex">
-          {isAuthed ? (
-            <>
-              {wallet ? (
-                <div className="mr-2 flex items-center gap-2">
-                  <MuenzenBadge amount={wallet.muenzen} size="sm" />
-                  <StreakFlame days={wallet.streak} size="sm" />
-                </div>
-              ) : null}
-              {authedLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="inline-flex min-h-11 items-center rounded-md px-3 py-2 text-foreground transition-colors hover:bg-muted hover:text-primary"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="ml-2">{signOutForm}</div>
-              <div className="ml-2">
-                <LocaleSwitcher />
-              </div>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="inline-flex min-h-11 items-center rounded-md px-3 py-2 transition-colors hover:bg-muted hover:text-primary"
-              >
-                {t("login")}
-              </Link>
-              <Link
-                href="/register"
-                className="ml-1 inline-flex min-h-11 items-center rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground shadow-sm transition-all hover:-translate-y-px hover:shadow"
-              >
-                {t("register")}
-              </Link>
-              <div className="ml-2">
-                <LocaleSwitcher />
-              </div>
-            </>
-          )}
-        </nav>
+          {/* Desktop nav (md+) */}
+          <Stack
+            direction="row"
+            spacing={0.5}
+            sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}
+          >
+            {isAuthed ? (
+              <>
+                {wallet ? (
+                  <Stack direction="row" spacing={1} sx={{ mr: 1 }}>
+                    <MuenzenBadge amount={wallet.muenzen} size="sm" />
+                    <StreakFlame days={wallet.streak} size="sm" />
+                  </Stack>
+                ) : null}
+                {authedLinks.map((link) => (
+                  <HeaderNavLink key={link.href} href={link.href}>
+                    {link.label}
+                  </HeaderNavLink>
+                ))}
+                <Box sx={{ ml: 1 }}>{signOutForm}</Box>
+                <Box sx={{ ml: 1 }}>
+                  <LocaleSwitcher />
+                </Box>
+              </>
+            ) : (
+              <>
+                <HeaderLoginButton>{t("login")}</HeaderLoginButton>
+                <HeaderRegisterButton>{t("register")}</HeaderRegisterButton>
+                <Box sx={{ ml: 1 }}>
+                  <LocaleSwitcher />
+                </Box>
+              </>
+            )}
+          </Stack>
 
-        {/* Mobile compact rail (below md): wallet chips next to the menu trigger */}
-        <div className="flex items-center gap-2 md:hidden">
-          {isAuthed && wallet ? (
-            <>
-              <MuenzenBadge amount={wallet.muenzen} size="sm" />
-              <StreakFlame days={wallet.streak} size="sm" />
-            </>
-          ) : null}
-          <MobileMenu
-            isAuthed={isAuthed}
-            labels={{
-              openMenu: t("openMenu"),
-              closeMenu: t("closeMenu"),
-              menu: t("menu"),
-              login: t("login"),
-              register: t("register"),
-              language: t("language"),
-            }}
-            links={authedLinks}
-            signOutSlot={isAuthed ? signOutForm : null}
-          />
-        </div>
-      </div>
-    </header>
+          {/* Mobile compact rail (below md): wallet chips next to the menu trigger */}
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ display: { xs: "flex", md: "none" }, alignItems: "center" }}
+          >
+            {isAuthed && wallet ? (
+              <>
+                <MuenzenBadge amount={wallet.muenzen} size="sm" />
+                <StreakFlame days={wallet.streak} size="sm" />
+              </>
+            ) : null}
+            <MobileMenu
+              isAuthed={isAuthed}
+              labels={{
+                openMenu: t("openMenu"),
+                closeMenu: t("closeMenu"),
+                menu: t("menu"),
+                login: t("login"),
+                register: t("register"),
+                language: t("language"),
+              }}
+              links={authedLinks}
+              signOutSlot={isAuthed ? signOutForm : null}
+            />
+          </Stack>
+        </Toolbar>
+      </Container>
+    </AppBar>
   );
 }
 
 function Wordmark() {
   return (
-    <span className="flex items-baseline gap-1.5">
-      <span className="text-primary">Wortschatz</span>
-      <span
+    <Stack direction="row" spacing={0.75} sx={{ alignItems: "baseline" }}>
+      <Typography
+        component="span"
+        sx={{
+          fontFamily: "var(--font-fraunces), serif",
+          fontWeight: 600,
+          fontSize: { xs: "1.125rem", sm: "1.25rem" },
+          color: "primary.main",
+          letterSpacing: "-0.01em",
+        }}
+      >
+        Wortschatz
+      </Typography>
+      <Box
         aria-hidden="true"
-        className="hidden h-1.5 w-1.5 rounded-full bg-accent sm:block"
+        sx={{
+          display: { xs: "none", sm: "block" },
+          height: 6,
+          width: 6,
+          borderRadius: "50%",
+          backgroundColor: "secondary.main",
+        }}
       />
-    </span>
+    </Stack>
   );
 }

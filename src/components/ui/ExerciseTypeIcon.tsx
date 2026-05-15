@@ -1,8 +1,23 @@
+"use client";
+
+import { useTheme } from "@mui/material/styles";
 import type { ExerciseType } from "@prisma/client";
+
+type ColorName =
+  | "primary"
+  | "secondary"
+  | "tertiary"
+  | "error"
+  | "success"
+  | "inherit";
 
 type Props = {
   type: ExerciseType;
   size?: number;
+  // Either a MUI palette key or a free-form color (e.g. a theme path
+  // already resolved by the caller). Default 'inherit' lets the parent
+  // <Box color="primary.main">…</Box> control the tone.
+  color?: ColorName;
   className?: string;
 };
 
@@ -11,19 +26,47 @@ type Props = {
  * currentColor so callers control the tone. Designed to feel like
  * letterpress marginalia rather than a busy icon library.
  */
-export function ExerciseTypeIcon({ type, size = 22, className = "" }: Props) {
+export function ExerciseTypeIcon({
+  type,
+  size = 22,
+  color = "inherit",
+  className,
+}: Props) {
+  const theme = useTheme();
+
+  const resolved = (() => {
+    switch (color) {
+      case "primary":
+        return theme.palette.primary.main;
+      case "secondary":
+        return theme.palette.secondary.main;
+      case "tertiary":
+        return theme.palette.tertiary.main;
+      case "error":
+        return theme.palette.error.main;
+      case "success":
+        return theme.palette.success.main;
+      case "inherit":
+      default:
+        return "currentColor";
+    }
+  })();
+
+  const dangerStroke = theme.palette.error.main;
+
   const common = {
     width: size,
     height: size,
     viewBox: "0 0 24 24",
     fill: "none",
-    stroke: "currentColor",
+    stroke: resolved,
     strokeWidth: 1.6,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
     "aria-hidden": true,
     className,
   };
+
   switch (type) {
     case "FILL_IN_THE_BLANK":
       return (
@@ -39,7 +82,7 @@ export function ExerciseTypeIcon({ type, size = 22, className = "" }: Props) {
         <svg {...common}>
           <circle cx="6" cy="7" r="1.4" />
           <circle cx="6" cy="12" r="1.4" />
-          <circle cx="6" cy="17" r="1.4" fill="currentColor" />
+          <circle cx="6" cy="17" r="1.4" fill={resolved} />
           <path d="M10 7h11" />
           <path d="M10 12h11" />
           <path d="M10 17h11" />
@@ -79,8 +122,16 @@ export function ExerciseTypeIcon({ type, size = 22, className = "" }: Props) {
       return (
         <svg {...common}>
           <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
-          <path d="M4 14a2 2 0 0 0 2 2h1v-4H6a2 2 0 0 0-2 2z" fill="currentColor" fillOpacity="0.15" />
-          <path d="M20 14a2 2 0 0 1-2 2h-1v-4h1a2 2 0 0 1 2 2z" fill="currentColor" fillOpacity="0.15" />
+          <path
+            d="M4 14a2 2 0 0 0 2 2h1v-4H6a2 2 0 0 0-2 2z"
+            fill={resolved}
+            fillOpacity="0.15"
+          />
+          <path
+            d="M20 14a2 2 0 0 1-2 2h-1v-4h1a2 2 0 0 1 2 2z"
+            fill={resolved}
+            fillOpacity="0.15"
+          />
           <path d="M17 16v1a3 3 0 0 1-3 3h-1" />
         </svg>
       );
@@ -105,8 +156,8 @@ export function ExerciseTypeIcon({ type, size = 22, className = "" }: Props) {
           <path d="M4 6h12" />
           <path d="M4 12h8" />
           <path d="M4 18h14" />
-          <path d="M16 4l4 4" stroke="var(--danger)" />
-          <path d="M20 4l-4 4" stroke="var(--danger)" />
+          <path d="M16 4l4 4" stroke={dangerStroke} />
+          <path d="M20 4l-4 4" stroke={dangerStroke} />
         </svg>
       );
     case "FREE_WRITING":

@@ -1,6 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useTheme } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 
 import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
 
@@ -30,77 +34,105 @@ export function ExerciseResult({
   const totalReward = reward + streakBonus;
 
   return (
-    <div
-      className={`overflow-hidden rounded-xl border shadow-sm ${
-        passed ? "border-success/40 bg-success-soft/40" : "border-danger/40 bg-danger-soft/40"
-      }`}
+    <Box
+      sx={{
+        overflow: "hidden",
+        borderRadius: 3,
+        border: 1,
+        borderStyle: "solid",
+        borderColor: passed ? "success.main" : "error.main",
+        backgroundColor: passed ? "successSoft.main" : "dangerSoft.main",
+        boxShadow: 1,
+      }}
     >
-      <div
-        className={`flex items-center gap-4 px-5 py-4 sm:px-6 ${
-          passed ? "bg-success/10" : "bg-danger/10"
-        }`}
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{
+          alignItems: "center",
+          px: { xs: 2.5, sm: 3 },
+          py: 2,
+          backgroundColor: passed ? "successSoft.main" : "dangerSoft.main",
+        }}
       >
         <ScoreRing score={score} passed={passed} />
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography
+            variant="overline"
+            sx={{ color: "text.secondary", display: "block" }}
+          >
             {t("score")}
-          </p>
-          <p className="font-display text-2xl font-semibold sm:text-3xl">
-            {score}
-            <span className="text-base font-normal text-muted-foreground">
-              {" "}
+          </Typography>
+          <Stack direction="row" spacing={0.75} sx={{ alignItems: "baseline" }}>
+            <Typography variant="h3" sx={{ fontSize: { xs: "1.5rem", sm: "1.875rem" } }}>
+              {score}
+            </Typography>
+            <Typography variant="body1" sx={{ color: "text.secondary" }}>
               / 100
-            </span>
-          </p>
-        </div>
-        {totalReward > 0 ? (
-          <MuenzenBadge amount={totalReward} size="lg" />
-        ) : null}
-      </div>
+            </Typography>
+          </Stack>
+        </Box>
+        {totalReward > 0 ? <MuenzenBadge amount={totalReward} size="lg" /> : null}
+      </Stack>
 
-      <div className="space-y-3 bg-surface px-5 py-4 text-sm leading-relaxed sm:px-6 sm:text-base">
-        <p>
-          <span className="font-medium text-foreground">{t("feedback")}: </span>
-          <span className="text-muted-foreground">{feedback}</span>
-        </p>
+      <Stack
+        spacing={1.5}
+        sx={{
+          px: { xs: 2.5, sm: 3 },
+          py: 2,
+          backgroundColor: "background.paper",
+          fontSize: { xs: "0.875rem", sm: "1rem" },
+          lineHeight: 1.55,
+        }}
+      >
+        <Typography variant="body2">
+          <Typography component="span" sx={{ fontWeight: 500, color: "text.primary" }}>
+            {t("feedback")}:{" "}
+          </Typography>
+          <Typography component="span" sx={{ color: "text.secondary" }}>
+            {feedback}
+          </Typography>
+        </Typography>
         {explanation ? (
-          <p>
-            <span className="font-medium text-foreground">{t("explanation")}: </span>
-            <span className="text-muted-foreground">{explanation}</span>
-          </p>
+          <Typography variant="body2">
+            <Typography component="span" sx={{ fontWeight: 500, color: "text.primary" }}>
+              {t("explanation")}:{" "}
+            </Typography>
+            <Typography component="span" sx={{ color: "text.secondary" }}>
+              {explanation}
+            </Typography>
+          </Typography>
         ) : null}
         {alreadyEarned ? (
-          <p className="text-sm italic text-muted-foreground">
+          <Typography variant="body2" sx={{ fontStyle: "italic", color: "text.secondary" }}>
             {t("alreadyEarned")}
-          </p>
+          </Typography>
         ) : totalReward > 0 ? (
-          <p className="text-sm font-medium text-accent-foreground">
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 500, color: "secondary.main" }}
+          >
             {t("rewardEarned", { amount: totalReward })}
-          </p>
+          </Typography>
         ) : null}
-      </div>
-    </div>
+      </Stack>
+    </Box>
   );
 }
 
 function ScoreRing({ score, passed }: { score: number; passed: boolean }) {
+  const theme = useTheme();
   const r = 22;
   const c = 2 * Math.PI * r;
   const offset = c - (Math.max(0, Math.min(100, score)) / 100) * c;
   return (
-    <svg
-      width="56"
-      height="56"
-      viewBox="0 0 56 56"
-      aria-hidden="true"
-      className="shrink-0"
-    >
+    <Box component="svg" width={56} height={56} viewBox="0 0 56 56" aria-hidden="true" sx={{ flexShrink: 0 }}>
       <circle
         cx="28"
         cy="28"
         r={r}
-        fill="var(--surface)"
-        stroke="var(--border)"
+        fill={theme.palette.background.paper}
+        stroke={theme.palette.divider}
         strokeWidth="4"
       />
       <circle
@@ -108,7 +140,7 @@ function ScoreRing({ score, passed }: { score: number; passed: boolean }) {
         cy="28"
         r={r}
         fill="none"
-        stroke={passed ? "var(--success)" : "var(--danger)"}
+        stroke={passed ? theme.palette.success.main : theme.palette.error.main}
         strokeWidth="4"
         strokeLinecap="round"
         strokeDasharray={c}
@@ -121,11 +153,11 @@ function ScoreRing({ score, passed }: { score: number; passed: boolean }) {
         textAnchor="middle"
         fontSize="14"
         fontWeight="700"
-        fill="var(--foreground)"
-        fontFamily="var(--font-sans), system-ui, sans-serif"
+        fill={theme.palette.text.primary}
+        fontFamily="var(--font-inter), system-ui, sans-serif"
       >
         {score}
       </text>
-    </svg>
+    </Box>
   );
 }

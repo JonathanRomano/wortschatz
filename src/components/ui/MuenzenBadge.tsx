@@ -1,35 +1,81 @@
+"use client";
+
+import Chip from "@mui/material/Chip";
+import { useTheme } from "@mui/material/styles";
+
 type Size = "sm" | "md" | "lg";
 
-const sizeMap: Record<Size, { wrap: string; icon: number; label: string }> = {
-  sm: { wrap: "px-2 py-0.5 text-xs gap-1", icon: 12, label: "text-xs" },
-  md: { wrap: "px-2.5 py-1 text-sm gap-1.5", icon: 14, label: "text-sm" },
-  lg: { wrap: "px-3.5 py-1.5 text-base gap-2", icon: 18, label: "text-base" },
+const sizeMap: Record<Size, { iconPx: number; chipSize: "small" | "medium"; fontPx: number; height: number }> = {
+  sm: { iconPx: 12, chipSize: "small", fontPx: 12, height: 24 },
+  md: { iconPx: 14, chipSize: "small", fontPx: 14, height: 28 },
+  lg: { iconPx: 18, chipSize: "medium", fontPx: 16, height: 36 },
 };
 
-export function MuenzenBadge({
-  amount,
-  size = "md",
-  className = "",
-  label,
-}: {
+type Props = {
   amount: number;
   size?: Size;
   className?: string;
   label?: string; // Optional aria-label override.
-}) {
+};
+
+/**
+ * Münzen balance pill. Amber (`secondary`) chip with a tiny coin glyph.
+ */
+export function MuenzenBadge({ amount, size = "md", className, label }: Props) {
   const s = sizeMap[size];
+  const theme = useTheme();
+
   return (
-    <span
+    <Chip
+      className={className}
+      size={s.chipSize}
+      color="secondary"
+      variant="filled"
+      icon={
+        <CoinIcon
+          size={s.iconPx}
+          fill={theme.palette.secondary.main}
+          stroke={theme.palette.secondary.contrastText}
+        />
+      }
+      label={
+        <span style={{ fontVariantNumeric: "tabular-nums", fontSize: s.fontPx }}>
+          {amount.toLocaleString()}
+        </span>
+      }
       aria-label={label ?? `${amount} Münzen`}
-      className={`inline-flex items-center rounded-full border border-accent/40 bg-accent-soft/60 font-medium tabular-nums text-accent-foreground ${s.wrap} ${className}`}
-    >
-      <CoinIcon size={s.icon} />
-      <span className={s.label}>{amount.toLocaleString()}</span>
-    </span>
+      sx={{
+        height: s.height,
+        bgcolor: "accentSoft.main",
+        color: "accentSoft.contrastText",
+        border: 1,
+        borderStyle: "solid",
+        borderColor: "secondary.main",
+        borderRadius: 9999,
+        fontWeight: 500,
+        "& .MuiChip-icon": {
+          marginLeft: "6px",
+          marginRight: "-2px",
+          color: "inherit",
+        },
+        "& .MuiChip-label": {
+          paddingLeft: "6px",
+          paddingRight: "10px",
+        },
+      }}
+    />
   );
 }
 
-function CoinIcon({ size }: { size: number }) {
+function CoinIcon({
+  size,
+  fill,
+  stroke,
+}: {
+  size: number;
+  fill: string;
+  stroke: string;
+}) {
   return (
     <svg
       width={size}
@@ -38,13 +84,13 @@ function CoinIcon({ size }: { size: number }) {
       fill="none"
       aria-hidden="true"
     >
-      <circle cx="12" cy="12" r="9" fill="var(--accent)" stroke="var(--accent)" />
+      <circle cx="12" cy="12" r="9" fill={fill} stroke={fill} />
       <circle
         cx="12"
         cy="12"
         r="6"
         fill="none"
-        stroke="var(--accent-foreground)"
+        stroke={stroke}
         strokeOpacity="0.35"
         strokeWidth="1"
       />
@@ -55,7 +101,7 @@ function CoinIcon({ size }: { size: number }) {
         fontSize="9"
         fontWeight="700"
         fontFamily="ui-serif, Georgia, serif"
-        fill="var(--accent-foreground)"
+        fill={stroke}
       >
         M
       </text>

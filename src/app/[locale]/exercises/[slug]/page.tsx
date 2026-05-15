@@ -1,15 +1,20 @@
 import { notFound, redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { CefrLevel, ExerciseType } from "@prisma/client";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/config";
 import { pickLocalized } from "@/lib/exercises/i18n";
 import { getRandomExerciseOfType } from "@/lib/exercises/actions";
 import { Card } from "@/components/ui/Card";
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
+import { InlineLink } from "@/components/ui/InlineLink";
 import { LevelChip } from "@/components/ui/LevelChip";
 import { LevelFilter } from "./LevelFilter";
 import { TypeRunner, type LoadedExercise } from "./TypeRunner";
@@ -107,58 +112,81 @@ export default async function ExerciseSlugPage({
       : null;
 
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
-        <Link
+      <Container maxWidth="md" sx={{ py: { xs: 4, sm: 5 } }}>
+        <InlineLink
           href="/exercises"
-          className="inline-flex min-h-9 items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary"
+          tone="muted"
+          sx={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.5,
+            minHeight: 36,
+          }}
         >
-          ← {t("back")}
-        </Link>
+          <ArrowBackIcon fontSize="small" />
+          <Typography component="span" variant="body2">
+            {t("back")}
+          </Typography>
+        </InlineLink>
 
-        <header className="mt-4 flex items-start gap-4">
-          <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent-soft text-primary sm:h-14 sm:w-14">
-            <ExerciseTypeIcon type={type} size={26} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+        <Stack
+          component="header"
+          direction="row"
+          spacing={2}
+          sx={{ mt: 2, alignItems: "flex-start" }}
+        >
+          <Box
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: { xs: 48, sm: 56 },
+              width: { xs: 48, sm: 56 },
+              flexShrink: 0,
+              borderRadius: "50%",
+              backgroundColor: "accentSoft.main",
+              color: "primary.main",
+            }}
+          >
+            <ExerciseTypeIcon type={type} size={26} color="inherit" />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="h1" sx={{ fontSize: { xs: "2rem", sm: "2.5rem" } }}>
               {tt(type)}
-            </h1>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
+            </Typography>
+            <Typography variant="body1" sx={{ mt: 1, color: "text.secondary" }}>
               {td(type)}
-            </p>
-          </div>
-        </header>
+            </Typography>
+          </Box>
+        </Stack>
 
-        <div className="mt-6">
+        <Box sx={{ mt: 3 }}>
           <LevelFilter
             type={type}
             current={level}
-            labels={{
-              level: tf("level"),
-              all: tf("all"),
-            }}
+            labels={{ level: tf("level"), all: tf("all") }}
             levels={LEVELS}
           />
-        </div>
+        </Box>
 
         {initial ? (
           <TypeRunner type={type} level={level} initialExercise={initial} />
         ) : (
-          <Card className="mt-8 text-center" padding="lg">
-            <p className="text-sm text-muted-foreground sm:text-base">
+          <Card padding="lg" sx={{ mt: 4, textAlign: "center" }}>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
               {t("noExercises")}
-            </p>
+            </Typography>
             {level ? (
-              <Link
+              <InlineLink
                 href={`/exercises/${type}`}
-                className="mt-4 inline-flex items-center text-sm font-medium text-primary hover:underline"
+                sx={{ mt: 2, display: "inline-block" }}
               >
                 {tf("clearLevel")}
-              </Link>
+              </InlineLink>
             ) : null}
           </Card>
         )}
-      </div>
+      </Container>
     );
   }
 
@@ -168,29 +196,49 @@ export default async function ExerciseSlugPage({
   if (!detail) notFound();
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
-      <Link
+    <Container maxWidth="md" sx={{ py: { xs: 4, sm: 5 } }}>
+      <InlineLink
         href={`/exercises/${detail.type}`}
-        className="inline-flex min-h-9 items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary"
+        tone="muted"
+        sx={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 0.5,
+          minHeight: 36,
+        }}
       >
-        ← {t("back")}
-      </Link>
-      <header className="mt-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <LevelChip level={detail.level} />
-          <span className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
-            {tt(detail.type)}
-          </span>
-        </div>
-        <h1 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-          {detail.title}
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-          {detail.instructions}
-        </p>
-      </header>
+        <ArrowBackIcon fontSize="small" />
+        <Typography component="span" variant="body2">
+          {t("back")}
+        </Typography>
+      </InlineLink>
 
-      <Card className="mt-6" padding="lg">
+      <Box component="header" sx={{ mt: 2 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
+          <LevelChip level={detail.level} />
+          <Typography
+            variant="overline"
+            sx={{
+              fontFamily:
+                'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+              color: "text.secondary",
+            }}
+          >
+            {tt(detail.type)}
+          </Typography>
+        </Stack>
+        <Typography
+          variant="h2"
+          sx={{ mt: 1.5, fontSize: { xs: "1.5rem", sm: "1.875rem" } }}
+        >
+          {detail.title}
+        </Typography>
+        <Typography variant="body1" sx={{ mt: 1, color: "text.secondary" }}>
+          {detail.instructions}
+        </Typography>
+      </Box>
+
+      <Card padding="lg" sx={{ mt: 3 }}>
         <ExerciseRunner
           exerciseId={detail.id}
           type={detail.type}
@@ -199,6 +247,6 @@ export default async function ExerciseSlugPage({
           alreadyEarned={detail.alreadyEarned}
         />
       </Card>
-    </div>
+    </Container>
   );
 }

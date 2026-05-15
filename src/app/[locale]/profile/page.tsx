@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
@@ -23,17 +25,17 @@ export default async function ProfilePage({
   });
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-8 sm:px-6 sm:py-10">
-      <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+    <Container maxWidth="sm" sx={{ py: { xs: 4, sm: 5 } }}>
+      <Typography variant="h1" sx={{ fontSize: { xs: "2rem", sm: "2.5rem" } }}>
         {t("title")}
-      </h1>
-      <Card className="mt-6" padding="lg">
+      </Typography>
+      <Card padding="lg" sx={{ mt: 3 }}>
         <ProfileForm
           name={user.name ?? ""}
           email={user.email}
           preferredLanguage={user.preferredLanguage}
         />
       </Card>
-    </div>
+    </Container>
   );
 }

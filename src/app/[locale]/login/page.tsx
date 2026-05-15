@@ -1,6 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+
 import { Card } from "@/components/ui/Card";
+import { InlineLink } from "@/components/ui/InlineLink";
 import { LoginForm } from "./LoginForm";
 
 export default async function LoginPage({
@@ -13,19 +16,21 @@ export default async function LoginPage({
   const t = await getTranslations("auth");
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-10 sm:px-6 sm:py-16">
-      <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+    <Container maxWidth="sm" sx={{ py: { xs: 5, sm: 8 } }}>
+      <Typography variant="h1" sx={{ fontSize: { xs: "2rem", sm: "2.5rem" } }}>
         {t("loginTitle")}
-      </h1>
-      <Card className="mt-6" padding="lg">
+      </Typography>
+      <Card padding="lg" sx={{ mt: 3 }}>
         <LoginForm />
       </Card>
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <Typography
+        variant="body2"
+        align="center"
+        sx={{ mt: 3, color: "text.secondary" }}
+      >
         {t("noAccount")}{" "}
-        <Link href="/register" className="font-medium text-primary hover:underline">
-          {t("submitRegister")}
-        </Link>
-      </p>
-    </div>
+        <InlineLink href="/register">{t("submitRegister")}</InlineLink>
+      </Typography>
+    </Container>
   );
 }

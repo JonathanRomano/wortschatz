@@ -6,6 +6,41 @@ needs to do.
 
 ---
 
+## Sprint 02 (revised) — in progress
+
+The MUI + Palette System migration replaces the original Tailwind-only
+visual sprint. Eight tasks total; the multi-agent flow is
+`@coder` → `@reviewer` → `@tester` → `@docs` with one semantic commit
+per task.
+
+- [x] **Task 1** — MUI v9 migration + centralized Palette System
+  (`src/theme/`), full UI re-skin, `vitest` setup, 80 tests, 100%
+  coverage on `src/theme/**`.
+- [ ] **Task 2** — Dark mode toggle: lift `mode` out of `Provider.tsx`,
+  add a context + `localStorage` + `prefers-color-scheme`, ship the
+  header switch.
+- [ ] **Task 3** — Real Anthropic API calls in `src/lib/ai.ts` with
+  caching + a rate limiter (supersedes "What's NOT done" item 1 below).
+- [ ] **Task 4** — Münzen extension (history view, richer transaction
+  reasons).
+- [ ] **Task 5** — Charts on the dashboard (progress over time, accuracy
+  by exercise type).
+- [ ] **Task 6** — Profile page expansion (preferences, CEFR level on
+  `User`).
+- [ ] **Task 7** — Exercise comments / discussion.
+- [ ] **Task 8** — Per-exercise-type intros.
+
+### Discovered debt
+
+- `ButtonLink` and `InlineLink` shipped with 0% test coverage — small
+  surface area, but worth a follow-up.
+- `ExerciseTypeIcon` branch coverage at 82.6%: only the `primary` color
+  mapping is exercised, the named-palette branches are uncovered.
+- React 19 RC + MUI v9 required `--legacy-peer-deps` on install. Friction
+  to document in the repo README if it recurs.
+
+---
+
 ## What's done
 
 - Next.js 15 (App Router) + TypeScript strict + Tailwind CSS v4 project shell
@@ -35,6 +70,10 @@ needs to do.
 ## What's NOT done (and why)
 
 ### 1. Anthropic API calls (intentional, per task instructions)
+
+**Status:** still pending — scheduled for **Task 3** of the revised
+Sprint 02 (above), which will also add response caching and a rate
+limiter.
 
 `src/lib/ai.ts` exposes the right interface but never calls the network. The
 three functions return placeholder responses and log a warning. To finish:
@@ -111,12 +150,23 @@ Not configured yet. Minimum required steps:
 - Add a `postinstall` hook that runs `prisma generate` (or set
   `"build": "prisma generate && next build"`).
 
-### 7. Tests
+### 7. Tests — partially done
 
-No test runner is set up. When this is wired, suggested layout:
+**Status:** `vitest` is wired (jsdom + `@testing-library/react` +
+coverage v8) as of Sprint 02 Task 1, with helpers in `src/test/` and
+tests under `__tests__/` directories beside source. The theme
+(`src/theme/**`) and the shared UI primitives are covered (80 tests,
+100% on the theme).
 
-- `vitest` for `src/lib/**` (especially `grade.ts` and `muenzen.ts`).
-- Playwright for the critical login → submit-exercise flow.
+Still uncovered:
+
+- Server actions (`src/app/[locale]/**/actions.ts` and friends).
+- Local grading in `src/lib/exercises/grade.ts`.
+- Münzen logic in `src/lib/muenzen.ts` (credit / debit / streak bonus).
+- `ButtonLink` / `InlineLink` shims and the named-palette branches of
+  `ExerciseTypeIcon` (tracked under **Discovered debt** at the top).
+- End-to-end: Playwright for the critical login → submit-exercise flow
+  has not been added yet.
 
 ### 8. Admin UX is intentionally minimal
 

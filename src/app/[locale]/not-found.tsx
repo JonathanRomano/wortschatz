@@ -1,22 +1,36 @@
 import { getTranslations } from "next-intl/server";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
-import { Link } from "@/i18n/navigation";
-import { buttonClasses } from "@/components/ui/buttonClasses";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 
 export default async function NotFound() {
   const t = await getTranslations("notFound");
   const tc = await getTranslations("common");
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-16 text-center sm:px-6 sm:py-24">
-      <p className="font-display text-7xl font-semibold tracking-tight text-primary sm:text-8xl">
+    <Container maxWidth="sm" sx={{ py: { xs: 8, sm: 12 }, textAlign: "center" }}>
+      <Typography
+        variant="h1"
+        sx={{
+          fontSize: { xs: "5rem", sm: "6rem" },
+          color: "primary.main",
+          letterSpacing: "-0.02em",
+        }}
+      >
         {t("title")}
-      </p>
-      <p className="mt-4 text-base text-muted-foreground sm:text-lg">
+      </Typography>
+      <Typography
+        variant="body1"
+        sx={{ mt: 2, color: "text.secondary", fontSize: { xs: "1rem", sm: "1.125rem" } }}
+      >
         {t("message")}
-      </p>
-      <Link href="/" className={`${buttonClasses("primary", "md")} mt-8`}>
-        {tc("home")}
-      </Link>
-    </div>
+      </Typography>
+      <Box sx={{ mt: 4 }}>
+        <ButtonLink href="/" variant="contained" color="primary">
+          {tc("home")}
+        </ButtonLink>
+      </Box>
+    </Container>
   );
 }

@@ -3,6 +3,9 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import type { ExerciseType } from "@prisma/client";
+import Stack from "@mui/material/Stack";
+import Button from "@mui/material/Button";
+import Alert from "@mui/material/Alert";
 
 import { ExerciseRenderer } from "@/components/exercises/renderers";
 import { ExerciseResult } from "@/components/exercises/ExerciseResult";
@@ -11,7 +14,6 @@ import {
   type SubmitResult,
 } from "@/lib/exercises/actions";
 import { useRouter } from "@/i18n/navigation";
-import { buttonClasses } from "@/components/ui/buttonClasses";
 
 type Props = {
   exerciseId: string;
@@ -37,11 +39,21 @@ export function ExerciseRunner({
   const submitted = result?.ok === true;
 
   return (
-    <div className="space-y-6">
+    <Stack spacing={3}>
       {alreadyEarned ? (
-        <p className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
+        <Alert
+          severity="info"
+          icon={false}
+          sx={{
+            backgroundColor: "surfaceAlt.main",
+            color: "text.secondary",
+            border: 1,
+            borderColor: "divider",
+            borderStyle: "solid",
+          }}
+        >
           {t("alreadyEarned")}
-        </p>
+        </Alert>
       ) : null}
 
       <ExerciseRenderer
@@ -53,8 +65,10 @@ export function ExerciseRunner({
       />
 
       {!submitted ? (
-        <button
+        <Button
           type="button"
+          variant="contained"
+          color="primary"
           disabled={pending}
           onClick={() =>
             startTransition(async () => {
@@ -62,23 +76,20 @@ export function ExerciseRunner({
               setResult(r);
             })
           }
-          className={buttonClasses("primary", "md", "w-full sm:w-auto")}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           {pending ? t("loading") : t("submit")}
-        </button>
+        </Button>
       ) : null}
 
       {result && !result.ok ? (
-        <p
-          role="alert"
-          className="rounded-md border border-danger/40 bg-danger-soft/60 px-3 py-2 text-sm text-danger"
-        >
+        <Alert severity="error" role="alert">
           {result.error}
-        </p>
+        </Alert>
       ) : null}
 
       {result?.ok ? (
-        <div className="space-y-4">
+        <Stack spacing={2}>
           <ExerciseResult
             score={result.score}
             feedback={result.feedback}
@@ -87,15 +98,16 @@ export function ExerciseRunner({
             streakBonus={result.streakBonus}
             alreadyEarned={result.alreadyEarned}
           />
-          <button
+          <Button
             type="button"
+            variant="outlined"
             onClick={() => router.push(`/exercises/${type}`)}
-            className={buttonClasses("secondary", "md", "w-full sm:w-auto")}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             {t("next")}
-          </button>
-        </div>
+          </Button>
+        </Stack>
       ) : null}
-    </div>
+    </Stack>
   );
 }

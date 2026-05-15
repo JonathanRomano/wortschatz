@@ -2,10 +2,12 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Inter, Fraunces } from "next/font/google";
+import Box from "@mui/material/Box";
 
 import { locales, type Locale } from "@/i18n/config";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { AppThemeProvider } from "@/theme/Provider";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
@@ -46,12 +48,27 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={`${inter.variable} ${fraunces.variable}`}>
-      <body className="flex min-h-screen flex-col bg-background text-foreground antialiased">
-        <NextIntlClientProvider messages={messages} locale={locale}>
-          <Header />
-          <main className="flex w-full flex-1 flex-col">{children}</main>
-          <Footer />
-        </NextIntlClientProvider>
+      <body>
+        <AppThemeProvider mode="light">
+          <NextIntlClientProvider messages={messages} locale={locale}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                minHeight: "100vh",
+              }}
+            >
+              <Header />
+              <Box
+                component="main"
+                sx={{ display: "flex", flex: 1, flexDirection: "column", width: "100%" }}
+              >
+                {children}
+              </Box>
+              <Footer />
+            </Box>
+          </NextIntlClientProvider>
+        </AppThemeProvider>
       </body>
     </html>
   );

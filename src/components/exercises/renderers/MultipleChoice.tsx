@@ -1,5 +1,12 @@
 "use client";
 
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+
 import type { RendererProps } from "../types";
 
 export function MultipleChoiceRenderer({ content, value, onChange, disabled }: RendererProps) {
@@ -8,35 +15,70 @@ export function MultipleChoiceRenderer({ content, value, onChange, disabled }: R
   const selected = typeof value.selectedIndex === "number" ? value.selectedIndex : -1;
 
   return (
-    <div className="space-y-4">
-      <p className="font-display text-lg font-semibold leading-relaxed sm:text-2xl">
+    <Stack spacing={2}>
+      <Typography
+        variant="h4"
+        component="p"
+        sx={{
+          fontSize: { xs: "1.125rem", sm: "1.5rem" },
+          lineHeight: 1.5,
+          fontWeight: 600,
+        }}
+      >
         {question}
-      </p>
-      <div className="grid gap-2">
-        {options.map((opt, i) => {
-          const checked = selected === i;
-          return (
-            <label
-              key={i}
-              className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3 py-2.5 text-base transition-all ${
-                checked
-                  ? "border-primary bg-primary/10 shadow-sm"
-                  : "border-border bg-surface hover:-translate-y-px hover:bg-muted"
-              } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
-            >
-              <input
-                type="radio"
-                name="mc-option"
-                checked={checked}
-                onChange={() => onChange({ selectedIndex: i })}
-                disabled={disabled}
-                className="h-5 w-5 shrink-0 accent-primary"
-              />
-              <span className="min-w-0 flex-1 break-words">{opt}</span>
-            </label>
-          );
-        })}
-      </div>
-    </div>
+      </Typography>
+      <RadioGroup
+        name="mc-option"
+        value={selected === -1 ? "" : String(selected)}
+        onChange={(_e, v) => onChange({ selectedIndex: Number(v) })}
+      >
+        <Stack spacing={1}>
+          {options.map((opt, i) => {
+            const checked = selected === i;
+            return (
+              <Box
+                key={i}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  minHeight: 44,
+                  px: 1.5,
+                  py: 1.25,
+                  borderRadius: 1,
+                  border: 1,
+                  borderStyle: "solid",
+                  borderColor: checked ? "primary.main" : "divider",
+                  backgroundColor: checked ? "accentSoft.main" : "background.paper",
+                  transition: "all 150ms ease",
+                  cursor: disabled ? "not-allowed" : "pointer",
+                  opacity: disabled ? 0.6 : 1,
+                  "&:hover": disabled
+                    ? undefined
+                    : {
+                        transform: "translateY(-1px)",
+                        backgroundColor: checked
+                          ? "accentSoft.main"
+                          : "surfaceAlt.main",
+                      },
+                  boxShadow: checked ? 1 : 0,
+                }}
+              >
+                <FormControlLabel
+                  value={String(i)}
+                  control={<Radio disabled={disabled} />}
+                  label={
+                    <Typography variant="body1" sx={{ wordBreak: "break-word" }}>
+                      {opt}
+                    </Typography>
+                  }
+                  sx={{ m: 0, width: "100%", alignItems: "center", gap: 1 }}
+                  disabled={disabled}
+                />
+              </Box>
+            );
+          })}
+        </Stack>
+      </RadioGroup>
+    </Stack>
   );
 }

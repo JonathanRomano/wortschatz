@@ -255,3 +255,86 @@ Nothing from the planned scope.
 - `npm run build` reports one webpack warning: *"Serializing big strings
   (128kiB) impacts deserialization performance"*. Cosmetic and unrelated
   to anything this sprint touched.
+
+---
+
+# Sprint 02 — Revision (MUI Migration)
+
+> The original Tinte & Bernstein visual sprint shipped above. This revision
+> migrates the visual layer to Material UI v9 with a centralized Palette
+> System while preserving the same color identity (ink-blue primary, amber
+> accent, warm-paper background). Tinte & Bernstein lives on as the theme's
+> palette values; only the runtime delivery changed.
+
+## Decision: MUI + Tailwind coexistence
+
+**MUI owns** every component with state / variant / color / surface
+semantics: Button, IconButton, Card/Paper, Chip, Avatar, TextField,
+Dialog, Drawer, AppBar, Toolbar, Menu, Tooltip, Tabs, Typography. All
+color, typography, radius, shadow, and shape values flow through the
+theme in `src/theme/`.
+
+**Tailwind owns** layout utilities only — `flex`, `grid`, `gap-*`,
+`mx-auto`, `max-w-*`, `px-*`, `py-*`, `space-*`, `min-h-*`/`min-w-*`,
+and responsive prefixes. Complex layouts can also use MUI `<Box sx={{}}>`
+or `<Stack>`.
+
+**Banned anywhere outside `src/theme/`**: hex colors, `bg-*`, `text-*`
+(color variants — `text-center`/`text-left` alignment is fine),
+`border-*`, `rounded-*`, `shadow-*`, `font-display`/`font-sans`/
+`font-mono`.
+
+**Routing across the RSC boundary**: server pages use `<ButtonLink>` /
+`<InlineLink>` from `src/components/ui/` — small client shims that wrap
+MUI's polymorphic `component={Link}` with the next-intl typed `Link`.
+
+Rationale: MUI owns theming so color, typography, and shape never leak
+outside `src/theme/`; Tailwind is retained for layout-only utility
+classes because rewriting flex/grid wrappers as `<Stack>` / `<Box>`
+would have inflated the diff without value.
+
+## What shipped (Task 1)
+
+- `src/theme/` — Palette System with light + dark variants:
+  - `palette.ts` (both palettes, with the augmented custom keys)
+  - `typography.ts` (Fraunces + Inter via CSS vars)
+  - `shape.ts`, `shadows.ts`, `augmentation.ts`
+  - `Provider.tsx` (wraps `AppRouterCacheProvider` + `ThemeProvider` +
+    `CssBaseline` + paper-grain `GlobalStyles`)
+  - `index.ts` (`createAppTheme(mode)` with all MUI component overrides)
+- Full repo refactor: 6 UI primitives, 4 layout components, 20 routed
+  pages, and 10 exercise renderers re-skinned on MUI.
+- 3 small `"use client"` shims to bridge MUI's polymorphic
+  `component={Link}` across the RSC boundary: `ButtonLink`, `InlineLink`,
+  `HeaderLinks`.
+- `vitest` test runner set up from scratch (jsdom +
+  `@testing-library/react` + coverage v8); helper `renderWithTheme` in
+  `src/test/`.
+- 80 tests across 11 files; 100% coverage on `src/theme/**`.
+- `npm run build` passes, `npm run typecheck` passes, `npm test` green.
+
+## Quality gates (all passing)
+
+- Zero hex outside `src/theme/`.
+- Zero color-bearing Tailwind classes anywhere.
+- Zero new `any`.
+- All `<IconButton>` have `aria-label`; touch targets ≥ 44px via theme
+  defaults.
+- Accessibility: 7 `<TextField>`s had aria-labels added during the
+  `@reviewer` pass.
+
+## Notes for next tasks
+
+- Light mode is hardcoded in `Provider.tsx` for Task 1. **Task 2** adds
+  the toggle, persistence (`localStorage` + `prefers-color-scheme`), and
+  the header switch — the wiring is already a single `mode` prop.
+- Tasks 3 (AI cache / rate-limit), 4 (Münzen extension), 5 (charts),
+  6 (profile), 7 (comments), 8 (intros) are still ahead.
+- `ButtonLink.tsx` and `InlineLink.tsx` shipped with 0% test coverage —
+  small enough to be low-risk, but worth a follow-up test in the next
+  sprint.
+- `ExerciseTypeIcon.tsx` branch coverage sits at 82.6% — only the
+  `primary` color mapping is exercised; the named-palette branches are
+  uncovered.
+- React 19 RC + MUI v9 required `--legacy-peer-deps` on install.
+  Document in the repo README if friction returns.
