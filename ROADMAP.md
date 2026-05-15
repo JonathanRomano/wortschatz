@@ -4,9 +4,15 @@ This document captures everything that was scaffolded vs. left as TODO in the
 foundational pass. Each item lists exact file paths and what the next session
 needs to do.
 
+> **Sprint 02 completed** — all 8 tasks shipped across roughly 8 `feat:`
+> commits + 1 initial `chore:` (git init). **427 tests across 33 files,
+> all green**; `npm run build` and `npx tsc --noEmit` both clean. See
+> `SPRINT_02.md` for the per-task breakdown and the "Sprint 02 — Final
+> results" wrap-up.
+
 ---
 
-## Sprint 02 (revised) — in progress
+## Sprint 02 (revised) — complete
 
 The MUI + Palette System migration replaces the original Tailwind-only
 visual sprint. Eight tasks total; the multi-agent flow is
@@ -87,7 +93,28 @@ per task.
   instead of hardcoding `'B1'`. Session augmented with `avatarUrl`
   (JWT + session callbacks). 47 new tests (273 total); 100 % coverage
   on `src/lib/profile/avatar.ts` and the profile `actions.ts`.
-- [ ] **Task 7** — Exercise comments / discussion.
+- [x] **Task 7** — Exercise comments / discussion: two new tables
+  (`ExerciseComment` + `CommentLike`) with hand-written migration at
+  `prisma/migrations/20260515160000_exercise_comments/` (**not yet
+  applied** — no live DB). Soft delete via `deletedAt`; CASCADE FKs on
+  both tables; composite unique `(commentId, userId)` on `CommentLike`.
+  Moderation knobs in `src/config/moderation.ts`
+  (`COMMENT_WORD_BLOCKLIST` empty today, `COMMENT_MAX_LENGTH = 500`,
+  `COMMENT_RATE_LIMIT = 5/min`, normalized `findBlockedWord`).
+  `src/lib/comments/` library: `serializeComment` strips content + user
+  on soft-deleted rows, `loadComments` / `loadComment` filter
+  `deletedAt: null`. Five REST endpoints —
+  `GET /api/exercises/[id]/comments` (public, ordered by like count
+  desc + `createdAt` desc), `POST` (auth · 401/400/429/201),
+  `PATCH /api/comments/[id]` (auth + **author only**, no admin edit ·
+  401/403/404/400/200), `DELETE` (auth + author OR admin, soft delete ·
+  401/403/404/200), `POST /api/comments/[id]/like`
+  (`prisma.$transaction` + P2002-catch, returns `{ liked, likeCount }`).
+  UI in `src/components/comments/` — `CommentsSection` (collapsed MUI
+  Accordion below the runner), `CommentList`, `CommentItem`,
+  `CommentComposer`. New `comments` i18n block in all four locales with
+  ICU-plural `count`. 79 new tests (**427 total**); 100 % coverage on
+  `serialize.ts`, `queries.ts`, and the `PATCH` / `DELETE` route.
 - [x] **Task 8** — Per-exercise-type intros: new `UserPreference` table
   (`userId`, `key: ExerciseType`, `skipIntro`, unique on `(userId, key)`,
   FK to `User` with `ON DELETE CASCADE`) with hand-written migration at
@@ -135,6 +162,22 @@ per task.
   `ExerciseType` enum. When a second preference kind arrives, promote
   `key` to a dedicated `Pref` enum rather than further overloading
   `ExerciseType`.
+- **Like-toggle P2002 branch coverage gap (Task 7).** The
+  `POST /api/comments/[id]/like` handler wraps the toggle in
+  `prisma.$transaction` and catches Prisma's `P2002` on the
+  `(commentId, userId)` unique to make double-likes idempotent. The
+  success path and the "already liked → unlike" path are tested; the
+  simulated `P2002` race catch isn't covered by a direct test.
+- **Comments rate-limit count race (Task 7).** The 5-per-60 s check is
+  a separate `count()` immediately before the insert, not wrapped in
+  the same transaction as the insert. Two concurrent submits from the
+  same user can both observe `count = 5` and both succeed. Acceptable
+  for v1 — promote to an atomic check + insert if abuse appears.
+- **Comments `editedAt` always bumps (Task 7).** `PATCH /api/comments/[id]`
+  sets `editedAt = now()` on every successful update, even when the
+  posted `content` is identical to the stored value. A no-op edit
+  therefore still shows an "edited" indicator in the UI; cheap to
+  short-circuit if it matters.
 
 ---
 
@@ -254,16 +297,28 @@ profile + avatar surface (`src/lib/profile/avatar.ts` and the profile
 `src/lib/profile/avatar.ts` and `actions.ts`. Task 8 added **75 more**
 across the exercise-intros surface (`src/lib/preferences/actions.ts`,
 the static intro content, and the `IntroScreen` / `IntroModal`
-components) — total **348 tests** with 100 % coverage on
-`src/lib/preferences/actions.ts`.
+components) — bringing the count to 348 with 100 % coverage on
+`src/lib/preferences/actions.ts`. Task 7 added **79 more** across the
+comments surface — `src/lib/comments/__tests__/serialize.test.ts`,
+`src/lib/comments/__tests__/queries.test.ts`, the comments route
+handlers (`src/app/api/exercises/[id]/comments/__tests__/*`,
+`src/app/api/comments/[id]/__tests__/*`,
+`src/app/api/comments/[id]/like/__tests__/*`), and the four UI
+components under `src/components/comments/__tests__/` — total
+**427 tests across 33 files** with 100 % coverage on
+`src/lib/comments/serialize.ts`, `src/lib/comments/queries.ts`, and the
+`PATCH` / `DELETE` route handlers.
 
 Still uncovered:
 
-- Server actions (`src/app/[locale]/**/actions.ts` and friends) — Task 4
-  covered admin adjust + history; the rest remain.
+- Server actions (`src/app/[locale]/**/actions.ts` and friends) —
+  Tasks 4 / 6 / 8 covered admin adjust + history, profile + avatar, and
+  intro preferences; the rest remain.
 - Local grading in `src/lib/exercises/grade.ts`.
 - `ButtonLink` / `InlineLink` shims and the named-palette branches of
   `ExerciseTypeIcon` (tracked under **Discovered debt** at the top).
+- Comments: the `POST /api/comments/[id]/like` P2002 race-catch branch
+  isn't directly exercised by a test (tracked under **Discovered debt**).
 - End-to-end: Playwright for the critical login → submit-exercise flow
   has not been added yet.
 

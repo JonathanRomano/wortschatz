@@ -698,3 +698,214 @@ type, not in `messages/*.json`).
 
 75 new tests; **348 total**. 100 % coverage on
 `src/lib/preferences/actions.ts`.
+
+## Task 7 — Comments + likes (shipped)
+
+Adds a discussion thread to every exercise: short text comments,
+heart-icon likes, soft delete, basic moderation. Auth-gated for write,
+public for read.
+
+### Schema additions
+
+Two new tables in `prisma/schema.prisma`:
+
+- **`ExerciseComment`** — `id`, `exerciseId`, `userId`, `content`
+  (string), `createdAt`, `editedAt?`, `deletedAt?`. FKs to `Exercise`
+  and `User` both `ON DELETE CASCADE`. Indexed on `exerciseId` for the
+  list query and on `createdAt` for the rate-limit window.
+- **`CommentLike`** — `id`, `commentId`, `userId`, `createdAt`.
+  Composite unique `(commentId, userId)` so a user can't double-like.
+  FKs to `ExerciseComment` and `User` both `ON DELETE CASCADE`.
+
+Hand-written migration at
+`prisma/migrations/20260515160000_exercise_comments/migration.sql` —
+**not yet applied** (no live DB in this environment); it will run on the
+next `prisma migrate dev/deploy`.
+
+### Library layout
+
+- `src/lib/comments/types.ts` — shared types for the serialized comment
+  shape returned by the API.
+- `src/lib/comments/serialize.ts` — `serializeComment` strips both
+  `content` and the `user` object on soft-deleted rows so a tombstone
+  never leaks the original text or author.
+- `src/lib/comments/queries.ts` — `loadComments(exerciseId, …)` and
+  `loadComment(id)` always filter `deletedAt: null`; ordering is
+  `likeCount desc, createdAt desc` on the list endpoint.
+
+### Moderation
+
+`src/config/moderation.ts`:
+
+- `COMMENT_WORD_BLOCKLIST` — currently empty. New bad words go here.
+- `COMMENT_MAX_LENGTH` — 500.
+- `COMMENT_RATE_LIMIT` — 5 comments per 60 s per user. Counted directly
+  from `createdAt` on `ExerciseComment` (no separate counter table).
+- `findBlockedWord(text)` — normalizes whitespace + lowercase before
+  comparing against the blocklist.
+
+### REST endpoints
+
+- `GET /api/exercises/[id]/comments` — public, paginated, ordered by
+  like count desc + `createdAt` desc, soft-deleted rows excluded.
+- `POST /api/exercises/[id]/comments` — auth required.
+  `401` unauth · `400` empty / too long / blocked word / invalid JSON ·
+  `429` rate-limited · `201` success.
+- `PATCH /api/comments/[id]` — auth + **author only**. Admins do **not**
+  have edit privilege on other users' comments.
+  `401` · `403` · `404` · `400` · `200`.
+- `DELETE /api/comments/[id]` — auth + author **OR admin**. Soft delete.
+  `401` · `403` · `404` · `200`.
+- `POST /api/comments/[id]/like` — auth required. Toggle. Wrapped in
+  `prisma.$transaction` with a `P2002`-catch on the
+  `(commentId, userId)` unique so two simultaneous likes from the same
+  user can't double-insert. Returns `{ liked, likeCount }`.
+
+### UI
+
+`src/components/comments/`:
+
+- `CommentsSection` — top-level wrapper rendered below the exercise
+  runner. Collapsed by default (MUI `Accordion`) so the discussion
+  doesn't compete with the exercise itself.
+- `CommentList` — paginated list, "load more" affordance, empty state.
+- `CommentItem` — heart toggle, edit/delete buttons gated on
+  `author === currentUser` (delete also visible to admins), masked
+  rendering for `deletedAt != null` rows.
+- `CommentComposer` — `TextField` with live character counter against
+  `COMMENT_MAX_LENGTH`, submit disabled when empty / over the cap,
+  inline error surface for the `429` / `blocked_word` cases.
+
+Content is always rendered as React text children with `whiteSpace:
+'pre-wrap'`; there is no `dangerouslySetInnerHTML` anywhere on this
+surface.
+
+### i18n
+
+New `comments` block across `en/pt/tr/uk` with `errors`, `actions`,
+`composer`, and a `count` ICU plural for "N comments".
+
+### Tests
+
+79 new tests; **427 total**. 100 % coverage on
+`src/lib/comments/serialize.ts`, `src/lib/comments/queries.ts`, and the
+`PATCH` / `DELETE` route handlers.
+
+## Sprint 02 — Final results
+
+All eight tasks shipped. The sprint started as a Tailwind-only visual
+refresh and was revised mid-flight into a wider MUI migration plus
+seven follow-on functionality tasks.
+
+### Tasks (final, in ship order)
+
+- [x] **Task 1** — MUI v9 migration + centralized Palette System in
+  `src/theme/`; full UI re-skin across primitives, layout, pages, and
+  the 10 exercise renderers; `vitest` set up from scratch.
+- [x] **Task 2** — Dark mode: `useColorMode` hook, `ColorModeContext`,
+  three-state `ColorModeToggle` (light/dark/system), `localStorage`
+  persistence, anti-FOUC inline script.
+- [x] **Task 4** — Münzen transactions: itemized
+  `EXERCISE_COMPLETE` / `PERFECT_SCORE_BONUS` / `DAILY_STREAK` rows,
+  `adminAdjust` helper + admin UI, paginated `/profile/historico`.
+- [x] **Task 5** — Dashboard charts: Münzen 30-day area, 90-day SVG
+  heatmap, 10-axis proficiency radar, daily-goal ring; single
+  `Promise.all` data fetch + pure aggregators.
+- [x] **Task 3** — Real Anthropic API calls in `src/lib/ai.ts` with
+  SHA-256 keyed cache, per-user 24 h rate limits, and `AiUsage` logging
+  (cache hits flagged, integer-microcents cost estimate).
+- [x] **Task 6** — Profile expansion: `bio`, `nativeLanguage`,
+  `learningLevel`, `dailyGoal`, `avatarUrl`; avatar pipeline
+  (mime check + sharp spoof defense + 512² WebP) behind
+  `POST/DELETE /api/profile/avatar`.
+- [x] **Task 8** — Per-exercise-type intros: static content per type ×
+  4 locales, `UserPreference` table, intro inline on first visit, `?`
+  keyboard shortcut, help-icon button on the single-exercise page.
+- [x] **Task 7** — Comments + likes: `ExerciseComment` +
+  `CommentLike` schema, 5 REST endpoints, soft delete with admin
+  override (delete only), word blocklist + rate limit, heart-toggle UI.
+
+### Final quality state
+
+- **427 tests across 33 files, all green.**
+- `npm run build` clean.
+- `npx tsc --noEmit` clean.
+
+### New dependencies introduced this sprint
+
+- `@mui/material`, `@emotion/react`, `@emotion/styled`,
+  `@mui/material-nextjs`, `@mui/icons-material` (Task 1).
+- `recharts` (Task 5) — Münzen area chart + proficiency radar; lazy
+  loaded via `next/dynamic({ ssr: false })`.
+- `sharp` (Task 6) — avatar pipeline (rotate / resize / WebP encode,
+  plus header re-decode for spoof defense).
+- `vitest`, `@vitest/coverage-v8`, `@testing-library/react`,
+  `@testing-library/dom`, `@testing-library/jest-dom`, `jsdom`
+  (Task 1 — test runner stack).
+
+The original "no new deps" rule from the pre-revision sprint plan was
+officially relaxed during Task 1.
+
+### Carry-over debt (created this sprint)
+
+- **No live DB ever connected.** Five migrations (`muenzen_reason_extension`,
+  `ai_tables`, `user_profile_fields`, `user_preferences`,
+  `exercise_comments`) were hand-written and will apply on the next
+  `prisma migrate dev/deploy`.
+- `ButtonLink` / `InlineLink` shims still at 0 % test coverage (low risk
+  but uncovered).
+- **Avatar storage is local-FS only.** Swap to Vercel Blob / S3 before
+  deploying on an ephemeral filesystem. `TODO` marker in
+  `src/app/api/profile/avatar/route.ts`.
+- **`UserPreference.key` overloads `ExerciseType`.** Promote to a
+  dedicated `Pref` enum when a second preference kind arrives.
+- **JWT not refreshed after avatar upload.** Header chip only picks up a
+  new avatar at next sign-in; the dashboard's `revalidatePath` covers
+  the rest.
+- **Comments rate-limit count race.** The 5-per-60 s check is a separate
+  `count()` before the insert, not an atomic transaction — under
+  concurrent submits a user could just squeak past the cap.
+- `ExerciseTypeIcon` branch coverage at 82.6 % — named-palette
+  branches unexercised.
+- `CommentsLike` toggle P2002 race branch isn't directly exercised by a
+  test (the success and the "already liked" paths are; the simulated
+  P2002 catch isn't).
+- `editedAt` is bumped on every PATCH even when `content` is unchanged.
+
+### Carry-over from before the sprint (still open in `ROADMAP.md`)
+
+- Listening-exercise audio: still falls back to the transcript; needs
+  TTS provider + asset hosting decision and a schema bump to require
+  `audioUrl`.
+- Google OAuth: `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` blank in `.env`.
+- Vercel deployment: not configured (Postgres provider, env vars,
+  Prisma generate in build).
+- Local grading (`src/lib/exercises/grade.ts`) and the remaining server
+  actions outside Tasks 4 / 6 / 8 still uncovered.
+- Playwright end-to-end for login → submit-exercise still absent.
+- Admin UX still minimal (no pagination / search / exercise CRUD /
+  teacher submission form).
+- `submitExerciseAttempt` still allows the same exercise to pay out on
+  repeat; per-user timezones for streaks still not modeled.
+
+### Multi-agent flow
+
+Every task ran `@coder` → `@reviewer` → `@tester` → `@docs`. The
+reviewer/tester rounds caught real bugs in flight:
+
+- **Task 2** — mount effect was unconditionally overwriting
+  `defaultMode` / legacy `mode` props with `readStoredMode()`, and the
+  same effect was clobbering the DOM-seeded `systemMode` when
+  `matchMedia` was unavailable. Both were fixed before the task closed.
+- **Task 3** — `ai-cache.set` originally let DB errors bubble out,
+  breaking the documented "doomed cache write never breaks the caller"
+  contract. The reviewer caught it; the error-swallow was added before
+  the task closed.
+- **Task 6** — avatar route accepted unsanitized path segments; the
+  reviewer pass added a reject-on-`/`-or-`..` guard before merge.
+- **Task 8** — intro screen broke heading hierarchy (h1/h2 inside a
+  page with its own h1); reviewer demoted to h2/h3 before merge.
+
+One semantic commit per task — roughly eight `feat:` commits plus the
+initial `chore:` that initialized the repo as a git working tree at the
+start of the sprint.

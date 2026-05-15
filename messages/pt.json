@@ -262,6 +262,36 @@
     "comingSoon": "Em breve",
     "home": "Início"
   },
+  "comments": {
+    "title": "Discussão",
+    "count": "{count, plural, =0 {Nenhum comentário ainda} one {# comentário} other {# comentários}}",
+    "composer": {
+      "placeholder": "Compartilhe uma dica ou faça uma pergunta…",
+      "submit": "Postar",
+      "signInRequired": "Entre para comentar.",
+      "charsLeft": "{count} caracteres restantes"
+    },
+    "actions": {
+      "edit": "Editar",
+      "delete": "Excluir",
+      "save": "Salvar",
+      "cancel": "Cancelar",
+      "like": "Curtir",
+      "unlike": "Descurtir"
+    },
+    "confirmDelete": "Excluir este comentário? Isso não pode ser desfeito.",
+    "loadMore": "Carregar mais",
+    "errors": {
+      "tooLong": "O comentário é muito longo (máx. 500 caracteres).",
+      "blocked": "Seu comentário contém uma palavra proibida.",
+      "rateLimited": "Muitos comentários. Aguarde um minuto e tente novamente.",
+      "notAllowed": "Você não pode fazer isso.",
+      "generic": "Algo deu errado. Tente novamente."
+    },
+    "editedTag": "(editado)",
+    "softDeleted": "[excluído]",
+    "empty": "Ainda não há comentários. Seja o primeiro."
+  },
   "notFound": {
     "title": "404",
     "message": "Esta página não existe."

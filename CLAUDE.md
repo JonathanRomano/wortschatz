@@ -221,6 +221,29 @@ hardcoded CEFR levels.
 - **Path traversal hardening.** The route handler rejects any filename
   segment containing `/` or `..` after the reviewer pass.
 
+## Comments + likes
+
+- User-generated content lives in `ExerciseComment` rows. Always render
+  via React text children — **never** `dangerouslySetInnerHTML`. Use
+  `whiteSpace: 'pre-wrap'` (or the equivalent `sx`) to preserve newlines.
+- Soft delete via `deletedAt`. `serializeComment` in
+  `src/lib/comments/serialize.ts` masks both content and author on
+  deleted rows; `loadComments` / `loadComment` in `queries.ts` also
+  filter `deletedAt: null` so deleted rows never escape the boundary.
+- Moderation knobs live in `src/config/moderation.ts`:
+  `COMMENT_WORD_BLOCKLIST` (currently empty — new bad words go here),
+  `COMMENT_MAX_LENGTH` (500), `COMMENT_RATE_LIMIT` (5 per 60 s), and
+  the `findBlockedWord` helper. The matcher normalizes whitespace and
+  lowercase before comparing.
+- Rate limit: 5 comments per 60 s per user, counted directly from the
+  `createdAt` column on `ExerciseComment` (no separate counter table).
+- Admins can soft-delete other users' comments but **cannot edit them** —
+  `PATCH /api/comments/[id]` is author-only (403 for admins editing
+  someone else's row). `DELETE /api/comments/[id]` allows author OR
+  admin.
+- Like toggle is race-safe via `prisma.$transaction` + a P2002-catch on
+  `(commentId, userId)`; the route returns `{ liked, likeCount }`.
+
 ## Multi-agent workflow (Sprint 02+)
 
 Each task flows `@coder` → `@reviewer` → `@tester` → `@docs`. Coder

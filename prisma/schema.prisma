@@ -102,6 +102,8 @@ model User {
   transactions      MuenzenTransaction[]
   reviewRequests    AIReviewRequest[]
   preferences       UserPreference[]
+  comments          ExerciseComment[]
+  commentLikes      CommentLike[]
 }
 
 // Sprint 02 Task 8 — per-exercise-type user preferences. Currently used
@@ -145,12 +147,50 @@ model Exercise {
   author         User?          @relation("ExerciseAuthor", fields: [authorId], references: [id], onDelete: SetNull)
 
   attempts       UserExercise[]
+  comments       ExerciseComment[]
 
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
   @@index([type, level, status])
   @@index([status])
+}
+
+// Sprint 02 Task 7 — per-exercise discussion thread. Soft-deleted rows
+// stay in place so reply chains keep their context; the API hides
+// `content` and the author for deleted rows. Word filter + per-minute
+// rate limit are enforced at write time (see src/config/moderation.ts
+// and the POST handler in src/app/api/exercises/[id]/comments/route.ts).
+model ExerciseComment {
+  id          String   @id @default(cuid())
+  exerciseId  String
+  userId      String
+  // Trimmed; max 500 chars enforced at write time.
+  content     String
+  createdAt   DateTime @default(now())
+  editedAt    DateTime?
+  // Soft-delete; the row stays, content/author hidden in API responses.
+  deletedAt   DateTime?
+
+  exercise    Exercise      @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes       CommentLike[]
+
+  @@index([exerciseId, createdAt])
+  @@index([userId])
+}
+
+model CommentLike {
+  id         String          @id @default(cuid())
+  commentId  String
+  userId     String
+  createdAt  DateTime        @default(now())
+
+  comment    ExerciseComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([commentId])
 }
 
 model UserExercise {

@@ -262,6 +262,36 @@
     "comingSoon": "Coming soon",
     "home": "Home"
   },
+  "comments": {
+    "title": "Discussion",
+    "count": "{count, plural, =0 {No comments yet} one {# comment} other {# comments}}",
+    "composer": {
+      "placeholder": "Share a tip or ask a question…",
+      "submit": "Post",
+      "signInRequired": "Sign in to comment.",
+      "charsLeft": "{count} characters left"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "like": "Like",
+      "unlike": "Unlike"
+    },
+    "confirmDelete": "Delete this comment? This can't be undone.",
+    "loadMore": "Load more",
+    "errors": {
+      "tooLong": "Comment is too long (max 500 chars).",
+      "blocked": "Your comment contains a blocked word.",
+      "rateLimited": "Too many comments. Wait a minute and try again.",
+      "notAllowed": "You can't do that.",
+      "generic": "Something went wrong. Try again."
+    },
+    "editedTag": "(edited)",
+    "softDeleted": "[deleted]",
+    "empty": "No comments yet. Be the first."
+  },
   "notFound": {
     "title": "404",
     "message": "This page does not exist."

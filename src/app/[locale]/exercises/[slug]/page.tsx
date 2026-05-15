@@ -21,6 +21,8 @@ import { LevelFilter } from "./LevelFilter";
 import { TypeRunner, type LoadedExercise } from "./TypeRunner";
 import { ExerciseRunner } from "./ExerciseRunner";
 import { ExerciseHelpButton } from "./ExerciseHelpButton";
+import { CommentsSection } from "@/components/comments/CommentsSection";
+import { DEFAULT_PAGE_SIZE, loadComments } from "@/lib/comments/queries";
 
 const TYPES: ExerciseType[] = [
   "FILL_IN_THE_BLANK",
@@ -204,7 +206,15 @@ export default async function ExerciseSlugPage({
   // the mistakes list).
   const detail = await loadExercise(slug, locale as Locale, session.user.id);
   if (!detail) notFound();
-  const skipIntroDetail = await getSkipIntro(session.user.id, detail.type);
+  const [skipIntroDetail, initialComments] = await Promise.all([
+    getSkipIntro(session.user.id, detail.type),
+    loadComments({
+      exerciseId: detail.id,
+      page: 1,
+      pageSize: DEFAULT_PAGE_SIZE,
+      viewerId: session.user.id,
+    }),
+  ]);
 
   return (
     <Container maxWidth="md" sx={{ py: { xs: 4, sm: 5 } }}>
@@ -269,6 +279,14 @@ export default async function ExerciseSlugPage({
           alreadyEarned={detail.alreadyEarned}
         />
       </Card>
+
+      <Box sx={{ mt: 4 }}>
+        <CommentsSection
+          exerciseId={detail.id}
+          isAuthed={Boolean(session.user?.id)}
+          initial={initialComments}
+        />
+      </Box>
     </Container>
   );
 }

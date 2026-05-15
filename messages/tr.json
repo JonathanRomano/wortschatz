@@ -262,6 +262,36 @@
     "comingSoon": "Yakında",
     "home": "Ana sayfa"
   },
+  "comments": {
+    "title": "Tartışma",
+    "count": "{count, plural, =0 {Henüz yorum yok} one {# yorum} other {# yorum}}",
+    "composer": {
+      "placeholder": "Bir ipucu paylaşın veya soru sorun…",
+      "submit": "Gönder",
+      "signInRequired": "Yorum yapmak için giriş yapın.",
+      "charsLeft": "{count} karakter kaldı"
+    },
+    "actions": {
+      "edit": "Düzenle",
+      "delete": "Sil",
+      "save": "Kaydet",
+      "cancel": "İptal",
+      "like": "Beğen",
+      "unlike": "Beğenmekten vazgeç"
+    },
+    "confirmDelete": "Bu yorum silinsin mi? Bu işlem geri alınamaz.",
+    "loadMore": "Daha fazla yükle",
+    "errors": {
+      "tooLong": "Yorum çok uzun (en fazla 500 karakter).",
+      "blocked": "Yorumunuz yasaklı bir kelime içeriyor.",
+      "rateLimited": "Çok fazla yorum. Bir dakika bekleyip tekrar deneyin.",
+      "notAllowed": "Bunu yapamazsınız.",
+      "generic": "Bir şeyler ters gitti. Tekrar deneyin."
+    },
+    "editedTag": "(düzenlendi)",
+    "softDeleted": "[silindi]",
+    "empty": "Henüz yorum yok. İlk yorumu siz yapın."
+  },
   "notFound": {
     "title": "404",
     "message": "Bu sayfa mevcut değil."
