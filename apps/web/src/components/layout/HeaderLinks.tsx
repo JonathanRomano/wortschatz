@@ -29,6 +29,8 @@ export function HeaderBrandLink({ children }: { children: ReactNode }) {
         flexShrink: 0,
         color: "inherit",
         textDecoration: "none",
+        transition: "opacity 150ms ease",
+        "&:hover": { opacity: 0.85 },
       }}
     >
       {children}
