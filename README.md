@@ -1,26 +1,36 @@
 # Wortschatz
 
-AI-powered German learning platform. Built with Next.js 15, Prisma,
-PostgreSQL, NextAuth.js v5, next-intl, MUI v9, and Claude.
+AI-powered German learning platform. Monorepo with a Next.js 15 web app
+and an Express API, sharing Prisma + a few small packages, calling
+Claude for review and evaluation.
 
-> **New here?** Read [`PROJECT_OVERVIEW.md`](./PROJECT_OVERVIEW.md) for a
-> single-source-of-truth tour of the stack, schema, domains, conventions,
-> environment variables, deployment checklist, debt, and critical user
-> flows. AI-assistant operational rules live in [`CLAUDE.md`](./CLAUDE.md);
-> per-task implementation notes are in [`SPRINT_02.md`](./SPRINT_02.md);
-> forward-looking work is in [`ROADMAP.md`](./ROADMAP.md).
+> **New here?** Start with [`MONOREPO.md`](./MONOREPO.md) for layout,
+> setup, commands, and the web ↔ api boundary. Then read
+> [`PROJECT_OVERVIEW.md`](./PROJECT_OVERVIEW.md) for the schema,
+> domains, conventions, env, deployment checklist, and critical user
+> flows. AI-assistant operational rules live in
+> [`CLAUDE.md`](./CLAUDE.md); per-task implementation notes are in
+> [`SPRINT_02.md`](./SPRINT_02.md); forward-looking work is in
+> [`ROADMAP.md`](./ROADMAP.md).
 
 ## Quick start
 
 ```bash
-docker compose up -d              # PostgreSQL on :5432
-npm install
-cp .env.example .env              # already exists; fill in real secrets
-npm run db:generate
-npm run db:push                   # or db:migrate for migration files
-npm run db:seed                   # admin + teacher accounts
-npm run db:generate-exercises     # 50 stub exercises (or real if AI key set)
-npm run dev
+npm install -g pnpm@9                 # if you don't already have it
+docker compose up -d                  # PostgreSQL on :5432
+pnpm install
+pnpm db:generate
+pnpm db:migrate                       # creates / updates schema
+pnpm db:seed                          # admin + teacher accounts
+pnpm db:generate-exercises            # 50 stub exercises (or real if AI key set)
+
+# Per-app env files — both gitignored
+cp apps/web/.env.example apps/web/.env  # fill in NEXTAUTH_SECRET, INTERNAL_API_SECRET
+cp apps/api/.env.example apps/api/.env  # fill in INTERNAL_API_SECRET (same value!)
+
+# Two terminals (or `pnpm dev` runs both via turbo)
+pnpm dev:api                          # Express on :4000
+pnpm dev:web                          # Next.js on :3000
 ```
 
 Then open <http://localhost:3000>. The default UI redirects to `/en` —
@@ -35,32 +45,26 @@ switch via the locale picker in the header (PT/EN/TR/UK).
 
 ## Environment
 
-See `.env.example` for the full list, or
+Each app has its own `.env`. See `apps/web/.env.example` and
+`apps/api/.env.example` for the full list, or
 [`PROJECT_OVERVIEW.md` § Environment variables](./PROJECT_OVERVIEW.md#7-environment-variables)
-for what each one does. `ANTHROPIC_API_KEY` is optional — without it,
-`src/lib/ai.ts` returns deterministic stubs and writes nothing to the
-DB (no cache row, no rate-limit row, no usage row). See `ROADMAP.md`
-for what to wire up next.
+for what each one does. `INTERNAL_API_SECRET` must be the same value in
+both apps; generate with `openssl rand -base64 32`. `ANTHROPIC_API_KEY`
+is optional everywhere — without it the AI routes return deterministic
+stubs and write nothing to the DB. See `ROADMAP.md` for what to wire
+up next.
 
 ## Project layout
 
-```
-src/
-  app/[locale]/        Routed pages, all locale-prefixed
-  app/api/auth/...     NextAuth handlers
-  auth.ts              Full NextAuth config (server)
-  auth.config.ts       Edge-safe NextAuth config (middleware)
-  components/          Shared UI: layout chrome + exercise renderers
-  i18n/                next-intl config + typed navigation helpers
-  lib/
-    ai.ts              Claude integration (currently stubbed)
-    db.ts              Prisma client
-    muenzen.ts         In-app currency rules
-    exercises/         Schemas, grader, server actions
-    review/            AI text review server action
-  middleware.ts        Auth + locale routing
+See [`MONOREPO.md`](./MONOREPO.md) for the full layout and per-package
+purpose. Quick orientation:
 
-prisma/schema.prisma   All models + enums
-messages/{en,pt,tr,uk}.json   UI translations
-scripts/               seed + AI-generation scripts
+```
+apps/
+  web/     Next.js 15 + MUI v9 + next-intl. Vercel target.
+  api/     Express 4 (ESM, tsx). VPS target (not deployed yet).
+packages/
+  database/   @wortschatz/database — Prisma client + schema + migrations
+  types/      @wortschatz/types    — cross-app wire formats
+  config/     @wortschatz/config   — constants, env schemas, utilities
 ```

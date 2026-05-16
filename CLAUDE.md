@@ -4,16 +4,47 @@ Operational notes for AI assistants working in this repo.
 
 ## Stack
 
-- Next.js 15 (App Router, React 19 RC)
-- **Material UI v9 + emotion** — the styling and component system
-- Tailwind CSS v4 — kept for layout-utility classes only (see coexistence rule)
+- **pnpm workspaces + Turborepo 2.x** monorepo
+- **`apps/web`** — Next.js 15 (App Router, React 19 RC) + MUI v9 + emotion
+- **`apps/api`** — Express 4 + helmet (ESM, runs via `tsx`)
+- Shared packages: **`@wortschatz/{database,types,config}`**
+- Tailwind CSS v4 — layout-utility classes only (see coexistence rule)
 - next-intl for i18n (`en`, `pt`, `tr`, `uk`)
 - Prisma + PostgreSQL, NextAuth.js v5
 - Fonts: `next/font/google` → **Fraunces** (display) + **Inter** (body)
 - vitest + jsdom + `@testing-library/react` for tests
 
-All routes nest under `src/app/[locale]/…`. The root layout is minimal —
-locale HTML lives in `src/app/[locale]/layout.tsx`.
+All Next.js routes nest under `apps/web/src/app/[locale]/…`. The root
+layout is minimal — locale HTML lives in
+`apps/web/src/app/[locale]/layout.tsx`.
+
+When this file refers to a path beginning with `src/…` (e.g.
+`src/theme/`), read it as `apps/web/src/…` — the rules predate the
+Sprint 03 monorepo split. See [MONOREPO.md](./MONOREPO.md) for the full
+layout, deployment story, and current limitations.
+
+## Monorepo conventions
+
+- **Prefer the package barrel over the in-tree alias.** Use
+  `import { prisma } from "@wortschatz/database"` (not `@/lib/db`),
+  `import { MUENZEN_REWARDS, pickLocalized } from "@wortschatz/config"`
+  (not `@/config/limits` or `@/lib/exercises/i18n`), and
+  `import type { LocalizedText } from "@wortschatz/types"`. The old
+  in-tree modules were deleted in Sprint 03; their re-imports won't
+  resolve. Prisma enums are re-exported from `@wortschatz/database`,
+  so never import directly from `@prisma/client`.
+- **Scripts run from the repo root.** `pnpm dev`, `pnpm build`,
+  `pnpm test`, `pnpm typecheck`, `pnpm db:generate`, `pnpm db:migrate`.
+  Target a single workspace with
+  `pnpm --filter @wortschatz/<name> run <script>`.
+- **Shared values belong in `@wortschatz/config`** when both apps
+  need them (Münzen rules, rate limits, locales, env schemas). Pure
+  TS types belong in `@wortschatz/types`. Prisma schema, migrations,
+  and the client singleton belong in `@wortschatz/database`. Don't
+  duplicate.
+- **One language per layer.** `apps/web` writes React + Next + MUI;
+  `apps/api` writes Node + Express + zod. They share types but never
+  cross-import (e.g. apps/api must never `import "@/something"`).
 
 ## Palette System + Material UI
 
@@ -106,20 +137,39 @@ re-implement.
 ## Project layout
 
 ```
-src/
-  app/[locale]/                     Routed pages, locale-prefixed
-  components/layout/                Header, Footer, LocaleSwitcher, MobileMenu
-  components/ui/                    Shared design-system primitives
-  components/exercises/renderers/   10 exercise type renderers
-  components/dashboard/             Dashboard chart components (Recharts + SVG)
-  theme/                            Palette system: palette, typography,
-                                    shape, shadows, augmentation, Provider
-  test/                             vitest setup + renderWithTheme helper
-  i18n/                             next-intl config + typed nav helpers
-  lib/                              db, ai, muenzen, exercises/, review/
-  lib/dashboard/                    Pure aggregations + parallel Prisma queries
-prisma/schema.prisma                All models + enums
-messages/*.json                     UI translations (incl. `renderers` block)
+apps/
+  web/                              Next.js 15 app
+    src/
+      app/[locale]/                 Routed pages, locale-prefixed
+      components/layout/            Header, Footer, LocaleSwitcher, MobileMenu
+      components/ui/                Shared design-system primitives
+      components/exercises/renderers/   10 exercise type renderers
+      components/dashboard/         Dashboard chart components (Recharts + SVG)
+      theme/                        Palette: palette, typography, shape,
+                                    shadows, augmentation, Provider
+      test/                         vitest setup + renderWithTheme helper
+      i18n/                         next-intl config + typed nav helpers
+      lib/                          ai (thin api-client wrapper), muenzen,
+                                    exercises/, review/, comments/, profile/
+      lib/dashboard/                Pure aggregations + parallel Prisma queries
+    scripts/                        Admin one-shots (generate-exercises, etc.)
+    messages/*.json                 UI translations (incl. `renderers` block)
+  api/                              Express 4 (ESM, tsx)
+    src/
+      index.ts                      App boot + middleware chain
+      env.ts                        zod-validated process.env
+      middleware/                   sharedSecretAuth, errorHandler, logger
+      services/                     claude, cache, rateLimit, stubs
+      routes/                       /health, /ai
+
+packages/
+  database/                         @wortschatz/database
+    prisma/{schema.prisma, migrations/, seed.ts}
+    src/index.ts                    PrismaClient singleton + re-exports
+  types/                            @wortschatz/types (wire formats)
+    src/{exercise,ai,user,muenzen,locale}.ts
+  config/                           @wortschatz/config (constants, env, utils)
+    src/{constants,env,validators,utils}.ts
 ```
 
 ## Exercise system rules
@@ -172,13 +222,20 @@ messages/*.json                     UI translations (incl. `renderers` block)
 ## Testing
 
 `vitest` is the runner; tests live under `__tests__/` directories beside
-the source they cover. Run `npm test`, `npm run test:watch`, or
-`npm run test:coverage`. Theme + UI primitives are covered as of
-Sprint 02 Task 1. Use the `renderWithTheme` helper from `src/test/` to
+the source they cover. From the repo root run `pnpm test` (turbo runs
+every workspace's vitest), `pnpm --filter @wortschatz/web run test`
+(just the web suite), or `pnpm --filter @wortschatz/web run test:watch`
+for watch mode. Theme + UI primitives are covered as of Sprint 02
+Task 1. Use the `renderWithTheme` helper from `apps/web/src/test/` to
 mount components inside the real theme. Color-mode tests live in
-`src/hooks/__tests__/useColorMode.test.tsx`,
-`src/theme/__tests__/Provider.test.tsx`, and
-`src/components/layout/__tests__/ColorModeToggle.test.tsx`.
+`apps/web/src/hooks/__tests__/useColorMode.test.tsx`,
+`apps/web/src/theme/__tests__/Provider.test.tsx`, and
+`apps/web/src/components/layout/__tests__/ColorModeToggle.test.tsx`.
+
+`apps/api` has no test suite yet — the `test` script uses
+`--passWithNoTests` so `pnpm test` doesn't fail. A follow-up sprint
+should port the cache / rate-limit / claude unit tests from the
+pre-migration `apps/web/src/lib/__tests__/` over.
 
 ## Dashboard charts
 
@@ -230,7 +287,7 @@ hardcoded CEFR levels.
   `src/lib/comments/serialize.ts` masks both content and author on
   deleted rows; `loadComments` / `loadComment` in `queries.ts` also
   filter `deletedAt: null` so deleted rows never escape the boundary.
-- Moderation knobs live in `src/config/moderation.ts`:
+- Moderation knobs live in `@wortschatz/config`:
   `COMMENT_WORD_BLOCKLIST` (currently empty — new bad words go here),
   `COMMENT_MAX_LENGTH` (500), `COMMENT_RATE_LIMIT` (5 per 60 s), and
   the `findBlockedWord` helper. The matcher normalizes whitespace and
@@ -253,38 +310,65 @@ writes tests (no production code); docs updates `CLAUDE.md`,
 
 ## AI integration
 
-- `src/lib/ai.ts` is the **only** file that imports the Anthropic SDK.
-  Never read `process.env.ANTHROPIC_API_KEY` elsewhere — gate on the
-  exported `AI_CONFIGURED` boolean instead.
-- When `AI_CONFIGURED` is `false`, the public functions return
-  deterministic stubs and write nothing to the DB (no cache write, no
-  `AiUsage` row, no rate-limit increment).
-- All call sites pass `userId?: string` when available. Pure scripts
-  (e.g. `scripts/generate-exercises.ts`) pass `undefined` so admin runs
-  skip per-user rate limits — usage is still logged with `userId: null`.
-- **Caching.** SHA-256 over `endpoint:model:canonicalPrompt`. TTLs live
-  in `AI_CACHE_TTL_MS` in `src/config/limits.ts`
-  (`REVIEW_TEXT: 0` = never cached; `EVALUATE_ANSWER: 1h`;
-  `GENERATE_EXERCISE: 30 days`). `set` swallows errors and a TTL of 0
-  skips the write entirely; expired rows are best-effort deleted on read.
+As of Sprint 03 the Claude pipeline is split:
+
+- **`apps/api/src/services/claude.ts`** owns `reviewText` and
+  `evaluateAnswer` (the user-facing endpoints). It's the only place
+  inside apps/api that imports the Anthropic SDK.
+- **`apps/web/src/lib/ai.ts`** still owns `generateExercise` — the
+  admin script `apps/web/scripts/generate-exercises.ts` calls it
+  directly via the in-process Anthropic SDK because the per-type Zod
+  schemas haven't been extracted into a shared package yet.
+- **`apps/web/src/lib/api-client.ts`** is the web's only path to
+  `reviewText`/`evaluateAnswer`. `src/lib/ai.ts` re-exports the
+  client's functions under the original names so callers in
+  `review/actions.ts`, `exercises/actions.ts`, etc. keep their
+  existing import paths.
+
+Boundary auth (web → api): every call ships `X-Internal-Secret`
+(constant-time compared against `INTERNAL_API_SECRET`) plus
+`X-User-Id` (resolved from the NextAuth session on the web server
+before the request leaves the process). Anonymous/admin calls omit
+the user header; the api then skips per-user rate limits. See
+[MONOREPO.md](./MONOREPO.md#web--api-boundary) for the rationale.
+
+Constants, TTLs, rate limits, pricing:
+
+- All live in `@wortschatz/config` — both apps import them from there.
+- **Stubs.** When the api has no `ANTHROPIC_API_KEY` the
+  review/evaluate routes return deterministic stub bodies and write
+  nothing to the DB. When the web has no key the in-process
+  `generateExercise` does the same; the stub for the exercise renderer
+  lives in `apps/web/src/lib/ai-stubs.ts`.
+- **Caching.** SHA-256 over `endpoint:model:canonicalPrompt`. TTLs
+  live in `AI_CACHE_TTL_MS` (`REVIEW_TEXT: 0` = never cached;
+  `EVALUATE_ANSWER: 1h`; `GENERATE_EXERCISE: 30 days`). `set` swallows
+  errors and a TTL of 0 skips the write entirely; expired rows are
+  best-effort deleted on read.
 - **Rate limits.** Per-user, per-endpoint, rolling 24h window via
-  `prisma.$transaction` (`src/lib/ai-rate-limit.ts`). Limits live in
-  `AI_RATE_LIMITS` in `src/config/limits.ts`
-  (`REVIEW_TEXT: 20`, `EVALUATE_ANSWER: 200`, `GENERATE_EXERCISE: 50`
-  per day). Cache hits do not count.
-- **Errors.** Catch `AiRateLimitedError` at the call site and surface a
-  localized message (review returns
-  `{ ok: false, error: 'rate_limited' }`; evaluate falls back to the
-  local grade and still records the attempt). Cache errors are already
-  swallowed inside `ai-cache.ts`.
+  `prisma.$transaction`. Limits in `AI_RATE_LIMITS` (`REVIEW_TEXT:
+  20`, `EVALUATE_ANSWER: 200`, `GENERATE_EXERCISE: 50` per day).
+  Cache hits do not count.
+- **Errors.** Catch `AiRateLimitedError` at the call site and surface
+  a localized message (review returns `{ ok: false, error:
+  'rate_limited' }`; evaluate falls back to the local grade and
+  still records the attempt). The api translates 429 → that same
+  error class so the catch site doesn't care whether the limit fired
+  in-process or remotely.
 - **Cost.** `estimateCostMicrocents(model, inputTokens, outputTokens)`
-  returns integer microcents (1 cent = 100 µ¢; USD × 100 000). Persist
-  on `AiUsage.costMicrocents` to avoid float drift.
+  in `@wortschatz/config` returns integer microcents (1 cent = 100 µ¢;
+  USD × 100 000). Persist on `AiUsage.costMicrocents` to avoid float
+  drift.
 
 ## What NOT to change without a request
 
 - Prisma schema, API routes, grading, Münzen amounts
-- AI surface (`src/lib/ai.ts`) — keep the public function signatures
-  stable; if you change prompts, follow the cache invalidation note in
-  `SPRINT_02.md` (the cache key includes the prompt body, so old rows
-  for the old prompt remain until their TTL expires).
+- AI surface (`apps/web/src/lib/ai.ts` re-exports +
+  `apps/api/src/services/claude.ts`) — keep the public function
+  signatures stable; if you change prompts, follow the cache
+  invalidation note in `SPRINT_02.md` (the cache key includes the
+  prompt body, so old rows for the old prompt remain until their TTL
+  expires).
+- `@wortschatz/config` constant values (Münzen rules, rate limits,
+  TTLs, pricing) — both apps depend on them being equal; bump in one
+  place, not via local override.

@@ -7,6 +7,31 @@
 > [`ROADMAP.md`](./ROADMAP.md); for AI-assistant operational rules see
 > [`CLAUDE.md`](./CLAUDE.md).
 
+> **Sprint 03 update.** The project is now a **pnpm + Turborepo
+> monorepo**:
+> - `apps/web` — the Next.js app described below (paths starting with
+>   `src/`, `prisma/`, `scripts/`, `messages/` now live under
+>   `apps/web/`).
+> - `apps/api` — a small Express service that owns the AI endpoints
+>   `/ai/review-text` and `/ai/evaluate-answer`. Web calls it via
+>   `apps/web/src/lib/api-client.ts` with a shared-secret +
+>   `X-User-Id` header pair.
+> - `packages/database` (`@wortschatz/database`) — Prisma schema +
+>   client.
+> - `packages/types` (`@wortschatz/types`) — cross-app wire formats.
+> - `packages/config` (`@wortschatz/config`) — constants, env schemas,
+>   `pickLocalized` / `findBlockedWord` / `estimateCostMicrocents`.
+>
+> See [`MONOREPO.md`](./MONOREPO.md) for the full layout, commands,
+> and known follow-ups (compile packages to dist, port avatar route to
+> api, extract exercise schemas, deploy api to a VPS). The sections
+> below remain accurate; where a path like `src/lib/db.ts` appears,
+> read it as `apps/web/src/lib/db.ts` *and* note that several of the
+> in-tree modules referenced (`src/lib/db.ts`, `src/config/limits.ts`,
+> `src/config/moderation.ts`, `src/lib/exercises/i18n.ts`) were
+> deleted in Sprint 03 — import the same exports from the
+> `@wortschatz/*` packages instead.
+
 ## Table of contents
 
 1. [Purpose & status](#1-purpose--status)
@@ -870,38 +895,36 @@ All of these live (or should live) in `.env`. See
 
 ## 8. Useful scripts
 
-All run via `npm run …` (or `npx …` where indicated).
+All run via `pnpm …` from the repo root. Turbo wires `dev` / `build` /
+`test` / `typecheck` / `lint` across workspaces; the `db:*` scripts
+delegate to `@wortschatz/database` via `pnpm --filter`.
 
-### App
-
-| Script | Purpose |
-| --- | --- |
-| `npm run dev` | Local dev server on `:3000`. |
-| `npm run build` | Production build. |
-| `npm run start` | Run the production build. |
-| `npm run lint` | `next lint`. |
-| `npm run typecheck` | `tsc --noEmit`. |
-
-### Tests
+### Apps (web + api)
 
 | Script | Purpose |
 | --- | --- |
-| `npm test` | Run vitest once. |
-| `npm run test:watch` | Vitest watch mode. |
-| `npm run test:coverage` | Vitest + coverage v8 → `coverage/index.html`. |
+| `pnpm dev` | Both apps via turbo (web on :3000, api on :4000). |
+| `pnpm dev:web` / `pnpm dev:api` | Run just one. |
+| `pnpm build` | `turbo run build` across all workspaces. |
+| `pnpm typecheck` | `tsc --noEmit` on every workspace. |
+| `pnpm test` | `turbo run test` (web vitest; api passes-with-no-tests for now). |
+| `pnpm --filter @wortschatz/web run test:watch` | Watch the web suite. |
+| `pnpm --filter @wortschatz/web run test:coverage` | Coverage → `apps/web/coverage/index.html`. |
+| `pnpm --filter @wortschatz/web run lint` | `next lint`. |
 
 ### Database
 
 | Script | Purpose |
 | --- | --- |
-| `npm run db:push` | Push the Prisma schema to the DB without a migration (fast local iteration). |
-| `npm run db:migrate` | Generate + apply a migration (`prisma migrate dev`). Use this before commits. |
-| `npm run db:generate` | Regenerate the Prisma Client (after schema edits). |
-| `npm run db:studio` | Prisma Studio — browser UI for the DB. |
-| `npm run db:seed` | Seed admin + teacher accounts. |
-| `npm run db:generate-exercises` | Generate 50 exercises. Uses real Claude when `ANTHROPIC_API_KEY` is set; logs `AI mode: real|stub`. |
-| `npm run db:migrate-exercise-i18n` | One-shot fixer to convert legacy single-locale `instructions`/`explanation` to the `{ en, pt, tr, uk }` shape. |
-| `npm run db:seed-muenzen-history` | Backfill `ADMIN_ADJUSTMENT` rows for users with `muenzen > 0` and no transactions, so historical balances get an audit trail. |
+| `pnpm db:push` | Push the Prisma schema to the DB without a migration (fast local iteration). |
+| `pnpm db:migrate` | Generate + apply a migration (`prisma migrate dev`). Use this before commits. |
+| `pnpm db:migrate:deploy` | `prisma migrate deploy` — production-safe, no schema drift. |
+| `pnpm db:generate` | Regenerate the Prisma Client (after schema edits). |
+| `pnpm db:studio` | Prisma Studio — browser UI for the DB. |
+| `pnpm db:seed` | Seed admin + teacher accounts. |
+| `pnpm db:generate-exercises` | Generate 50 exercises (web's admin script). Uses real Claude when `ANTHROPIC_API_KEY` is set; logs `AI mode: real|stub`. |
+| `pnpm db:migrate-exercise-i18n` | One-shot fixer to convert legacy single-locale `instructions`/`explanation` to the `{ en, pt, tr, uk }` shape. |
+| `pnpm db:seed-muenzen-history` | Backfill `ADMIN_ADJUSTMENT` rows for users with `muenzen > 0` and no transactions. |
 
 ---
 
@@ -1185,37 +1208,42 @@ Document if friction recurs.
 git clone <repo-url> wortschatz
 cd wortschatz
 
-# 2. Install deps (use --legacy-peer-deps if you hit a peer-dep error
-#    from MUI v9 + React 19 RC)
-npm install
+# 2. Install pnpm (skip if you already have ≥9)
+npm install -g pnpm@9
 
-# 3. Start Postgres
+# 3. Install all workspaces
+pnpm install
+
+# 4. Start Postgres
 docker compose up -d           # PostgreSQL 16 on :5432
                                 # Volume: wortschatz_pg_data
 
-# 4. Configure env
-cp .env.example .env
-# Then edit .env:
-#   - AUTH_SECRET → openssl rand -base64 32
-#   - ANTHROPIC_API_KEY → optional but recommended
-#   - AUTH_GOOGLE_ID/SECRET → optional, only if you want Google OAuth
+# 5. Configure env — each app has its own .env (both gitignored)
+cp apps/web/.env.example apps/web/.env
+cp apps/api/.env.example apps/api/.env
+# Then edit both:
+#   - AUTH_SECRET in apps/web         → openssl rand -base64 32
+#   - INTERNAL_API_SECRET in BOTH     → openssl rand -base64 32 (same value!)
+#   - ANTHROPIC_API_KEY in apps/api   → optional but recommended
+#     (apps/web also still reads it for the admin generate-exercises script)
+#   - AUTH_GOOGLE_ID/SECRET in apps/web → optional, only if Google OAuth
 
-# 5. Generate the Prisma client
-npm run db:generate
+# 6. Generate the Prisma client
+pnpm db:generate
 
-# 6. Apply schema (push for fast iteration, or migrate to track
-#    history)
-npm run db:push                # OR: npm run db:migrate
+# 7. Apply schema (push for fast iteration, or migrate to track history)
+pnpm db:push                   # OR: pnpm db:migrate
 
-# 7. Seed the test users (admin + teacher)
-npm run db:seed
+# 8. Seed the test users (admin + teacher)
+pnpm db:seed
 
-# 8. (Optional) Generate exercises — uses real Claude when
+# 9. (Optional) Generate exercises — uses real Claude when
 #    ANTHROPIC_API_KEY is set; deterministic stubs otherwise.
-npm run db:generate-exercises
+pnpm db:generate-exercises
 
-# 9. Run the dev server
-npm run dev                    # http://localhost:3000
+# 10. Run both servers (turbo runs them in parallel)
+pnpm dev                       # web → :3000, api → :4000
+                                # Or: pnpm dev:web / pnpm dev:api
 ```
 
 The default landing redirects to `/en`. Switch via the locale picker
@@ -1223,12 +1251,15 @@ in the header.
 
 ### Verifying things work
 
-- Run `npm run typecheck` and `npm test` — both should be clean.
-- Open Prisma Studio: `npm run db:studio`.
+- `pnpm typecheck` and `pnpm test` — both should be clean.
+- `curl http://localhost:4000/health` → `{"status":"ok",...}`.
+- Open Prisma Studio: `pnpm db:studio`.
 - Sign in as `admin@wortschatz.app / admin123` → visit `/admin` to
   approve drafts.
 - Sign in as a fresh user → submit an exercise → confirm a
   `UserExercise` row and one or more `MuenzenTransaction` rows appear.
+- Open `/review` → submit text → confirm the api logs a
+  `POST /ai/review-text 200` line (i.e. the web → api wire works).
 
 ---
 
