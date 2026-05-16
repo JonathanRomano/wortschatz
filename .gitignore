@@ -5,6 +5,7 @@ dist
 build
 .env
 .env.local
+.env.*.local
 *.tsbuildinfo
 coverage
 .DS_Store
@@ -13,4 +14,4 @@ coverage
 # and simple self-hosted deploys; the .gitkeep below ensures the dir
 # itself ships with the repo. Swap for object storage before deploying
 # to an ephemeral platform (Vercel/Netlify).
-public/uploads/
+apps/web/public/uploads/
