@@ -6,6 +6,8 @@ import type { ExerciseType } from "@wortschatz/database";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Fade from "@mui/material/Fade";
 
 import { ExerciseRenderer } from "@/components/exercises/renderers";
 import { ExerciseResult } from "@/components/exercises/ExerciseResult";
@@ -65,21 +67,24 @@ export function ExerciseRunner({
       />
 
       {!submitted ? (
-        <Button
-          type="button"
-          variant="contained"
-          color="primary"
-          disabled={pending}
-          onClick={() =>
-            startTransition(async () => {
-              const r = await submitExerciseAttempt(exerciseId, answer);
-              setResult(r);
-            })
-          }
-          sx={{ width: { xs: "100%", sm: "auto" } }}
-        >
-          {pending ? t("loading") : t("submit")}
-        </Button>
+        <Box sx={{ display: "flex", justifyContent: { xs: "stretch", sm: "flex-end" } }}>
+          <Button
+            type="button"
+            variant="contained"
+            color="primary"
+            size="large"
+            disabled={pending}
+            onClick={() =>
+              startTransition(async () => {
+                const r = await submitExerciseAttempt(exerciseId, answer);
+                setResult(r);
+              })
+            }
+            sx={{ width: { xs: "100%", sm: "auto" }, minWidth: { sm: 160 } }}
+          >
+            {pending ? t("loading") : t("submit")}
+          </Button>
+        </Box>
       ) : null}
 
       {result && !result.ok ? (
@@ -89,24 +94,30 @@ export function ExerciseRunner({
       ) : null}
 
       {result?.ok ? (
-        <Stack spacing={2}>
-          <ExerciseResult
-            score={result.score}
-            feedback={result.feedback}
-            explanation={explanation}
-            reward={result.reward}
-            streakBonus={result.streakBonus}
-            alreadyEarned={result.alreadyEarned}
-          />
-          <Button
-            type="button"
-            variant="outlined"
-            onClick={() => router.push(`/exercises/${type}`)}
-            sx={{ width: { xs: "100%", sm: "auto" } }}
-          >
-            {t("next")}
-          </Button>
-        </Stack>
+        <Fade in timeout={300}>
+          <Stack spacing={2}>
+            <ExerciseResult
+              score={result.score}
+              feedback={result.feedback}
+              explanation={explanation}
+              reward={result.reward}
+              streakBonus={result.streakBonus}
+              alreadyEarned={result.alreadyEarned}
+            />
+            <Box sx={{ display: "flex", justifyContent: { xs: "stretch", sm: "flex-end" } }}>
+              <Button
+                type="button"
+                variant="contained"
+                color="primary"
+                size="large"
+                onClick={() => router.push(`/exercises/${type}`)}
+                sx={{ width: { xs: "100%", sm: "auto" }, minWidth: { sm: 160 } }}
+              >
+                {t("next")}
+              </Button>
+            </Box>
+          </Stack>
+        </Fade>
       ) : null}
     </Stack>
   );

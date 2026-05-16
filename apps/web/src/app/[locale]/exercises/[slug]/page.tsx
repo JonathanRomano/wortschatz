@@ -216,8 +216,15 @@ export default async function ExerciseSlugPage({
     }),
   ]);
 
+  // 800px focus column: wide enough for two-column matching exercises,
+  // narrow enough that the question is the only thing on the page.
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 4, sm: 5 } }}>
+    <Container
+      sx={{
+        py: { xs: 4, sm: 5 },
+        maxWidth: { xs: "100%", sm: 800 },
+      }}
+    >
       <InlineLink
         href={`/exercises/${detail.type}`}
         tone="muted"
@@ -261,16 +268,29 @@ export default async function ExerciseSlugPage({
         </Stack>
         <Typography
           variant="h2"
-          sx={{ mt: 1.5, fontSize: { xs: "1.5rem", sm: "1.875rem" } }}
+          sx={{
+            mt: 1.5,
+            fontSize: { xs: "1.75rem", sm: "2.125rem" },
+            lineHeight: 1.15,
+            letterSpacing: "-0.01em",
+          }}
         >
           {detail.title}
         </Typography>
-        <Typography variant="body1" sx={{ mt: 1, color: "text.secondary" }}>
+        <Typography
+          variant="body1"
+          sx={{
+            mt: 1.5,
+            color: "text.secondary",
+            fontSize: { xs: "1rem", sm: "1.0625rem" },
+            lineHeight: 1.6,
+          }}
+        >
           {detail.instructions}
         </Typography>
       </Box>
 
-      <Card padding="lg" sx={{ mt: 3 }}>
+      <Card padding="lg" sx={{ mt: 4 }}>
         <ExerciseRunner
           exerciseId={detail.id}
           type={detail.type}
