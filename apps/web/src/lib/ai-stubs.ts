@@ -10,11 +10,7 @@
 import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 
 import type { LocalizedText } from "@wortschatz/types";
-import type {
-  AIEvaluation,
-  GeneratedExercise,
-  ReviewResult,
-} from "@/lib/ai";
+import type { GeneratedExercise } from "@/lib/ai";
 
 // Per-type instruction translations. Keys: en, pt, tr, uk.
 const INSTRUCTIONS: Record<ExerciseType, LocalizedText> = {
@@ -197,24 +193,6 @@ export function stubExercise(
   }
 }
 
-export function stubEvaluation(): AIEvaluation {
-  return {
-    score: 50,
-    feedback:
-      "AI evaluation is disabled (no ANTHROPIC_API_KEY). " +
-      "The deterministic grader handled what it could; open-ended feedback is unavailable.",
-  };
-}
-
-export function stubReview(
-  text: string,
-  userLevel: CefrLevel,
-  model: string,
-): ReviewResult {
-  return {
-    feedback:
-      `# Stub review\n\nReview for level **${userLevel}** is currently disabled.\n\n` +
-      `Configure \`ANTHROPIC_API_KEY\` to enable real Claude (${model}) feedback. ` +
-      `Your text (${text.split(/\s+/).filter(Boolean).length} words) was received and stored.`,
-  };
-}
+// stubEvaluation + stubReview moved to apps/api/src/services/stubs.ts
+// as part of Sprint 03 Task 7. The api owns the stub fallback for the
+// review and evaluate endpoints now that the web delegates to it.

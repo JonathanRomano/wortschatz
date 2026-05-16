@@ -1,28 +1,36 @@
 /**
- * Claude integration surface for Wortschatz.
+ * Claude integration surface for Wortschatz (web side).
  *
- * Public functions (unchanged signatures, plus a new optional `userId`):
+ * Public functions (unchanged signatures, plus the optional `userId`
+ * added in Sprint 02):
  *   - generateExercise(type, level, topic, userId?)
  *   - evaluateAnswer(exercise, userAnswer, userId?)
  *   - reviewText(text, userLevel, userId?)
  *
- * Each wrapper:
- *   1. Computes a cache key = SHA-256(endpoint:model:canonicalPrompt).
- *   2. Returns the cached response on hit (still logs an AiUsage row with
- *      `cacheHit = true` so the dashboard reflects load).
- *   3. On miss, rate-limits the calling user (when one is provided),
- *      calls Claude via @anthropic-ai/sdk, validates with Zod where
- *      applicable, then persists usage + cache.
+ * As of Sprint 03 Task 7, evaluateAnswer and reviewText delegate to
+ * apps/api (POST /ai/evaluate-answer, /ai/review-text) via
+ * `src/lib/api-client.ts`. The api owns the cache + rate-limit + usage
+ * pipeline + stub fallback for those two endpoints. The web is just a
+ * thin server-side caller — it still wraps the response in the same
+ * Promise shape consumers already use, and the api translates rate
+ * limits back into AiRateLimitedError throws.
  *
- * When ANTHROPIC_API_KEY is missing we log a single named-only warning
- * and return the deterministic stubs from `stubs.ts` — no DB writes at
- * all in that path, so the cache + usage tables stay empty until the
- * key is set. This keeps `vitest run` and `next build` offline-safe.
+ * generateExercise stays here for now: its per-type Zod content/solution
+ * schemas live in src/lib/exercises/schemas.ts (web-only) and aren't yet
+ * extracted into a shared package, so the api can't host it. The admin
+ * script apps/web/scripts/generate-exercises.ts continues to call it
+ * directly with userId=undefined so per-user rate limits don't apply.
+ *
+ * When ANTHROPIC_API_KEY is missing the generateExercise path returns a
+ * deterministic stub and writes nothing to the DB — keeps `vitest run`
+ * and `next build` offline-safe. The evaluate/review stubs live in
+ * apps/api/src/services/stubs.ts and run automatically when the api
+ * itself has no key.
  */
 
 import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
-import type { CefrLevel, Exercise, ExerciseType } from "@wortschatz/database";
+import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 
 import { prisma } from "@wortschatz/database";
 import type { LocalizedText } from "@wortschatz/types";
@@ -33,14 +41,15 @@ import {
   type AiEndpoint,
 } from "@wortschatz/config";
 import * as aiCache from "@/lib/ai-cache";
-import {
-  AiRateLimitedError,
-  checkAndIncrement,
-} from "@/lib/ai-rate-limit";
+import { checkAndIncrement } from "@/lib/ai-rate-limit";
 
-import { stubExercise, stubEvaluation, stubReview } from "@/lib/ai-stubs";
+import { stubExercise } from "@/lib/ai-stubs";
 
 export { AiRateLimitedError } from "@/lib/ai-rate-limit";
+export {
+  evaluateAnswerRemote as evaluateAnswer,
+  reviewTextRemote as reviewText,
+} from "@/lib/api-client";
 
 // --- Config ------------------------------------------------------------
 
@@ -302,153 +311,8 @@ export async function generateExercise(
   return out;
 }
 
-// --- evaluateAnswer ----------------------------------------------------
-
-const EVALUATE_SYSTEM = `You are a strict but encouraging German teacher grading a single exercise attempt.
-Respond with one JSON object and nothing else, of the shape:
-  { "score": <integer 0-100>, "feedback": "<one short paragraph>" }
-Score 100 for a fully correct answer, 60-99 for a minor mistake, below 60 for a wrong answer.
-The feedback must be in English, no more than three sentences, and reference the specific error if any.`;
-
-export async function evaluateAnswer(
-  exercise: Pick<Exercise, "type" | "content" | "solution" | "explanation">,
-  userAnswer: unknown,
-  userId?: string,
-): Promise<AIEvaluation> {
-  if (!AI_CONFIGURED) {
-    warnMissingKeyOnce("evaluateAnswer");
-    return stubEvaluation();
-  }
-
-  const endpoint: AiEndpoint = "EVALUATE_ANSWER";
-  const userPrompt = JSON.stringify({
-    exercise: {
-      type: exercise.type,
-      content: exercise.content,
-      solution: exercise.solution,
-    },
-    userAnswer,
-  });
-  const key = hashKey(endpoint, MODEL, canonicalize({ system: EVALUATE_SYSTEM, user: userPrompt }));
-
-  const cached = await aiCache.get(key);
-  if (cached) {
-    await recordUsage({
-      userId,
-      endpoint,
-      model: MODEL,
-      inputTokens: cached.inputTokens,
-      outputTokens: cached.outputTokens,
-      cacheHit: true,
-    });
-    return cached.response as AIEvaluation;
-  }
-
-  if (userId) await checkAndIncrement(userId, endpoint);
-
-  const resp = await getClient().messages.create({
-    model: MODEL,
-    max_tokens: MAX_TOKENS[endpoint],
-    system: EVALUATE_SYSTEM,
-    messages: [{ role: "user", content: userPrompt }],
-  });
-
-  const raw = textFromResponse(resp);
-  const parsed = extractJson(raw) as Record<string, unknown>;
-
-  const scoreNum = typeof parsed.score === "number" ? parsed.score : Number(parsed.score);
-  const feedback = typeof parsed.feedback === "string" ? parsed.feedback : "";
-  if (!Number.isFinite(scoreNum) || feedback.length === 0) {
-    throw new Error(
-      `evaluateAnswer: malformed Claude response: ${raw.slice(0, 200)}…`,
-    );
-  }
-  const out: AIEvaluation = {
-    score: Math.max(0, Math.min(100, Math.round(scoreNum))),
-    feedback,
-  };
-
-  await recordUsage({
-    userId,
-    endpoint,
-    model: MODEL,
-    inputTokens: resp.usage.input_tokens,
-    outputTokens: resp.usage.output_tokens,
-    cacheHit: false,
-  });
-  await aiCache.set({
-    key,
-    endpoint,
-    model: MODEL,
-    response: out,
-    inputTokens: resp.usage.input_tokens,
-    outputTokens: resp.usage.output_tokens,
-    ttlMs: AI_CACHE_TTL_MS[endpoint],
-  });
-
-  return out;
-}
-
-// --- reviewText --------------------------------------------------------
-
-const REVIEW_SYSTEM = `You are a German tutor giving detailed Markdown feedback on a user-submitted text.
-The user's CEFR level is provided. Structure the feedback as Markdown with these sections, in order:
-  ## Grammar
-  ## Vocabulary
-  ## Style
-  ## Corrected version
-Be encouraging but specific. Quote the user's wording when pointing out issues. Keep total length under ~400 words.`;
-
-export async function reviewText(
-  text: string,
-  userLevel: CefrLevel,
-  userId?: string,
-): Promise<ReviewResult> {
-  if (!AI_CONFIGURED) {
-    warnMissingKeyOnce("reviewText");
-    return stubReview(text, userLevel, MODEL);
-  }
-
-  const endpoint: AiEndpoint = "REVIEW_TEXT";
-  const userPrompt = JSON.stringify({ level: userLevel, text });
-  // Per-user-personalized; we still compute a key for tracing, but
-  // AI_CACHE_TTL_MS.REVIEW_TEXT is 0 so the write is skipped.
-  const key = hashKey(endpoint, MODEL, canonicalize({ system: REVIEW_SYSTEM, user: userPrompt }));
-
-  // Skip cache lookup since TTL is 0 — saves a roundtrip.
-  if (userId) await checkAndIncrement(userId, endpoint);
-
-  const resp = await getClient().messages.create({
-    model: MODEL,
-    max_tokens: MAX_TOKENS[endpoint],
-    system: REVIEW_SYSTEM,
-    messages: [{ role: "user", content: userPrompt }],
-  });
-  const feedback = textFromResponse(resp).trim();
-  if (feedback.length === 0) {
-    throw new Error("reviewText: Claude returned an empty response.");
-  }
-  const out: ReviewResult = { feedback };
-
-  await recordUsage({
-    userId,
-    endpoint,
-    model: MODEL,
-    inputTokens: resp.usage.input_tokens,
-    outputTokens: resp.usage.output_tokens,
-    cacheHit: false,
-  });
-  // Cache write is a no-op when TTL is 0 but we call it for symmetry —
-  // ai-cache.set short-circuits the DB write.
-  await aiCache.set({
-    key,
-    endpoint,
-    model: MODEL,
-    response: out,
-    inputTokens: resp.usage.input_tokens,
-    outputTokens: resp.usage.output_tokens,
-    ttlMs: AI_CACHE_TTL_MS[endpoint],
-  });
-
-  return out;
-}
+// evaluateAnswer + reviewText now live in apps/api and are re-exported
+// from @/lib/api-client at the top of this file. The in-process versions
+// (and their EVALUATE_SYSTEM / REVIEW_SYSTEM prompts, cache logic, etc.)
+// were deleted in Sprint 03 Task 7 — see apps/api/src/services/claude.ts
+// for the canonical implementation.
