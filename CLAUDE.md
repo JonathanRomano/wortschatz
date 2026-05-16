@@ -70,26 +70,36 @@ outside `src/theme/`.**
 
 ### Color modes
 
-- The user picks `'light' | 'dark' | 'system'`. Default is `'system'` on
-  first visit; persisted in `localStorage` under `wortschatz:color-mode`
+- The user picks `'light' | 'dark'`. Default is `'light'` on first
+  visit; persisted in `localStorage` under `wortschatz:color-mode`
   (exported as `COLOR_MODE_STORAGE_KEY` from
-  `src/theme/ColorModeContext.tsx`).
-- Use `useColorMode()` from `@/hooks/useColorMode` to read or change the
-  mode. It returns `{ mode, resolvedMode, setMode, toggle }`. Don't access
+  `src/theme/ColorModeContext.tsx`). The pre-Sprint-04 `'system'`
+  option was removed; old stored values map to `'light'` on read.
+- Use `useColorMode()` from `@/hooks/useColorMode` to read or change
+  the mode. It returns `{ mode, setMode, toggle }`. Don't access
   `localStorage` directly.
-- The blocking inline script in `src/app/[locale]/layout.tsx` writes
-  `<html data-color-mode="…">` and `<html style="color-scheme: …">`
-  before React hydrates, so first paint matches the user's preference.
-  The Provider keeps both in sync afterward and seeds `systemMode` from
-  the DOM attribute so dark-mode users never flash a light palette during
-  hydration. Script errors are swallowed (Safari private mode).
+- **Hydration contract** (load-bearing — do not loosen):
+  - The locale layout injects a blocking inline script in `<head>`
+    that reads `localStorage` and writes
+    `<html data-color-mode="…">` plus `style.color-scheme="…"` before
+    React hydrates.
+  - `<html>` carries `suppressHydrationWarning` for exactly those
+    attributes (one-deep — body content still needs to match).
+  - `AppThemeProvider` keeps its `useState` initializer pure (always
+    `"light"` on both server and first client render) so emotion
+    emits identical classNames; the user's actual stored choice is
+    applied inside `useLayoutEffect`, which runs synchronously before
+    the browser paints. Dark-mode users see one frame of dark, not a
+    flash of light → dark.
 - All new UI must work in both modes. Use `theme.palette.X` (or
   `sx={{ color: 'text.primary' }}` etc.) — never reference a specific
   palette mode in a component.
-- The header `<ColorModeToggle />` cycles
-  `light → dark → system → light` with a distinct icon and localized
-  `aria-label`/tooltip per state. It's already rendered in both desktop
-  and mobile menus.
+- The header `<ColorModeToggle />` is a 2-state sun ↔ moon icon with
+  a stable localized `aria-label`. Rendered in both desktop and
+  mobile menus.
+
+For the full design system (palette tokens, typography scale,
+component patterns, motion rules), see [DESIGN.md](./DESIGN.md).
 
 ## MUI ↔ Tailwind coexistence (mandatory rule)
 
