@@ -5,6 +5,7 @@ import Container from "@mui/material/Container";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 
 import { auth, signOut } from "@/auth";
@@ -79,7 +80,7 @@ export async function Header() {
         <Toolbar
           sx={{
             px: { xs: 2, sm: 3 },
-            py: 1,
+            minHeight: { xs: 56, sm: 64 },
             gap: 1.5,
             justifyContent: "space-between",
           }}
@@ -96,19 +97,31 @@ export async function Header() {
           >
             {isAuthed ? (
               <>
-                {wallet ? (
-                  <Stack direction="row" spacing={1} sx={{ mr: 1 }}>
-                    <MuenzenBadge amount={wallet.muenzen} size="sm" />
-                    <StreakFlame days={wallet.streak} size="sm" />
-                  </Stack>
-                ) : null}
                 {authedLinks.map((link) => (
                   <HeaderNavLink key={link.href} href={link.href}>
                     {link.label}
                   </HeaderNavLink>
                 ))}
-                <Box sx={{ ml: 1 }}>{signOutForm}</Box>
-                <Box sx={{ ml: 1 }}>
+                {wallet ? (
+                  <>
+                    <Divider
+                      orientation="vertical"
+                      flexItem
+                      sx={{ mx: 1, my: 1.5 }}
+                    />
+                    <Stack direction="row" spacing={1}>
+                      <MuenzenBadge amount={wallet.muenzen} size="sm" />
+                      <StreakFlame days={wallet.streak} size="sm" />
+                    </Stack>
+                  </>
+                ) : null}
+                <Divider
+                  orientation="vertical"
+                  flexItem
+                  sx={{ mx: 1, my: 1.5 }}
+                />
+                <Box>{signOutForm}</Box>
+                <Box>
                   <ColorModeToggle />
                 </Box>
                 <Box>
