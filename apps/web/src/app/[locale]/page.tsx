@@ -33,15 +33,7 @@ export default async function LandingPage({
   setRequestLocale(locale);
   const t = await getTranslations();
   const tt = await getTranslations("exerciseTypes");
-
-  const proofText =
-    locale === "pt"
-      ? "Dez tipos de exercício, cada um afina uma habilidade diferente."
-      : locale === "tr"
-        ? "On alıştırma türü — her biri farklı bir beceriyi geliştirir."
-        : locale === "uk"
-          ? "Десять типів вправ — кожен тренує свою навичку."
-          : "Ten exercise types, each tuning a different skill.";
+  const tl = await getTranslations("landing");
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 6, sm: 8, lg: 12 } }}>
@@ -91,8 +83,9 @@ export default async function LandingPage({
             sx={{
               mt: 2.5,
               textWrap: "balance",
-              fontSize: { xs: "2.25rem", sm: "3rem", lg: "3.5rem" },
-              lineHeight: 1.05,
+              fontSize: { xs: "2.5rem", sm: "3.25rem", lg: "4rem" },
+              lineHeight: 1.02,
+              letterSpacing: "-0.02em",
               color: "text.primary",
             }}
           >
@@ -151,7 +144,7 @@ export default async function LandingPage({
                   color: "text.secondary",
                 }}
               >
-                A2 · {tt("FILL_IN_THE_BLANK")}
+                {tl("previewLevelLabel")} · {tt("FILL_IN_THE_BLANK")}
               </Typography>
               <MuenzenBadge amount={10} size="sm" />
             </Box>
@@ -189,7 +182,7 @@ export default async function LandingPage({
               variant="body2"
               sx={{ mt: 2, color: "text.secondary" }}
             >
-              Hint · Verb &laquo;essen&raquo;
+              {tl("previewHintLabel")} · {tl("previewHintBody")}
             </Typography>
             <Box
               sx={{
@@ -204,7 +197,7 @@ export default async function LandingPage({
               }}
             >
               <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                +10 M when you nail it
+                {tl("previewRewardLabel")}
               </Typography>
               <Typography
                 variant="caption"
@@ -214,7 +207,7 @@ export default async function LandingPage({
                   color: "text.secondary",
                 }}
               >
-                01 / 50
+                {tl("previewProgress")}
               </Typography>
             </Box>
           </Card>
@@ -293,7 +286,7 @@ export default async function LandingPage({
           variant="body1"
           sx={{ color: "text.secondary", fontSize: { xs: "0.875rem", sm: "1rem" } }}
         >
-          {proofText}
+          {tl("typesProof")}
         </Typography>
         <Box
           component="ul"

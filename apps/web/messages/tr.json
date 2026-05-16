@@ -33,7 +33,13 @@
     "feature2Title": "Münzen kazanın",
     "feature2Body": "Alıştırmaları tamamlayın ve serinizi sürdürerek uygulama içi parayı kazanın.",
     "feature3Title": "Kişisel AI öğretmeni",
-    "feature3Body": "Kendi Almanca metinlerinizi gönderin ve ayrıntılı dilbilgisi ile üslup geri bildirimi alın."
+    "feature3Body": "Kendi Almanca metinlerinizi gönderin ve ayrıntılı dilbilgisi ile üslup geri bildirimi alın.",
+    "typesProof": "On alıştırma türü — her biri farklı bir beceriyi geliştirir.",
+    "previewLevelLabel": "A2",
+    "previewHintLabel": "İpucu",
+    "previewHintBody": "Fiil «essen»",
+    "previewRewardLabel": "Doğru yaptığında +10 M",
+    "previewProgress": "01 / 50"
   },
   "auth": {
     "loginTitle": "Tekrar hoş geldiniz",

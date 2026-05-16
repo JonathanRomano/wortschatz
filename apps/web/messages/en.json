@@ -33,7 +33,13 @@
     "feature2Title": "Earn Münzen",
     "feature2Body": "Complete exercises and keep your streak alive to earn the in-app currency.",
     "feature3Title": "Personal AI tutor",
-    "feature3Body": "Submit your own German texts and get detailed grammar and style feedback."
+    "feature3Body": "Submit your own German texts and get detailed grammar and style feedback.",
+    "typesProof": "Ten exercise types, each tuning a different skill.",
+    "previewLevelLabel": "A2",
+    "previewHintLabel": "Hint",
+    "previewHintBody": "Verb «essen»",
+    "previewRewardLabel": "+10 M when you nail it",
+    "previewProgress": "01 / 50"
   },
   "auth": {
     "loginTitle": "Welcome back",

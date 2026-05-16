@@ -33,7 +33,13 @@
     "feature2Title": "Ganhe Münzen",
     "feature2Body": "Complete exercícios e mantenha sua sequência viva para ganhar a moeda interna.",
     "feature3Title": "Tutor de IA pessoal",
-    "feature3Body": "Envie seus próprios textos em alemão e receba feedback detalhado de gramática e estilo."
+    "feature3Body": "Envie seus próprios textos em alemão e receba feedback detalhado de gramática e estilo.",
+    "typesProof": "Dez tipos de exercício, cada um afina uma habilidade diferente.",
+    "previewLevelLabel": "A2",
+    "previewHintLabel": "Dica",
+    "previewHintBody": "Verbo «essen»",
+    "previewRewardLabel": "+10 M quando você acertar",
+    "previewProgress": "01 / 50"
   },
   "auth": {
     "loginTitle": "Bem-vindo de volta",
