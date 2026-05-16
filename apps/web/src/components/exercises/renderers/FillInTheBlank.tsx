@@ -25,9 +25,13 @@ export function FillInTheBlankRenderer({ content, value, onChange, disabled }: R
   const parts = sentence.split("___");
   return (
     <Stack spacing={2}>
+      {/* component="div", not "p". The sentence interleaves TextField
+          inputs (which render as <div>) with text, and <div> inside
+          <p> is invalid HTML — browsers auto-close the <p> and React
+          flags it as a hydration mismatch. */}
       <Typography
         variant="h4"
-        component="p"
+        component="div"
         sx={{
           fontSize: { xs: "1.125rem", sm: "1.5rem" },
           fontFamily: "var(--font-fraunces), serif",
