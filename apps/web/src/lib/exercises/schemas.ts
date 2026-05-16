@@ -145,7 +145,7 @@ export const FreeWritingSolution = z.object({
 
 // --- Type registry ----------------------------------------------------
 
-import type { ExerciseType } from "@prisma/client";
+import type { ExerciseType } from "@wortschatz/database";
 
 export const contentSchemaFor: Record<ExerciseType, z.ZodTypeAny> = {
   FILL_IN_THE_BLANK: FillInTheBlankContent,

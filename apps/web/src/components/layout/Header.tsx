@@ -8,7 +8,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 import { auth, signOut } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
 import { StreakFlame } from "@/components/ui/StreakFlame";
 import { LocaleSwitcher } from "./LocaleSwitcher";

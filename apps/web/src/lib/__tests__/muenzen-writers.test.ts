@@ -28,7 +28,7 @@ const mocks = vi.hoisted(() => {
 
 const { userUpdate, userFindUnique, txCreate, $transaction } = mocks;
 
-vi.mock("@/lib/db", () => ({
+vi.mock("@wortschatz/database", () => ({
   prisma: {
     $transaction: mocks.$transaction,
     user: {

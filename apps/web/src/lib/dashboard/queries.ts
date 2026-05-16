@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 import {
   HEATMAP_DAYS,
   MUENZEN_SERIES_DAYS,
@@ -29,7 +29,7 @@ export type DashboardChartData = {
   radarAttempts: {
     score: number;
     completedAt: Date;
-    exercise: { type: import("@prisma/client").ExerciseType };
+    exercise: { type: import("@wortschatz/database").ExerciseType };
   }[];
   todayCount: number;
 };

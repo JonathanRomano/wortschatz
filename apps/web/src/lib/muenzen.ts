@@ -1,5 +1,5 @@
-import type { MuenzenReason, Prisma } from "@prisma/client";
-import { prisma } from "@/lib/db";
+import type { MuenzenReason, Prisma } from "@wortschatz/database";
+import { prisma } from "@wortschatz/database";
 
 export const MUENZEN_RULES = {
   exerciseComplete: 10, // score >= 60

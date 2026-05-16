@@ -47,7 +47,7 @@ vi.mock("@anthropic-ai/sdk", () => {
   };
 });
 
-vi.mock("@/lib/db", () => ({
+vi.mock("@wortschatz/database", () => ({
   prisma: {
     aiUsage: { create: mocks.aiUsageCreate },
   },

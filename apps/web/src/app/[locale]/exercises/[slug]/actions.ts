@@ -1,11 +1,11 @@
 "use server";
 
-import type { CefrLevel, ExerciseType } from "@prisma/client";
+import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 import type { Locale } from "@/i18n/config";
-import { pickLocalized } from "@/lib/exercises/i18n";
+import { pickLocalized } from "@wortschatz/config";
 import { getRandomExerciseOfType } from "@/lib/exercises/actions";
 
 export type NextExercisePayload = {

@@ -5,7 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 
 import { authConfig, credentialsSchema } from "@/auth.config";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,

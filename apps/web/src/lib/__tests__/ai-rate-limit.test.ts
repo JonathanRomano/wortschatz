@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AI_RATE_LIMITS } from "@/config/limits";
+import { AI_RATE_LIMITS } from "@wortschatz/config";
 
 // --- Prisma mock --------------------------------------------------------
 //
@@ -21,7 +21,7 @@ const mocks = vi.hoisted(() => {
   return { findUnique, upsert, update, txClient, $transaction };
 });
 
-vi.mock("@/lib/db", () => ({
+vi.mock("@wortschatz/database", () => ({
   prisma: {
     $transaction: mocks.$transaction,
     aiRateLimit: mocks.txClient.aiRateLimit,

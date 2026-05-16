@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import type { ExerciseType } from "@prisma/client";
+import type { ExerciseType } from "@wortschatz/database";
 import IconButton from "@mui/material/IconButton";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutlineOutlined";
 

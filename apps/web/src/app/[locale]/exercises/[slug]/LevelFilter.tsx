@@ -1,6 +1,6 @@
 "use client";
 
-import type { CefrLevel, ExerciseType } from "@prisma/client";
+import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import ToggleButton from "@mui/material/ToggleButton";

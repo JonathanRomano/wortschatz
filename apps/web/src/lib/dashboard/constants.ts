@@ -1,11 +1,10 @@
-// Dashboard configuration knobs. Kept dependency-free so the
-// aggregation helpers (and any future tests) can import them without
-// pulling in Prisma or React. As of Sprint 02 Task 6 the per-user
-// `dailyGoal` column on `User` is the source of truth — this constant
-// is the fallback the dashboard reaches for if that value is somehow
-// null/undefined, and also the DB-side default for new accounts.
+// Dashboard-specific tuning knobs. Kept dependency-free so the
+// aggregation helpers (and tests) can import them without pulling in
+// Prisma or React.
+//
+// DAILY_GOAL_DEFAULT moved to @wortschatz/config during Sprint 03 since
+// apps/api also needs it; import it from there.
 
-export const DAILY_GOAL_DEFAULT = 5;
 export const HEATMAP_DAYS = 90;
 export const MUENZEN_SERIES_DAYS = 30;
 export const RADAR_LAST_N = 10;

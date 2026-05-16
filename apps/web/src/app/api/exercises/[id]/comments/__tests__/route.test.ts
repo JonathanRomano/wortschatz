@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/auth", () => ({ auth: mocks.auth }));
 
-vi.mock("@/lib/db", () => ({
+vi.mock("@wortschatz/database", () => ({
   prisma: {
     exercise: { findUnique: mocks.exerciseFindUnique },
     exerciseComment: {
@@ -25,9 +25,9 @@ vi.mock("@/lib/db", () => ({
 
 // The route imports `findBlockedWord` directly. Mock it so we can flip the
 // blocklist on/off in a single test rather than mutating production config.
-vi.mock("@/config/moderation", async () => {
-  const actual = await vi.importActual<typeof import("@/config/moderation")>(
-    "@/config/moderation",
+vi.mock("@wortschatz/config", async () => {
+  const actual = await vi.importActual<typeof import("@wortschatz/config")>(
+    "@wortschatz/config",
   );
   return {
     ...actual,

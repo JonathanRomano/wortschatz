@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import type { ExerciseType } from "@prisma/client";
+import type { ExerciseType } from "@wortschatz/database";
 
 // --- Mocks --------------------------------------------------------------
 //
@@ -16,7 +16,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/auth", () => ({ auth: mocks.authMock }));
 
-vi.mock("@/lib/db", () => ({
+vi.mock("@wortschatz/database", () => ({
   prisma: {
     userPreference: {
       upsert: mocks.userPrefUpsertMock,

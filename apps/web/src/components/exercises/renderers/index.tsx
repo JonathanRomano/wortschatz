@@ -1,6 +1,6 @@
 "use client";
 
-import type { ExerciseType } from "@prisma/client";
+import type { ExerciseType } from "@wortschatz/database";
 import Typography from "@mui/material/Typography";
 
 import type { RendererProps } from "../types";

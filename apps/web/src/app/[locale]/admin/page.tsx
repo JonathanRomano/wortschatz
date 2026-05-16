@@ -12,7 +12,7 @@ import TableRow from "@mui/material/TableRow";
 import TableContainer from "@mui/material/TableContainer";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 import { Card } from "@/components/ui/Card";
 import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
 import { AdminExerciseRow } from "./AdminExerciseRow";

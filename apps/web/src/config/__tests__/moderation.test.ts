@@ -5,7 +5,7 @@ import {
   COMMENT_RATE_LIMIT,
   COMMENT_WORD_BLOCKLIST,
   findBlockedWord,
-} from "@/config/moderation";
+} from "@wortschatz/config";
 
 describe("comment moderation constants", () => {
   it("caps comment length at 500 characters", () => {

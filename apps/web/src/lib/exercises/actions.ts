@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 import { auth } from "@/auth";
 import { gradeLocally } from "@/lib/exercises/grade";
 import {
@@ -14,7 +14,7 @@ import {
   credit,
   isSameCalendarDay,
 } from "@/lib/muenzen";
-import type { CefrLevel, ExerciseType } from "@prisma/client";
+import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 
 export type SubmitResult =
   | {

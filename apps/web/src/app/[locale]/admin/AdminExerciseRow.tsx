@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import type { CefrLevel, ExerciseStatus, ExerciseType } from "@prisma/client";
+import type { CefrLevel, ExerciseStatus, ExerciseType } from "@wortschatz/database";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";

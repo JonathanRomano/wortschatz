@@ -1,4 +1,4 @@
-import type { Exercise, ExerciseType } from "@prisma/client";
+import type { Exercise, ExerciseType } from "@wortschatz/database";
 
 export type GradeResult = {
   score: number; // 0-100

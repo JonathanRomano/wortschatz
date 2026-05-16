@@ -22,16 +22,16 @@
 
 import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
-import type { CefrLevel, Exercise, ExerciseType } from "@prisma/client";
+import type { CefrLevel, Exercise, ExerciseType } from "@wortschatz/database";
 
-import { prisma } from "@/lib/db";
-import type { LocalizedText } from "@/lib/exercises/i18n";
+import { prisma } from "@wortschatz/database";
+import type { LocalizedText } from "@wortschatz/types";
 import { contentSchemaFor, solutionSchemaFor } from "@/lib/exercises/schemas";
 import {
   AI_CACHE_TTL_MS,
   estimateCostMicrocents,
   type AiEndpoint,
-} from "@/config/limits";
+} from "@wortschatz/config";
 import * as aiCache from "@/lib/ai-cache";
 import {
   AiRateLimitedError,

@@ -35,7 +35,7 @@ vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePathMock }));
 
 // prisma is imported by actions.ts but not exercised by `adminAdjustUser`.
 // Provide a benign stub so module load doesn't try to spin up a real client.
-vi.mock("@/lib/db", () => ({
+vi.mock("@wortschatz/database", () => ({
   prisma: {
     exercise: { update: vi.fn() },
   },

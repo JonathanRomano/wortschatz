@@ -5,7 +5,7 @@ import {
   AI_MODEL_PRICING_MICROCENTS_PER_TOKEN,
   AI_RATE_LIMITS,
   estimateCostMicrocents,
-} from "@/config/limits";
+} from "@wortschatz/config";
 
 describe("estimateCostMicrocents", () => {
   let warnSpy: ReturnType<typeof vi.spyOn>;

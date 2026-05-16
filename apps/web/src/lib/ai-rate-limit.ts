@@ -7,8 +7,8 @@
  * per day" style limits without a queue.
  */
 
-import { prisma } from "@/lib/db";
-import { AI_RATE_LIMITS, type AiEndpoint } from "@/config/limits";
+import { prisma } from "@wortschatz/database";
+import { AI_RATE_LIMITS, type AiEndpoint } from "@wortschatz/config";
 
 /**
  * Thrown by `checkAndIncrement` when the caller has exhausted their daily

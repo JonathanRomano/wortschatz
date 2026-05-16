@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import type { CefrLevel, ExerciseType } from "@prisma/client";
+import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import LinearProgress from "@mui/material/LinearProgress";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card } from "@/components/ui/Card";
 import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
@@ -26,8 +26,8 @@ import {
   buildMuenzenSeries,
   buildRadar,
 } from "@/lib/dashboard/aggregations";
+import { DAILY_GOAL_DEFAULT } from "@wortschatz/config";
 import {
-  DAILY_GOAL_DEFAULT,
   HEATMAP_DAYS,
   RADAR_LAST_N,
 } from "@/lib/dashboard/constants";

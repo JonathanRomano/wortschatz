@@ -7,7 +7,7 @@
  *
  * Idempotent: re-running on jsonb columns is a no-op.
  */
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@wortschatz/database";
 
 const prisma = new PrismaClient();
 

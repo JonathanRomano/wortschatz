@@ -1,9 +1,9 @@
 "use server";
 
-import type { ExerciseType } from "@prisma/client";
+import type { ExerciseType } from "@wortschatz/database";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 
 /**
  * Toggle the "skip the intro" preference for a given exercise type.

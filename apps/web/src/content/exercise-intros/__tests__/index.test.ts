@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ExerciseType } from "@prisma/client";
+import { ExerciseType } from "@wortschatz/database";
 
 import { EXERCISE_INTROS } from "../index";
 import type { ExerciseIntro } from "../types";

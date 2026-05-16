@@ -1,5 +1,5 @@
-import type { ExerciseType } from "@prisma/client";
-import type { LocalizedText } from "@/lib/exercises/i18n";
+import type { ExerciseType } from "@wortschatz/database";
+import type { LocalizedText } from "@wortschatz/types";
 
 /**
  * Static, hand-translated copy shown on the per-exercise-type intro

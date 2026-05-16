@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 
 // Native-language allow-list. We don't reuse `UiLanguage` because (a)
 // `UiLanguage` is uppercase + the UI-supported locales only, while

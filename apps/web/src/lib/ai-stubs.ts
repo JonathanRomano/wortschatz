@@ -7,9 +7,9 @@
  * empty until the key is set.
  */
 
-import type { CefrLevel, ExerciseType } from "@prisma/client";
+import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 
-import type { LocalizedText } from "@/lib/exercises/i18n";
+import type { LocalizedText } from "@wortschatz/types";
 import type {
   AIEvaluation,
   GeneratedExercise,

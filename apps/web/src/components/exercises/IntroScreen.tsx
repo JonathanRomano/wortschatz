@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import type { ExerciseType } from "@prisma/client";
+import type { ExerciseType } from "@wortschatz/database";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -13,7 +13,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import { Card } from "@/components/ui/Card";
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
 import { setSkipIntro } from "@/lib/preferences/actions";
-import { pickLocalized } from "@/lib/exercises/i18n";
+import { pickLocalized } from "@wortschatz/config";
 import type { Locale } from "@/i18n/config";
 import { EXERCISE_INTROS } from "@/content/exercise-intros";
 

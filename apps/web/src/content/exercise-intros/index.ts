@@ -1,4 +1,4 @@
-import type { ExerciseType } from "@prisma/client";
+import type { ExerciseType } from "@wortschatz/database";
 
 import { errorCorrection } from "./error-correction";
 import { fillInTheBlank } from "./fill-in-the-blank";

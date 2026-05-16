@@ -9,12 +9,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 import {
   COMMENT_MAX_LENGTH,
   COMMENT_RATE_LIMIT,
   findBlockedWord,
-} from "@/config/moderation";
+} from "@wortschatz/config";
 import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,

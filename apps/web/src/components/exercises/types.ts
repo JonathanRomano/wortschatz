@@ -1,4 +1,4 @@
-import type { ExerciseType } from "@prisma/client";
+import type { ExerciseType } from "@wortschatz/database";
 
 export type RendererProps = {
   type: ExerciseType;

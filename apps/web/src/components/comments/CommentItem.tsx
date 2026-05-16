@@ -16,7 +16,7 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
-import { COMMENT_MAX_LENGTH } from "@/config/moderation";
+import { COMMENT_MAX_LENGTH } from "@wortschatz/config";
 import type { CommentDTO } from "@/lib/comments/types";
 
 type Props = {

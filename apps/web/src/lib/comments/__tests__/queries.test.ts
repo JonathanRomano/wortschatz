@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   findUnique: vi.fn(),
 }));
 
-vi.mock("@/lib/db", () => ({
+vi.mock("@wortschatz/database", () => ({
   prisma: {
     exerciseComment: {
       findMany: mocks.findMany,

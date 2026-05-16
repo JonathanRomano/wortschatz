@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 import { reviewText, AiRateLimitedError } from "@/lib/ai";
 import { debit, InsufficientFundsError, MUENZEN_RULES } from "@/lib/muenzen";
 

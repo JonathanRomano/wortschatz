@@ -11,11 +11,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 import {
   COMMENT_MAX_LENGTH,
   findBlockedWord,
-} from "@/config/moderation";
+} from "@wortschatz/config";
 import { serializeComment, type CommentRow } from "@/lib/comments/serialize";
 
 const patchSchema = z.object({

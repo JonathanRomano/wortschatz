@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/auth", () => ({ auth: mocks.auth }));
 
-vi.mock("@/lib/db", () => ({
+vi.mock("@wortschatz/database", () => ({
   prisma: {
     exerciseComment: {
       findUnique: mocks.commentFindUnique,
@@ -18,9 +18,9 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-vi.mock("@/config/moderation", async () => {
-  const actual = await vi.importActual<typeof import("@/config/moderation")>(
-    "@/config/moderation",
+vi.mock("@wortschatz/config", async () => {
+  const actual = await vi.importActual<typeof import("@wortschatz/config")>(
+    "@wortschatz/config",
   );
   return {
     ...actual,

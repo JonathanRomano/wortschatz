@@ -10,8 +10,8 @@
  * since we pass `userId: undefined` this script bypasses per-user rate
  * limiting (it's an admin/system run).
  */
-import type { CefrLevel, ExerciseType, Prisma } from "@prisma/client";
-import { PrismaClient } from "@prisma/client";
+import type { CefrLevel, ExerciseType, Prisma } from "@wortschatz/database";
+import { PrismaClient } from "@wortschatz/database";
 import { generateExercise, AI_CONFIGURED } from "../src/lib/ai";
 
 const prisma = new PrismaClient();

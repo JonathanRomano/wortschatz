@@ -64,23 +64,23 @@ const mocks = vi.hoisted(() => {
 
 vi.mock("@/auth", () => ({ auth: mocks.auth }));
 
-vi.mock("@/lib/db", () => ({
-  prisma: {
-    exerciseComment: { findUnique: mocks.commentFindUnique },
-    commentLike: { count: mocks.commentLikeCount },
-    $transaction: mocks.transaction,
-  },
-}));
-
-vi.mock("@prisma/client", () => {
-  // Build a class whose `.prototype` matches the prototype stamped on
-  // the thrown error so `instanceof` succeeds.
+vi.mock("@wortschatz/database", () => {
+  // Build a class whose `.prototype` matches the prototype stamped on the
+  // thrown error so `instanceof` succeeds. Bundled with the `prisma` mock
+  // in a single mock factory because pre-Sprint-03 these came from two
+  // different modules (@/lib/db + @prisma/client); the package merge
+  // means we must register one combined export object.
   function PrismaClientKnownRequestError(this: any, message: string) {
     Error.call(this, message);
   }
   PrismaClientKnownRequestError.prototype = mocks.ErrCtorPrototype;
 
   return {
+    prisma: {
+      exerciseComment: { findUnique: mocks.commentFindUnique },
+      commentLike: { count: mocks.commentLikeCount },
+      $transaction: mocks.transaction,
+    },
     Prisma: { PrismaClientKnownRequestError },
   };
 });

@@ -7,7 +7,7 @@ import {
   buildRadar,
   countToday,
 } from "@/lib/dashboard/aggregations";
-import type { ExerciseType } from "@prisma/client";
+import type { ExerciseType } from "@wortschatz/database";
 
 // All 10 exercise types as in prisma/schema.prisma. The radar always
 // returns one row per type, so we need a complete label map.

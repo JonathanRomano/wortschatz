@@ -1,7 +1,7 @@
 "use client";
 
 import Chip from "@mui/material/Chip";
-import type { CefrLevel } from "@prisma/client";
+import type { CefrLevel } from "@wortschatz/database";
 
 type Props = {
   level: CefrLevel;

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 import { serializeComment, type CommentRow } from "./serialize";
 import type { CommentListResponse } from "./types";
 

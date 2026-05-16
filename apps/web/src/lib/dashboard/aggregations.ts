@@ -1,4 +1,4 @@
-import type { ExerciseType } from "@prisma/client";
+import type { ExerciseType } from "@wortschatz/database";
 
 // Pure aggregation helpers feeding the dashboard charts. None of these
 // touch Prisma or React — they take plain rows and return plain data so

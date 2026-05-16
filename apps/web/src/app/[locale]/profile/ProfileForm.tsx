@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import type { CefrLevel, UiLanguage } from "@prisma/client";
+import type { CefrLevel, UiLanguage } from "@wortschatz/database";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";

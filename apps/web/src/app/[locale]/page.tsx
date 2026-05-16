@@ -1,4 +1,4 @@
-import type { ExerciseType } from "@prisma/client";
+import type { ExerciseType } from "@wortschatz/database";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";

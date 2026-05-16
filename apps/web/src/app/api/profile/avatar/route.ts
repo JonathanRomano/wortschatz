@@ -13,7 +13,7 @@ import { writeFile, unlink, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 import {
   AVATAR_URL_PREFIX,
   buildAvatarFilename,

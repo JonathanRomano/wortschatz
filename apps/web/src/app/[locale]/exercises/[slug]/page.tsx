@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import type { CefrLevel, ExerciseType } from "@prisma/client";
+import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
@@ -8,9 +8,9 @@ import Typography from "@mui/material/Typography";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 import type { Locale } from "@/i18n/config";
-import { pickLocalized } from "@/lib/exercises/i18n";
+import { pickLocalized } from "@wortschatz/config";
 import { getRandomExerciseOfType } from "@/lib/exercises/actions";
 import { getSkipIntro } from "@/lib/preferences/actions";
 import { Card } from "@/components/ui/Card";

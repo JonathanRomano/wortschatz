@@ -10,7 +10,7 @@
  * ADMIN_ADJUSTMENT row equal to their current balance so the history
  * page reconciles with the displayed total.
  */
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@wortschatz/database";
 
 const prisma = new PrismaClient();
 

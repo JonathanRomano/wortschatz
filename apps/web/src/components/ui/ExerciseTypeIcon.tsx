@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "@mui/material/styles";
-import type { ExerciseType } from "@prisma/client";
+import type { ExerciseType } from "@wortschatz/database";
 
 type ColorName =
   | "primary"

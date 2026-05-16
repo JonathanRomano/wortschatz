@@ -7,8 +7,8 @@
  * doesn't grow without bound.
  */
 
-import { prisma } from "@/lib/db";
-import type { AiEndpoint } from "@/config/limits";
+import { prisma } from "@wortschatz/database";
+import type { AiEndpoint } from "@wortschatz/config";
 
 export type CachedResponse = {
   response: unknown;

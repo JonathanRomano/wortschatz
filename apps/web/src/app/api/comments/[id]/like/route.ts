@@ -8,10 +8,10 @@
 // who won the race.
 
 import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@wortschatz/database";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 
 function errorResponse(error: string, status: number) {
   return NextResponse.json({ error }, { status });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { ExerciseType } from "@prisma/client";
+import type { ExerciseType } from "@wortschatz/database";
 
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
 import { renderLight, renderDark } from "@/test/renderWithTheme";

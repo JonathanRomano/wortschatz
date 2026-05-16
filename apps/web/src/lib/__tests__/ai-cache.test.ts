@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => {
   return { findUnique, upsert, del };
 });
 
-vi.mock("@/lib/db", () => ({
+vi.mock("@wortschatz/database", () => ({
   prisma: {
     aiCache: {
       findUnique: mocks.findUnique,

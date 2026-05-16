@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { screen } from "@testing-library/react";
-import type { CefrLevel } from "@prisma/client";
+import type { CefrLevel } from "@wortschatz/database";
 
 import { LevelChip } from "@/components/ui/LevelChip";
 import { renderLight, renderDark } from "@/test/renderWithTheme";

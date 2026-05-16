@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { ExerciseStatus } from "@prisma/client";
+import type { ExerciseStatus } from "@wortschatz/database";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+import { prisma } from "@wortschatz/database";
 import { adminAdjust, InsufficientFundsError } from "@/lib/muenzen";
 
 export async function setExerciseStatus(id: string, status: ExerciseStatus) {
