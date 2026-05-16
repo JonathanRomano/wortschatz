@@ -102,7 +102,24 @@ export default async function ExercisesPage({
           const disabled = available === 0;
           return (
             <Box component="li" key={tp}>
-              <Card sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+              <Card
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  transition:
+                    "transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease",
+                  ...(disabled
+                    ? {}
+                    : {
+                        "&:hover, &:focus-within": {
+                          transform: "translateY(-4px)",
+                          boxShadow: 4,
+                          borderColor: "secondary.main",
+                        },
+                      }),
+                }}
+              >
                 <Stack
                   direction="row"
                   spacing={1.5}
@@ -113,15 +130,15 @@ export default async function ExercisesPage({
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      height: 40,
-                      width: 40,
+                      height: 44,
+                      width: 44,
                       flexShrink: 0,
                       borderRadius: "50%",
                       backgroundColor: "accentSoft.main",
                       color: "primary.main",
                     }}
                   >
-                    <ExerciseTypeIcon type={tp} size={22} color="inherit" />
+                    <ExerciseTypeIcon type={tp} size={24} color="inherit" />
                   </Box>
                   <Typography
                     variant="overline"
