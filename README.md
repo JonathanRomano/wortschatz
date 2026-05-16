@@ -1,7 +1,14 @@
 # Wortschatz
 
 AI-powered German learning platform. Built with Next.js 15, Prisma,
-PostgreSQL, NextAuth.js v5, next-intl, and (planned) Claude.
+PostgreSQL, NextAuth.js v5, next-intl, MUI v9, and Claude.
+
+> **New here?** Read [`PROJECT_OVERVIEW.md`](./PROJECT_OVERVIEW.md) for a
+> single-source-of-truth tour of the stack, schema, domains, conventions,
+> environment variables, deployment checklist, debt, and critical user
+> flows. AI-assistant operational rules live in [`CLAUDE.md`](./CLAUDE.md);
+> per-task implementation notes are in [`SPRINT_02.md`](./SPRINT_02.md);
+> forward-looking work is in [`ROADMAP.md`](./ROADMAP.md).
 
 ## Quick start
 
@@ -28,9 +35,12 @@ switch via the locale picker in the header (PT/EN/TR/UK).
 
 ## Environment
 
-See `.env.example` for the full list. `ANTHROPIC_API_KEY` is optional —
-without it the app falls back to deterministic stub exercises and skips
-real AI evaluation. See `ROADMAP.md` for what to wire up next.
+See `.env.example` for the full list, or
+[`PROJECT_OVERVIEW.md` § Environment variables](./PROJECT_OVERVIEW.md#7-environment-variables)
+for what each one does. `ANTHROPIC_API_KEY` is optional — without it,
+`src/lib/ai.ts` returns deterministic stubs and writes nothing to the
+DB (no cache row, no rate-limit row, no usage row). See `ROADMAP.md`
+for what to wire up next.
 
 ## Project layout
 
