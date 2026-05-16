@@ -189,7 +189,15 @@ export function CommentItem({ comment, isAuthed, onChange, onDelete }: Props) {
       <Avatar
         src={comment.user?.avatarUrl ?? undefined}
         alt={comment.user?.name ?? ""}
-        sx={{ width: 36, height: 36, flexShrink: 0 }}
+        sx={{
+          width: 40,
+          height: 40,
+          flexShrink: 0,
+          bgcolor: "primary.main",
+          color: "primary.contrastText",
+          fontSize: "0.95rem",
+          fontWeight: 600,
+        }}
       >
         {comment.user?.name?.[0]?.toUpperCase() ?? "?"}
       </Avatar>

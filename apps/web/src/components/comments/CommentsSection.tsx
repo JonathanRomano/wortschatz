@@ -93,7 +93,14 @@ export function CommentsSection({ exerciseId, isAuthed, initial }: Props) {
     >
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}
-        sx={{ minHeight: 56, "& .MuiAccordionSummary-content": { my: 1 } }}
+        sx={{
+          minHeight: 56,
+          "& .MuiAccordionSummary-content": { my: 1 },
+          transition: "background-color 200ms ease",
+          "&:hover": {
+            backgroundColor: "surfaceAlt.main",
+          },
+        }}
       >
         <Stack
           direction="row"
