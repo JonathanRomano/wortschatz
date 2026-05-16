@@ -258,6 +258,39 @@ Then declare it as a dep on the consuming app:
    `apps/web/scripts/generate-exercises.ts` calls Claude directly via
    the in-process `apps/web/src/lib/ai.ts`.
 
+## Dev-mode performance
+
+The Sprint 03 split introduced a real cost: cold page compiles jumped
+from sub-second to 3–10 s because webpack now transpiles every
+`@wortschatz/*` workspace package on every cold start. Sprint 03.5
+tuned the obvious knobs (see [`PERFORMANCE.md`](./PERFORMANCE.md) for
+numbers and methodology):
+
+- **`serverExternalPackages`** keeps `@prisma/client`,
+  `@anthropic-ai/sdk`, `sharp`, `bcryptjs` out of the dev bundle —
+  they're `require()`d at runtime instead.
+- **`experimental.optimizePackageImports`** trims recharts barrels
+  (MUI was already deep-path).
+- **`experimental.webpackBuildWorker`** moves webpack to a worker so
+  the main process stays responsive.
+
+Net effect after the hotfix: hot reload **~20 % faster** (538 ms →
+430 ms compile, 263 ms → 203 ms response); cold compiles still vary
+3–10 s depending on route depth. The remaining cost is structural —
+see "Open questions / next levers" in PERFORMANCE.md.
+
+If a route feels unusably slow during iteration:
+
+- **Don't `rm -rf .next`** unless you have to; route compiles after
+  the first are much faster with a warm `.next/cache/`.
+- The `<w> [webpack.cache.PackFileCacheStrategy] Serializing big
+  strings (128kiB)…` warning is webpack's own grumble about cache
+  format, not your code — leave it.
+- Turbopack (`next dev --turbo`) does not currently work in this
+  repo: it can't follow the source-only packages' `.js → .ts`
+  rewrite and chokes on MUI v9 `proxy.js` barrels. Reachable only
+  after the packages ship compiled `dist/`.
+
 ## Where the bodies are buried
 
 - **`shamefully-hoist=true`** in `.npmrc`. Needed for Next.js + MUI
