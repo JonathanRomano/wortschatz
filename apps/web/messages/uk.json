@@ -89,7 +89,8 @@
         "progress": "{done} / {goal}",
         "complete": "Виконано на сьогодні!"
       }
-    }
+    },
+    "welcomeBack": "Раді бачити знову"
   },
   "exercises": {
     "browseTitle": "Вправи",

@@ -162,6 +162,9 @@ export default async function DashboardPage({
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 5 } }}>
+      {/* Hero — welcome + reward chips. Streak + Münzen are the
+          identity carriers, so they sit prominently in the first row
+          rather than buried inside the highlights grid. */}
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={2}
@@ -175,19 +178,28 @@ export default async function DashboardPage({
             variant="overline"
             sx={{ color: "text.secondary", display: "block" }}
           >
-            {t("dashboard.title")}
+            {t("dashboard.welcomeBack")}
           </Typography>
-          <Typography variant="h1" sx={{ mt: 0.5, fontSize: { xs: "2rem", sm: "2.5rem" } }}>
+          <Typography
+            variant="h1"
+            sx={{
+              mt: 0.5,
+              fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
+              lineHeight: 1.05,
+              letterSpacing: "-0.02em",
+            }}
+          >
             {user.name ?? session.user.email}
           </Typography>
         </Box>
-        <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-          <MuenzenBadge amount={user.muenzen} size="lg" />
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", flexWrap: "wrap" }}>
           <StreakFlame days={user.streak} size="lg" />
+          <MuenzenBadge amount={user.muenzen} size="lg" />
         </Stack>
       </Stack>
 
-      {/* Highlights row */}
+      {/* Highlights — totals only. Münzen + streak already in the hero,
+          so they're not duplicated here. */}
       <Box
         component="section"
         sx={{
@@ -201,62 +213,39 @@ export default async function DashboardPage({
           },
         }}
       >
-        <Stat
-          label={t("dashboard.muenzenBalance")}
-          value={`${user.muenzen}`}
-          subtle="M"
-          accent
-        />
-        <Stat
-          label={t("dashboard.currentStreak")}
-          value={t("dashboard.streakDays", { days: user.streak })}
-        />
         <Stat label={t("dashboard.exercisesThisWeek")} value={String(week)} />
         <Stat label={t("dashboard.exercisesThisMonth")} value={String(month)} />
-      </Box>
-
-      <Box
-        component="section"
-        sx={{
-          mt: 1.5,
-          display: "grid",
-          gap: { xs: 1.5, sm: 2 },
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
-        }}
-      >
         <Stat label={t("dashboard.exercisesTotal")} value={String(total)} />
         <Stat
           label={t("dashboard.toReview")}
           value={String(mistakesCount)}
           accent={mistakesCount > 0}
         />
+      </Box>
+
+      <Box sx={{ mt: { xs: 1.5, sm: 2 } }}>
         <ButtonLink
           href="/exercises/mistakes"
           variant="outlined"
           size="large"
-          fullWidth
         >
           {t("dashboard.reviewMistakes")}
         </ButtonLink>
       </Box>
 
-      {/* Row 1 — Münzen series + daily goal ring */}
+      {/* Row 1 — Daily goal ring + recent activity. Putting them side
+          by side gives the user a "today" + "what just happened" view
+          before the heavier charts. */}
       <Box
         component="section"
         sx={{
           mt: { xs: 3, sm: 4 },
           display: "grid",
           gap: { xs: 2, sm: 3 },
-          gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" },
+          gridTemplateColumns: { xs: "1fr", md: "1fr 2fr" },
+          alignItems: "stretch",
         }}
       >
-        <ChartCard title={tCharts("muenzenSeries.title")}>
-          <MuenzenSeriesChart
-            data={muenzenSeries}
-            locale={locale}
-            emptyMessage={tCharts("muenzenSeries.empty")}
-          />
-        </ChartCard>
         <ChartCard title={tCharts("dailyGoal.title")}>
           <DailyGoalRing
             done={doneToday}
@@ -268,16 +257,110 @@ export default async function DashboardPage({
             completeLabel={tCharts("dailyGoal.complete")}
           />
         </ChartCard>
+
+        <Card>
+          <Typography variant="h4">{t("dashboard.recentActivity")}</Typography>
+          {recent.length === 0 ? (
+            <Box
+              sx={{
+                mt: 2,
+                p: 3,
+                textAlign: "center",
+                border: "1px dashed",
+                borderColor: "divider",
+                borderRadius: 1,
+              }}
+            >
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                {t("dashboard.noActivity")}
+              </Typography>
+            </Box>
+          ) : (
+            <Stack
+              divider={
+                <Box sx={{ borderTop: 1, borderColor: "divider" }} />
+              }
+              sx={{ mt: 1.5 }}
+            >
+              {recent.slice(0, 5).map((r) => (
+                <Stack
+                  key={r.id}
+                  direction="row"
+                  spacing={1.5}
+                  sx={{
+                    py: 1.25,
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    spacing={1.5}
+                    sx={{ flex: 1, alignItems: "center", minWidth: 0 }}
+                  >
+                    <LevelChip level={r.exercise.level} size="sm" />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        flex: 1,
+                        minWidth: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {r.exercise.title}
+                    </Typography>
+                  </Stack>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      flexShrink: 0,
+                      fontFamily:
+                        'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+                      color: r.score >= 60 ? "success.main" : "error.main",
+                    }}
+                  >
+                    {r.score}/100
+                  </Typography>
+                </Stack>
+              ))}
+            </Stack>
+          )}
+        </Card>
       </Box>
 
-      {/* Row 2 — Activity heatmap (full width) */}
+      {/* Row 2 — Performance radar (full width, larger). The radar
+          benefits most from horizontal space. */}
+      <Box component="section" sx={{ mt: { xs: 2, sm: 3 } }}>
+        <ChartCard title={tCharts("radar.title")}>
+          <ProficiencyRadar
+            data={radar}
+            emptyMessage={tCharts("radar.empty")}
+          />
+        </ChartCard>
+      </Box>
+
+      {/* Row 3 — Münzen history (full width). */}
+      <Box component="section" sx={{ mt: { xs: 2, sm: 3 } }}>
+        <ChartCard title={tCharts("muenzenSeries.title")}>
+          <MuenzenSeriesChart
+            data={muenzenSeries}
+            locale={locale}
+            emptyMessage={tCharts("muenzenSeries.empty")}
+          />
+        </ChartCard>
+      </Box>
+
+      {/* Row 4 — Activity heatmap (full width). */}
       <Box component="section" sx={{ mt: { xs: 2, sm: 3 } }}>
         <ChartCard title={tCharts("activity.title")}>
           <ActivityHeatmap data={heatmap} locale={locale} />
         </ChartCard>
       </Box>
 
-      {/* Row 3 — Radar + by-level + by-type cards */}
+      {/* Row 5 — By-level + by-type breakdowns. Demoted below the
+          main charts because they're reference data, not headline. */}
       <Box
         component="section"
         sx={{
@@ -287,13 +370,6 @@ export default async function DashboardPage({
           gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
         }}
       >
-        <ChartCard title={tCharts("radar.title")}>
-          <ProficiencyRadar
-            data={radar}
-            emptyMessage={tCharts("radar.empty")}
-          />
-        </ChartCard>
-
         <Card>
           <Typography variant="h4">{t("dashboard.byLevel")}</Typography>
           <Stack spacing={1.5} sx={{ mt: 2 }}>
@@ -327,10 +403,7 @@ export default async function DashboardPage({
             ))}
           </Stack>
         </Card>
-      </Box>
 
-      {/* By type — full width because 10 rows of label+bar is tall */}
-      <Box component="section" sx={{ mt: { xs: 2, sm: 3 } }}>
         <Card>
           <Typography variant="h4">{t("dashboard.byType")}</Typography>
           <Stack spacing={1.5} sx={{ mt: 2 }}>
@@ -375,79 +448,6 @@ export default async function DashboardPage({
               </Stack>
             ))}
           </Stack>
-        </Card>
-      </Box>
-
-      <Box component="section" sx={{ mt: { xs: 3, sm: 4 } }}>
-        <Card>
-          <Typography variant="h4">{t("dashboard.recentActivity")}</Typography>
-          {recent.length === 0 ? (
-            <Box
-              sx={{
-                mt: 2,
-                p: 3,
-                textAlign: "center",
-                border: "1px dashed",
-                borderColor: "divider",
-                borderRadius: 1,
-              }}
-            >
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                {t("dashboard.noActivity")}
-              </Typography>
-            </Box>
-          ) : (
-            <Stack
-              divider={
-                <Box sx={{ borderTop: 1, borderColor: "divider" }} />
-              }
-              sx={{ mt: 1.5 }}
-            >
-              {recent.map((r) => (
-                <Stack
-                  key={r.id}
-                  direction="row"
-                  spacing={1.5}
-                  sx={{
-                    py: 1.5,
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Stack
-                    direction="row"
-                    spacing={1.5}
-                    sx={{ flex: 1, alignItems: "center", minWidth: 0 }}
-                  >
-                    <LevelChip level={r.exercise.level} size="sm" />
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        flex: 1,
-                        minWidth: 0,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {r.exercise.title}
-                    </Typography>
-                  </Stack>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      flexShrink: 0,
-                      fontFamily:
-                        'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
-                      color: r.score >= 60 ? "success.main" : "error.main",
-                    }}
-                  >
-                    {r.score}/100
-                  </Typography>
-                </Stack>
-              ))}
-            </Stack>
-          )}
         </Card>
       </Box>
     </Container>

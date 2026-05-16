@@ -89,7 +89,8 @@
         "progress": "{done} / {goal}",
         "complete": "Concluído por hoje!"
       }
-    }
+    },
+    "welcomeBack": "Bem-vindo de volta"
   },
   "exercises": {
     "browseTitle": "Exercícios",

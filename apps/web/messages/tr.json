@@ -89,7 +89,8 @@
         "progress": "{done} / {goal}",
         "complete": "Bugün için tamamlandı!"
       }
-    }
+    },
+    "welcomeBack": "Tekrar hoş geldin"
   },
   "exercises": {
     "browseTitle": "Alıştırmalar",
