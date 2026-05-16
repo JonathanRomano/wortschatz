@@ -17,11 +17,12 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "db:push": "prisma db push",
-    "db:migrate": "prisma migrate dev",
-    "db:generate": "prisma generate",
-    "db:studio": "prisma studio",
-    "db:seed": "tsx scripts/seed.ts",
+    "db:push": "pnpm --filter @wortschatz/database push",
+    "db:migrate": "pnpm --filter @wortschatz/database migrate",
+    "db:migrate:deploy": "pnpm --filter @wortschatz/database migrate:deploy",
+    "db:generate": "pnpm --filter @wortschatz/database generate",
+    "db:studio": "pnpm --filter @wortschatz/database studio",
+    "db:seed": "pnpm --filter @wortschatz/database seed",
     "db:generate-exercises": "tsx scripts/generate-exercises.ts",
     "db:migrate-exercise-i18n": "tsx scripts/migrate-exercise-i18n.ts",
     "db:seed-muenzen-history": "tsx scripts/seed-muenzen-history.ts",
@@ -70,6 +71,7 @@
     "vitest": "^4.1.6"
   },
   "prisma": {
-    "seed": "tsx scripts/seed.ts"
+    "schema": "packages/database/prisma/schema.prisma",
+    "seed": "tsx packages/database/prisma/seed.ts"
   }
 }

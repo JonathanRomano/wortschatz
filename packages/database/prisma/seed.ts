@@ -1,9 +1,16 @@
 /**
  * Seed the database with the admin and teacher accounts.
  *
- *   npm run db:seed
+ *   pnpm db:seed                       # from repo root
+ *   pnpm --filter @wortschatz/database seed
  *
  * Idempotent — safe to re-run. Passwords are bcrypt-hashed.
+ *
+ * Imports PrismaClient directly from @prisma/client rather than via
+ * @wortschatz/database to avoid a package-self-reference (seed.ts lives
+ * inside the database package). And uses a fresh client instead of the
+ * exported singleton because seed is a one-shot script — we want a
+ * connection we explicitly $disconnect at the end.
  */
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
