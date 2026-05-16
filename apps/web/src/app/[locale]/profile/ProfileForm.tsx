@@ -164,13 +164,18 @@ export function ProfileForm({
             alt={name || email}
             onClick={() => fileInputRef.current?.click()}
             sx={{
-              width: 96,
-              height: 96,
+              width: { xs: 112, sm: 144 },
+              height: { xs: 112, sm: 144 },
               cursor: "pointer",
-              fontSize: "2rem",
+              fontSize: { xs: "2.25rem", sm: "2.75rem" },
               fontFamily: "var(--font-display)",
               bgcolor: "primary.main",
               color: "primary.contrastText",
+              transition: "transform 200ms ease, box-shadow 200ms ease",
+              "&:hover, &:focus-within": {
+                transform: "scale(1.02)",
+                boxShadow: 3,
+              },
             }}
           >
             {!avatarUrl ? initials : null}

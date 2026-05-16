@@ -48,10 +48,77 @@ export default async function ProfilePage({
   });
 
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 4, sm: 5 }, px: { xs: 2, sm: 3 } }}>
-      <Typography variant="h1" sx={{ fontSize: { xs: "2rem", sm: "2.5rem" } }}>
+    <Container maxWidth="md" sx={{ py: { xs: 4, sm: 5 }, px: { xs: 2, sm: 3 } }}>
+      <Typography
+        variant="h1"
+        sx={{
+          fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
+          lineHeight: 1.05,
+          letterSpacing: "-0.02em",
+        }}
+      >
         {t("title")}
       </Typography>
+
+      {/* Stats + history link sit at the top now, so the user lands on
+          their identity numbers before scrolling into the editable
+          form. Two-column grid on sm+: stats on the left, history on
+          the right. */}
+      <Box
+        sx={{
+          mt: 3,
+          display: "grid",
+          gap: { xs: 2, sm: 3 },
+          gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" },
+          alignItems: "stretch",
+        }}
+      >
+        <Card padding="lg">
+          <Typography variant="h4">{t("stats.title")}</Typography>
+          <Box
+            sx={{
+              mt: 2,
+              display: "grid",
+              gap: { xs: 1.5, sm: 2 },
+              gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+            }}
+          >
+            <StatCell
+              label={t("stats.totalExercises")}
+              value={String(totalExercises)}
+            />
+            <StatCell
+              label={t("stats.currentStreak")}
+              value=""
+              icon={<StreakFlame days={user.streak} size="md" />}
+            />
+            <StatCell
+              label={t("stats.totalMuenzen")}
+              value=""
+              icon={<MuenzenBadge amount={user.muenzen} size="md" />}
+            />
+          </Box>
+        </Card>
+
+        <Card
+          padding="lg"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography variant="h4">{t("historyLink")}</Typography>
+          <ButtonLink
+            href="/profile/historico"
+            variant="outlined"
+            color="primary"
+            sx={{ mt: 2, width: "100%", minHeight: 44 }}
+          >
+            {t("historyLink")}
+          </ButtonLink>
+        </Card>
+      </Box>
 
       <Card padding="lg" sx={{ mt: 3 }}>
         <ProfileForm
@@ -65,44 +132,6 @@ export default async function ProfilePage({
           avatarUrl={user.avatarUrl}
         />
       </Card>
-
-      <Card padding="lg" sx={{ mt: 3 }}>
-        <Typography variant="h4">{t("stats.title")}</Typography>
-        <Box
-          sx={{
-            mt: 2,
-            display: "grid",
-            gap: { xs: 1.5, sm: 2 },
-            gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
-          }}
-        >
-          <StatCell
-            label={t("stats.totalExercises")}
-            value={String(totalExercises)}
-          />
-          <StatCell
-            label={t("stats.currentStreak")}
-            value=""
-            icon={<StreakFlame days={user.streak} size="md" />}
-          />
-          <StatCell
-            label={t("stats.totalMuenzen")}
-            value=""
-            icon={<MuenzenBadge amount={user.muenzen} size="md" />}
-          />
-        </Box>
-      </Card>
-
-      <Stack sx={{ mt: 3, alignItems: { xs: "stretch", sm: "flex-start" } }}>
-        <ButtonLink
-          href="/profile/historico"
-          variant="outlined"
-          color="primary"
-          sx={{ width: { xs: "100%", sm: "auto" }, minHeight: 44 }}
-        >
-          {t("historyLink")}
-        </ButtonLink>
-      </Stack>
     </Container>
   );
 }
