@@ -20,8 +20,7 @@
     "colorMode": {
       "toggle": "Alternar modo de cor",
       "light": "Claro",
-      "dark": "Escuro",
-      "system": "Sistema"
+      "dark": "Escuro"
     }
   },
   "landing": {

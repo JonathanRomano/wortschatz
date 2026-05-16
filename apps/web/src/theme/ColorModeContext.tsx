@@ -2,23 +2,20 @@
 
 import { createContext } from "react";
 
-import type { ThemeMode } from "./index";
-
 /**
- * The user's explicit color mode choice. `"system"` defers to the OS
- * `prefers-color-scheme` media query, while `"light"` and `"dark"` are
- * explicit overrides persisted to `localStorage`.
+ * The user's color-mode choice. Only `"light"` and `"dark"` since
+ * Sprint 04 — the previous `"system"` (follow OS) option was removed
+ * to simplify the toggle UX. Pre-Sprint-04 stored values of `"system"`
+ * are migrated to `"light"` on the next read.
  */
-export type ColorModeChoice = "light" | "dark" | "system";
+export type ColorModeChoice = "light" | "dark";
 
 export type ColorModeContextValue = {
-  /** The user's explicit choice (may be `"system"`). */
+  /** Current palette mode. */
   mode: ColorModeChoice;
-  /** The actually-applied palette mode (`"light"` or `"dark"`). */
-  resolvedMode: ThemeMode;
-  /** Set the explicit choice. Persists to `localStorage`. */
+  /** Set the mode explicitly. Persists to `localStorage`. */
   setMode: (next: ColorModeChoice) => void;
-  /** Cycle light -> dark -> system -> light. */
+  /** Flip light ↔ dark. */
   toggle: () => void;
 };
 
@@ -28,15 +25,14 @@ export type ColorModeContextValue = {
  * supplies the real implementation.
  */
 export const ColorModeContext = createContext<ColorModeContextValue>({
-  mode: "system",
-  resolvedMode: "light",
+  mode: "light",
   setMode: () => {},
   toggle: () => {},
 });
 
 /**
- * Storage key for the user's explicit choice. Kept in one place so the
- * inline FOUC-prevention script in the root layout and the React-side
- * provider stay in sync.
+ * Storage key for the user's choice. Kept in one place so the inline
+ * FOUC-prevention script in the root layout and the React-side provider
+ * stay in sync.
  */
 export const COLOR_MODE_STORAGE_KEY = "wortschatz:color-mode";

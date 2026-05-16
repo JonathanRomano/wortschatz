@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 
@@ -33,28 +33,6 @@ function installInMemoryLocalStorage(): void {
   });
 }
 
-// Minimal matchMedia stub that always reports light mode. Provider's
-// effects call matchMedia on mount and subscribe to "change"; we just
-// need a no-op shape that satisfies both addEventListener and the older
-// addListener fallback so the provider can mount cleanly under jsdom.
-function installMatchMediaStub(matches = false): void {
-  const mql = {
-    matches,
-    media: "(prefers-color-scheme: dark)",
-    onchange: null,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  };
-  Object.defineProperty(window, "matchMedia", {
-    configurable: true,
-    writable: true,
-    value: vi.fn().mockReturnValue(mql),
-  });
-}
-
 function wrapper({ children }: { children: ReactNode }) {
   return <AppThemeProvider>{children}</AppThemeProvider>;
 }
@@ -63,13 +41,11 @@ describe("useColorMode (outside provider)", () => {
   beforeEach(() => {
     installInMemoryLocalStorage();
     delete document.documentElement.dataset.colorMode;
-    installMatchMediaStub(false);
   });
 
   it("returns safe defaults when called without a provider", () => {
     const { result } = renderHook(() => useColorMode());
-    expect(result.current.mode).toBe("system");
-    expect(result.current.resolvedMode).toBe("light");
+    expect(result.current.mode).toBe("light");
   });
 
   it("does not throw when calling setMode/toggle outside a provider", () => {
@@ -83,25 +59,22 @@ describe("useColorMode (inside AppThemeProvider)", () => {
   beforeEach(() => {
     installInMemoryLocalStorage();
     delete document.documentElement.dataset.colorMode;
-    installMatchMediaStub(false);
   });
 
-  it("setMode('dark') updates mode and resolvedMode", () => {
+  it("setMode('dark') updates mode", () => {
     const { result } = renderHook(() => useColorMode(), { wrapper });
-    expect(result.current.mode).toBe("system");
+    expect(result.current.mode).toBe("light");
 
     act(() => {
       result.current.setMode("dark");
     });
 
     expect(result.current.mode).toBe("dark");
-    expect(result.current.resolvedMode).toBe("dark");
   });
 
-  it("toggle cycles light -> dark -> system -> light", () => {
+  it("toggle flips light ↔ dark", () => {
     const { result } = renderHook(() => useColorMode(), { wrapper });
 
-    // Pin to a known starting point.
     act(() => {
       result.current.setMode("light");
     });
@@ -111,11 +84,6 @@ describe("useColorMode (inside AppThemeProvider)", () => {
       result.current.toggle();
     });
     expect(result.current.mode).toBe("dark");
-
-    act(() => {
-      result.current.toggle();
-    });
-    expect(result.current.mode).toBe("system");
 
     act(() => {
       result.current.toggle();
@@ -132,11 +100,6 @@ describe("useColorMode (inside AppThemeProvider)", () => {
     expect(localStorage.getItem(COLOR_MODE_STORAGE_KEY)).toBe("dark");
 
     act(() => {
-      result.current.setMode("system");
-    });
-    expect(localStorage.getItem(COLOR_MODE_STORAGE_KEY)).toBe("system");
-
-    act(() => {
       result.current.setMode("light");
     });
     expect(localStorage.getItem(COLOR_MODE_STORAGE_KEY)).toBe("light");
@@ -145,7 +108,6 @@ describe("useColorMode (inside AppThemeProvider)", () => {
   it("toggle persists the new value to localStorage", () => {
     const { result } = renderHook(() => useColorMode(), { wrapper });
 
-    // Start from a known mode so the toggle target is deterministic.
     act(() => {
       result.current.setMode("light");
     });

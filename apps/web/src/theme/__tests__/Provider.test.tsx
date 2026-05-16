@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { useTheme } from "@mui/material/styles";
 
@@ -12,17 +12,6 @@ function ModeProbe() {
   const theme = useTheme();
   return <span data-testid="mode-probe">{theme.palette.mode}</span>;
 }
-
-type Mql = {
-  matches: boolean;
-  media: string;
-  onchange: null;
-  addEventListener: ReturnType<typeof vi.fn>;
-  removeEventListener: ReturnType<typeof vi.fn>;
-  addListener: ReturnType<typeof vi.fn>;
-  removeListener: ReturnType<typeof vi.fn>;
-  dispatchEvent: ReturnType<typeof vi.fn>;
-};
 
 function installInMemoryLocalStorage(): void {
   const store = new Map<string, string>();
@@ -47,34 +36,10 @@ function installInMemoryLocalStorage(): void {
   });
 }
 
-function installMatchMediaStub(matches: boolean): Mql {
-  const mql: Mql = {
-    matches,
-    media: "(prefers-color-scheme: dark)",
-    onchange: null,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  };
-  // `vi.stubGlobal` also patches `window.matchMedia` because jsdom's
-  // window === globalThis, but we re-pin via defineProperty to make the
-  // assignment survive the StrictMode-style double-mount used in some
-  // testing-library configurations.
-  Object.defineProperty(window, "matchMedia", {
-    configurable: true,
-    writable: true,
-    value: vi.fn().mockReturnValue(mql),
-  });
-  return mql;
-}
-
 describe("<AppThemeProvider />", () => {
   beforeEach(() => {
     installInMemoryLocalStorage();
     delete document.documentElement.dataset.colorMode;
-    installMatchMediaStub(false);
   });
 
   it("renders children in the default (light) mode", () => {
@@ -113,7 +78,7 @@ describe("<AppThemeProvider />", () => {
     expect(screen.getByTestId("mode-probe")).toHaveTextContent("dark");
   });
 
-  it("uses dark palette when localStorage holds 'dark' (the realistic post-hydration path)", () => {
+  it("uses dark palette when localStorage holds 'dark'", () => {
     window.localStorage.setItem(COLOR_MODE_STORAGE_KEY, "dark");
     render(
       <AppThemeProvider>
@@ -133,33 +98,26 @@ describe("<AppThemeProvider />", () => {
     expect(screen.getByTestId("mode-probe")).toHaveTextContent("light");
   });
 
-  it("resolves to dark when stored mode is 'system' and matchMedia reports dark", () => {
-    installMatchMediaStub(true);
+  it("migrates the pre-Sprint-04 'system' value to light", () => {
+    // Users who picked "system" before Sprint 04 should fall back to
+    // light without throwing or rendering an invalid theme.
     window.localStorage.setItem(COLOR_MODE_STORAGE_KEY, "system");
     render(
       <AppThemeProvider>
         <ModeProbe />
       </AppThemeProvider>,
     );
-    expect(screen.getByTestId("mode-probe")).toHaveTextContent("dark");
+    expect(screen.getByTestId("mode-probe")).toHaveTextContent("light");
   });
 
-  it("seeds systemMode from document.documentElement.dataset.colorMode when matchMedia is unavailable", () => {
-    // With matchMedia missing, readSystemMode returns null and the mount
-    // effect leaves the DOM-seeded value intact.
-    Object.defineProperty(window, "matchMedia", {
-      configurable: true,
-      writable: true,
-      value: undefined,
-    });
-    document.documentElement.dataset.colorMode = "dark";
-
+  it("ignores garbage values and renders light", () => {
+    window.localStorage.setItem(COLOR_MODE_STORAGE_KEY, "neon");
     render(
-      <AppThemeProvider defaultMode="system">
+      <AppThemeProvider>
         <ModeProbe />
       </AppThemeProvider>,
     );
-    expect(screen.getByTestId("mode-probe")).toHaveTextContent("dark");
+    expect(screen.getByTestId("mode-probe")).toHaveTextContent("light");
   });
 
   it("writes the resolved mode back onto <html data-color-mode>", () => {
@@ -170,20 +128,5 @@ describe("<AppThemeProvider />", () => {
       </AppThemeProvider>,
     );
     expect(document.documentElement.dataset.colorMode).toBe("dark");
-  });
-
-  it("survives without a matchMedia implementation", () => {
-    // Some jsdom-based environments still leave matchMedia undefined.
-    Object.defineProperty(window, "matchMedia", {
-      configurable: true,
-      writable: true,
-      value: undefined,
-    });
-    render(
-      <AppThemeProvider defaultMode="light">
-        <ModeProbe />
-      </AppThemeProvider>,
-    );
-    expect(screen.getByTestId("mode-probe")).toHaveTextContent("light");
   });
 });
