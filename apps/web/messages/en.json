@@ -112,7 +112,10 @@
     "empty": "No exercises match your filters.",
     "completed": "Completed",
     "alreadyEarned": "You already earned Münzen for this exercise.",
-    "rewardEarned": "+{amount} Münzen earned"
+    "rewardEarned": "+{amount} Münzen earned",
+    "debug": {
+      "copyIdHint": "Click to copy exercise id"
+    }
   },
   "mistakes": {
     "title": "My mistakes",

@@ -8,6 +8,7 @@ import Button from "@mui/material/Button";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Fade from "@mui/material/Fade";
+import Typography from "@mui/material/Typography";
 
 import { ExerciseRenderer } from "@/components/exercises/renderers";
 import { ExerciseResult } from "@/components/exercises/ExerciseResult";
@@ -42,6 +43,31 @@ export function ExerciseRunner({
 
   return (
     <Stack spacing={3}>
+      {process.env.NODE_ENV === "development" ? (
+        <Typography
+          component="code"
+          variant="caption"
+          title={t("debug.copyIdHint")}
+          onClick={() => {
+            void navigator.clipboard?.writeText(exerciseId);
+          }}
+          sx={{
+            alignSelf: "flex-start",
+            px: 1,
+            py: 0.25,
+            borderRadius: 1,
+            fontFamily:
+              'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+            backgroundColor: "surfaceAlt.main",
+            color: "text.secondary",
+            cursor: "copy",
+            userSelect: "all",
+          }}
+        >
+          id: {exerciseId}
+        </Typography>
+      ) : null}
+
       {alreadyEarned ? (
         <Alert
           severity="info"

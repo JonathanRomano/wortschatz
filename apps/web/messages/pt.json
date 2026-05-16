@@ -112,7 +112,10 @@
     "empty": "Nenhum exercício corresponde aos filtros.",
     "completed": "Completado",
     "alreadyEarned": "Você já ganhou Münzen por este exercício.",
-    "rewardEarned": "+{amount} Münzen ganhas"
+    "rewardEarned": "+{amount} Münzen ganhas",
+    "debug": {
+      "copyIdHint": "Clique para copiar o id do exercício"
+    }
   },
   "mistakes": {
     "title": "Meus erros",

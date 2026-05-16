@@ -135,7 +135,36 @@ export function TypeRunner({
               justifyContent: "space-between",
             }}
           >
-            <LevelChip level={exercise.level} />
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ alignItems: "center", flexWrap: "wrap" }}
+            >
+              <LevelChip level={exercise.level} />
+              {process.env.NODE_ENV === "development" ? (
+                <Typography
+                  component="code"
+                  variant="caption"
+                  title={t("debug.copyIdHint")}
+                  onClick={() => {
+                    void navigator.clipboard?.writeText(exercise.id);
+                  }}
+                  sx={{
+                    px: 1,
+                    py: 0.25,
+                    borderRadius: 1,
+                    fontFamily:
+                      'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+                    backgroundColor: "surfaceAlt.main",
+                    color: "text.secondary",
+                    cursor: "copy",
+                    userSelect: "all",
+                  }}
+                >
+                  id: {exercise.id}
+                </Typography>
+              ) : null}
+            </Stack>
             <IconButton
               type="button"
               aria-label={tIntro("openHelp")}

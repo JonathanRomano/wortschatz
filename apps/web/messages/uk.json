@@ -112,7 +112,10 @@
     "empty": "Жодна вправа не відповідає фільтрам.",
     "completed": "Виконано",
     "alreadyEarned": "Ви вже заробили Münzen за цю вправу.",
-    "rewardEarned": "+{amount} Münzen зароблено"
+    "rewardEarned": "+{amount} Münzen зароблено",
+    "debug": {
+      "copyIdHint": "Натисніть, щоб скопіювати id вправи"
+    }
   },
   "mistakes": {
     "title": "Мої помилки",

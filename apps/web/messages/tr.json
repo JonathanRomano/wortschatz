@@ -112,7 +112,10 @@
     "empty": "Filtrelerinize uyan alıştırma yok.",
     "completed": "Tamamlandı",
     "alreadyEarned": "Bu alıştırma için Münzen'i zaten kazandınız.",
-    "rewardEarned": "+{amount} Münzen kazanıldı"
+    "rewardEarned": "+{amount} Münzen kazanıldı",
+    "debug": {
+      "copyIdHint": "Alıştırma id'sini kopyalamak için tıklayın"
+    }
   },
   "mistakes": {
     "title": "Hatalarım",
