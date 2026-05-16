@@ -60,7 +60,20 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${inter.variable} ${fraunces.variable}`}>
+    // suppressHydrationWarning is required because COLOR_MODE_BOOT_SCRIPT
+    // below writes `data-color-mode` and `style.color-scheme` onto this
+    // element before React hydrates. The server-rendered HTML has neither
+    // attribute, so without this flag React would warn about an attribute
+    // mismatch on first hydration. The suppression is one element deep
+    // (per React docs) — it does *not* silence mismatches inside <body>,
+    // which is why the theme provider keeps the very first React render
+    // in light mode and only swaps to the user's preference in a layout
+    // effect; see Provider.tsx for the matching half of this contract.
+    <html
+      lang={locale}
+      className={`${inter.variable} ${fraunces.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {/*
           Runs synchronously before <body> paints. Resolves the persisted

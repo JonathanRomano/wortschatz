@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -56,15 +57,25 @@ function readSystemMode(): ThemeMode | null {
   return window.matchMedia(PREFERS_DARK_QUERY).matches ? "dark" : "light";
 }
 
-// The blocking inline script in the root layout writes the resolved mode
-// to `<html data-color-mode="…">` before React hydrates. Reading it back
-// on first client render keeps MUI's palette in sync with the rest of
-// the page from frame 1, avoiding a light-palette flash for dark users.
+// The blocking inline script in the root layout writes the resolved
+// mode to `<html data-color-mode="…">` before React hydrates. We read
+// it back inside a layout effect (not in `useState`) so the very first
+// React render still matches what the server emitted — otherwise every
+// emotion-hashed className for dark-mode users would mismatch between
+// SSR and hydration. The layout effect runs synchronously before the
+// browser paints, so the dark theme swap is invisible to the user.
 function readDomResolvedMode(): ThemeMode | null {
   if (typeof document === "undefined") return null;
   const value = document.documentElement.dataset.colorMode;
   return value === "dark" || value === "light" ? value : null;
 }
+
+// `useLayoutEffect` warns when called server-side. The Provider is a
+// `"use client"` component but Next.js still SSRs it, so swap to
+// `useEffect` on the server pass to silence the warning while keeping
+// the synchronous-before-paint behavior on the client.
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 export function AppThemeProvider({
   children,
@@ -72,27 +83,27 @@ export function AppThemeProvider({
   mode: legacyMode,
 }: Props) {
   const initialMode: ColorModeChoice = defaultMode ?? legacyMode ?? "system";
-  // We start with the caller-supplied default so the server render and
-  // the first client render agree. The blocking inline script in the
-  // root layout has already set the correct `color-scheme` on <html> for
-  // first paint; we resolve React state right after mount.
+  // The server has no access to localStorage or matchMedia, so it
+  // always renders with `mode = initialMode` and `systemMode = "light"`.
+  // The first client render (during hydration) must produce the same
+  // tree to avoid a hydration mismatch on every emotion-styled class
+  // name. Reading the user's actual preference happens in the layout
+  // effect below — synchronously, before the browser paints.
   const [mode, setModeState] = useState<ColorModeChoice>(initialMode);
-  // Seed systemMode from the DOM if the blocking script already wrote
-  // it. On the server this stays "light"; on first client render it
-  // picks up the real resolved mode so the very first React paint
-  // matches what the user actually wants.
-  const [systemMode, setSystemMode] = useState<ThemeMode>(
-    () => readDomResolvedMode() ?? "light",
-  );
+  const [systemMode, setSystemMode] = useState<ThemeMode>("light");
   const [hydrated, setHydrated] = useState(false);
 
-  // On mount, pick up the persisted choice and the current system mode.
-  // Only overwrite when we actually found a value — otherwise we'd clobber
-  // a caller-supplied `defaultMode`/`mode` prop or the DOM-seeded systemMode.
-  useEffect(() => {
+  // Pick up the persisted choice + current system mode synchronously
+  // after the hydration commit. `useLayoutEffect` guarantees the state
+  // update is flushed before the browser paints, so dark-mode users
+  // see one frame of dark, not a flash of light → dark. matchMedia is
+  // the source of truth for `systemMode`; if the browser doesn't have
+  // it (older Safari, some test envs), we fall back to whatever the
+  // blocking inline script wrote on <html>.
+  useIsomorphicLayoutEffect(() => {
     const stored = readStoredMode();
     if (stored !== null) setModeState(stored);
-    const system = readSystemMode();
+    const system = readSystemMode() ?? readDomResolvedMode();
     if (system !== null) setSystemMode(system);
     setHydrated(true);
   }, []);
