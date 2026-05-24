@@ -15,6 +15,7 @@ import { StreakFlame } from "@/components/ui/StreakFlame";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { MobileMenu } from "./MobileMenu";
 import { ColorModeToggle } from "./ColorModeToggle";
+import { UserMenu } from "./UserMenu";
 import {
   HeaderBrandLink,
   HeaderLoginButton,
@@ -29,12 +30,18 @@ export async function Header() {
   const role = session?.user?.role;
   const isAdmin = role === "ADMIN" || role === "TEACHER";
 
-  // Pull live Münzen/streak for the header chip. Cheap, indexed by id.
+  // Pull live Münzen/streak/avatar for the header. Cheap, indexed by id.
   const wallet =
     isAuthed && session.user.id
       ? await prisma.user.findUnique({
           where: { id: session.user.id },
-          select: { muenzen: true, streak: true },
+          select: {
+            muenzen: true,
+            streak: true,
+            name: true,
+            email: true,
+            avatarUrl: true,
+          },
         })
       : null;
 
@@ -43,17 +50,22 @@ export async function Header() {
     { href: "/exercises", label: t("exercises") },
     { href: "/exercises/mistakes", label: t("mistakes") },
     { href: "/review", label: t("review") },
-    { href: "/profile", label: t("profile") },
     ...(isAdmin ? [{ href: "/admin", label: t("admin") }] : []),
   ];
 
+  // Mobile drawer keeps Profile inline since it has no avatar menu.
+  const mobileLinks = [
+    ...authedLinks,
+    { href: "/profile", label: t("profile") },
+  ];
+
+  async function signOutAction() {
+    "use server";
+    await signOut({ redirectTo: "/" });
+  }
+
   const signOutForm = (
-    <form
-      action={async () => {
-        "use server";
-        await signOut({ redirectTo: "/" });
-      }}
-    >
+    <form action={signOutAction}>
       <Button
         type="submit"
         variant="outlined"
@@ -65,6 +77,16 @@ export async function Header() {
       </Button>
     </form>
   );
+
+  const userMenu =
+    isAuthed && wallet ? (
+      <UserMenu
+        name={wallet.name}
+        email={wallet.email}
+        avatarUrl={wallet.avatarUrl}
+        signOutAction={signOutAction}
+      />
+    ) : null;
 
   return (
     <AppBar
@@ -120,13 +142,13 @@ export async function Header() {
                   flexItem
                   sx={{ mx: 1, my: 1.5 }}
                 />
-                <Box>{signOutForm}</Box>
                 <Box>
                   <ColorModeToggle />
                 </Box>
                 <Box>
                   <LocaleSwitcher />
                 </Box>
+                {userMenu ? <Box sx={{ ml: 0.5 }}>{userMenu}</Box> : null}
               </>
             ) : (
               <>
@@ -164,7 +186,7 @@ export async function Header() {
                 register: t("register"),
                 language: t("language"),
               }}
-              links={authedLinks}
+              links={mobileLinks}
               signOutSlot={isAuthed ? signOutForm : null}
             />
           </Stack>

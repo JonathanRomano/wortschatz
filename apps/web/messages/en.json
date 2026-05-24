@@ -16,6 +16,7 @@
     "menu": "Menu",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
+    "userMenu": "Account menu",
     "language": "Language",
     "colorMode": {
       "toggle": "Toggle color mode",
