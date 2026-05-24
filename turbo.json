@@ -9,7 +9,14 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"],
+      "env": [
+        "DATABASE_URL",
+        "AUTH_SECRET",
+        "AUTH_URL",
+        "API_URL",
+        "INTERNAL_API_SECRET"
+      ]
     },
     "dev": {
       "cache": false,
