@@ -8,7 +8,7 @@
   ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "@wortschatz/database#db:generate"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"],
       "env": [
         "DATABASE_URL",
@@ -32,6 +32,9 @@
     "test": {
       "dependsOn": ["^build"],
       "outputs": ["coverage/**"]
+    },
+    "db:generate": {
+      "cache": false
     }
   }
 }
