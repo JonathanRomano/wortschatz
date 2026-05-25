@@ -17,6 +17,7 @@ export type NextExercisePayload = {
   explanation: string;
   content: Record<string, unknown>;
   alreadyEarned: boolean;
+  model: string | null;
 };
 
 /**
@@ -53,6 +54,7 @@ export async function fetchNextExerciseOfType(
         type: true,
         level: true,
         content: true,
+        model: true,
       },
     }),
     prisma.userExercise.findFirst({
@@ -70,5 +72,6 @@ export async function fetchNextExerciseOfType(
     explanation: pickLocalized(exercise.explanation, locale),
     content: exercise.content as Record<string, unknown>,
     alreadyEarned: Boolean(priorSuccess),
+    model: exercise.model,
   };
 }

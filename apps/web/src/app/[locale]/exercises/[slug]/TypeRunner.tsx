@@ -33,6 +33,9 @@ export type LoadedExercise = {
   explanation: string;
   content: Record<string, unknown>;
   alreadyEarned: boolean;
+  // AI model that generated this exercise (NULL for stub / hand-authored).
+  // Surfaced only in the dev id chip — not user-facing.
+  model: string | null;
 };
 
 type Props = {
@@ -142,27 +145,45 @@ export function TypeRunner({
             >
               <LevelChip level={exercise.level} />
               {process.env.NODE_ENV === "development" ? (
-                <Typography
-                  component="code"
-                  variant="caption"
-                  title={t("debug.copyIdHint")}
-                  onClick={() => {
-                    void navigator.clipboard?.writeText(exercise.id);
-                  }}
-                  sx={{
-                    px: 1,
-                    py: 0.25,
-                    borderRadius: 1,
-                    fontFamily:
-                      'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
-                    backgroundColor: "surfaceAlt.main",
-                    color: "text.secondary",
-                    cursor: "copy",
-                    userSelect: "all",
-                  }}
-                >
-                  id: {exercise.id}
-                </Typography>
+                <>
+                  <Typography
+                    component="code"
+                    variant="caption"
+                    title={t("debug.copyIdHint")}
+                    onClick={() => {
+                      void navigator.clipboard?.writeText(exercise.id);
+                    }}
+                    sx={{
+                      px: 1,
+                      py: 0.25,
+                      borderRadius: 1,
+                      fontFamily:
+                        'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+                      backgroundColor: "surfaceAlt.main",
+                      color: "text.secondary",
+                      cursor: "copy",
+                      userSelect: "all",
+                    }}
+                  >
+                    id: {exercise.id}
+                  </Typography>
+                  <Typography
+                    component="code"
+                    variant="caption"
+                    sx={{
+                      px: 1,
+                      py: 0.25,
+                      borderRadius: 1,
+                      fontFamily:
+                        'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+                      backgroundColor: "surfaceAlt.main",
+                      color: "text.secondary",
+                      userSelect: "all",
+                    }}
+                  >
+                    model: {exercise.model ?? "—"}
+                  </Typography>
+                </>
               ) : null}
             </Stack>
             <IconButton

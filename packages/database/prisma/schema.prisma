@@ -142,6 +142,10 @@ model Exercise {
   explanation    Json
   tags           String[]       @default([])
   status         ExerciseStatus @default(DRAFT)
+  // AI model that generated this exercise (e.g. "claude-sonnet-4-6").
+  // Nullable: rows created before this column, or authored manually
+  // without an AI call, leave it NULL.
+  model          String?
 
   authorId       String?
   author         User?          @relation("ExerciseAuthor", fields: [authorId], references: [id], onDelete: SetNull)

@@ -66,6 +66,7 @@ async function loadExercise(
       level: true,
       content: true,
       status: true,
+      model: true,
     },
   });
   if (!exercise || exercise.status !== "PUBLISHED") return null;
@@ -84,6 +85,7 @@ async function loadExercise(
     explanation: pickLocalized(exercise.explanation, locale),
     content: exercise.content as Record<string, unknown>,
     alreadyEarned: Boolean(priorSuccess),
+    model: exercise.model,
   };
 }
 
@@ -297,6 +299,7 @@ export default async function ExerciseSlugPage({
           content={detail.content}
           explanation={detail.explanation}
           alreadyEarned={detail.alreadyEarned}
+          model={detail.model}
         />
       </Card>
 

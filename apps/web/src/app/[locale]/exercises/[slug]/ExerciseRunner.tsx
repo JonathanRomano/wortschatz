@@ -24,6 +24,9 @@ type Props = {
   content: Record<string, unknown>;
   explanation: string;
   alreadyEarned?: boolean;
+  // AI model that generated this exercise — surfaced only in the
+  // dev id chip, never to end users.
+  model?: string | null;
 };
 
 export function ExerciseRunner({
@@ -32,6 +35,7 @@ export function ExerciseRunner({
   content,
   explanation,
   alreadyEarned,
+  model,
 }: Props) {
   const t = useTranslations("exercises");
   const [answer, setAnswer] = useState<Record<string, unknown>>({});
@@ -44,28 +48,49 @@ export function ExerciseRunner({
   return (
     <Stack spacing={3}>
       {process.env.NODE_ENV === "development" ? (
-        <Typography
-          component="code"
-          variant="caption"
-          title={t("debug.copyIdHint")}
-          onClick={() => {
-            void navigator.clipboard?.writeText(exerciseId);
-          }}
-          sx={{
-            alignSelf: "flex-start",
-            px: 1,
-            py: 0.25,
-            borderRadius: 1,
-            fontFamily:
-              'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
-            backgroundColor: "surfaceAlt.main",
-            color: "text.secondary",
-            cursor: "copy",
-            userSelect: "all",
-          }}
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ alignSelf: "flex-start", flexWrap: "wrap" }}
         >
-          id: {exerciseId}
-        </Typography>
+          <Typography
+            component="code"
+            variant="caption"
+            title={t("debug.copyIdHint")}
+            onClick={() => {
+              void navigator.clipboard?.writeText(exerciseId);
+            }}
+            sx={{
+              px: 1,
+              py: 0.25,
+              borderRadius: 1,
+              fontFamily:
+                'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+              backgroundColor: "surfaceAlt.main",
+              color: "text.secondary",
+              cursor: "copy",
+              userSelect: "all",
+            }}
+          >
+            id: {exerciseId}
+          </Typography>
+          <Typography
+            component="code"
+            variant="caption"
+            sx={{
+              px: 1,
+              py: 0.25,
+              borderRadius: 1,
+              fontFamily:
+                'ui-monospace, SFMono-Regular, "Menlo", "Monaco", monospace',
+              backgroundColor: "surfaceAlt.main",
+              color: "text.secondary",
+              userSelect: "all",
+            }}
+          >
+            model: {model ?? "—"}
+          </Typography>
+        </Stack>
       ) : null}
 
       {alreadyEarned ? (

@@ -67,6 +67,9 @@ async function main() {
           explanation: ex.explanation as Prisma.InputJsonValue,
           tags: ex.tags,
           status: "PUBLISHED",
+          // Stub runs aren't a real model call — keep model = NULL for
+          // those so the column stays a faithful audit of AI usage.
+          model: AI_CONFIGURED ? MODEL : null,
         },
       });
       created += 1;
