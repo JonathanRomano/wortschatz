@@ -30,7 +30,7 @@ import { heliconeAnthropicOverrides } from "@wortschatz/config";
 import {
   FillInTheBlankContent,
   FillInTheBlankSolution,
-} from "@/lib/exercises/schemas";
+} from "@wortschatz/exercises";
 
 const prisma = new PrismaClient();
 
