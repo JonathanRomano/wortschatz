@@ -12,6 +12,7 @@ import Typography from "@mui/material/Typography";
 
 import { ExerciseRenderer } from "@/components/exercises/renderers";
 import { ExerciseResult } from "@/components/exercises/ExerciseResult";
+import { TipPanel } from "@/components/exercises/TipPanel";
 import {
   submitExerciseAttempt,
   type SubmitResult,
@@ -27,6 +28,8 @@ type Props = {
   // AI model that generated this exercise — surfaced only in the
   // dev id chip, never to end users.
   model?: string | null;
+  // Localized tip text, or null when this exercise has no tip.
+  tip?: string | null;
 };
 
 export function ExerciseRunner({
@@ -36,11 +39,15 @@ export function ExerciseRunner({
   explanation,
   alreadyEarned,
   model,
+  tip,
 }: Props) {
   const t = useTranslations("exercises");
   const [answer, setAnswer] = useState<Record<string, unknown>>({});
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [pending, startTransition] = useTransition();
+  // Once revealed, tipUsed stays true — hiding the tip again must not
+  // undo the reward penalty.
+  const [tipUsed, setTipUsed] = useState(false);
   const router = useRouter();
 
   const submitted = result?.ok === true;
@@ -117,6 +124,15 @@ export function ExerciseRunner({
         disabled={submitted}
       />
 
+      {tip ? (
+        <TipPanel
+          tip={tip}
+          revealed={tipUsed}
+          onReveal={() => setTipUsed(true)}
+          disabled={submitted}
+        />
+      ) : null}
+
       {!submitted ? (
         <Box sx={{ display: "flex", justifyContent: { xs: "stretch", sm: "flex-end" } }}>
           <Button
@@ -127,7 +143,7 @@ export function ExerciseRunner({
             disabled={pending}
             onClick={() =>
               startTransition(async () => {
-                const r = await submitExerciseAttempt(exerciseId, answer);
+                const r = await submitExerciseAttempt(exerciseId, answer, tipUsed);
                 setResult(r);
               })
             }

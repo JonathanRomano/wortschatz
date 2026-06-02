@@ -12,8 +12,10 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "db:generate-exercises": "tsx scripts/generate-exercises.ts",
-    "db:migrate-exercise-i18n": "tsx scripts/migrate-exercise-i18n.ts",
-    "db:seed-muenzen-history": "tsx scripts/seed-muenzen-history.ts"
+    "db:generate-fitb": "tsx scripts/generate-fitb-exercises.ts",
+    "db:seed-muenzen-history": "tsx scripts/seed-muenzen-history.ts",
+    "gen:claude": "tsx scripts/claude/generate.ts",
+    "gen:gpt": "tsx scripts/gpt/generate.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
@@ -31,6 +33,7 @@
     "next": "15.5.18",
     "next-auth": "5.0.0-beta.25",
     "next-intl": "^3.26.0",
+    "openai": "^6.39.0",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106",
     "recharts": "^3.8.1",

@@ -14,6 +14,7 @@ import TableContainer from "@mui/material/TableContainer";
 import { auth } from "@/auth";
 import { prisma } from "@wortschatz/database";
 import { Card } from "@/components/ui/Card";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
 import { AdminExerciseRow } from "./AdminExerciseRow";
 import { AdminAdjustForm } from "./AdminAdjustForm";
@@ -66,9 +67,19 @@ export default async function AdminPage({
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 5 } }}>
-      <Typography variant="h1" sx={{ fontSize: { xs: "2rem", sm: "2.5rem" } }}>
-        {t("title")}
-      </Typography>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        sx={{ justifyContent: "space-between", alignItems: { sm: "center" }, gap: 2 }}
+      >
+        <Typography variant="h1" sx={{ fontSize: { xs: "2rem", sm: "2.5rem" } }}>
+          {t("title")}
+        </Typography>
+        {role === "ADMIN" ? (
+          <ButtonLink href="/admin/generate" variant="contained" size="small" sx={{ minHeight: 44 }}>
+            {t("generate.title")}
+          </ButtonLink>
+        ) : null}
+      </Stack>
 
       <Box component="section" sx={{ mt: 4 }}>
         <Typography variant="h4">{t("exercises")}</Typography>

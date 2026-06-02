@@ -64,6 +64,14 @@ enum MuenzenReason {
   BONUS
 }
 
+// How a batch of exercises was generated. CLI = the `pnpm gen:*` scripts;
+// UI = the admin generator at /admin/generate. Every generation run records
+// exactly one GenerationSession tagged with its source.
+enum GenerationSource {
+  UI
+  CLI
+}
+
 // --- App models ---------------------------------------------------------
 
 model User {
@@ -104,6 +112,8 @@ model User {
   preferences       UserPreference[]
   comments          ExerciseComment[]
   commentLikes      CommentLike[]
+  savedPrompts       SavedPrompt[]
+  generationSessions GenerationSession[]
 }
 
 // Sprint 02 Task 8 — per-exercise-type user preferences. Currently used
@@ -127,9 +137,10 @@ model Exercise {
   id             String         @id @default(cuid())
   type           ExerciseType
   title          String
-  // Per-locale strings: { en, pt, tr, uk }. Read with pickLocalized()
-  // from src/lib/exercises/i18n.ts so missing locales fall back to en.
-  instructions   Json
+  // Per-type prompt instructions live in `messages/*.json` under
+  // `exercises.instructionsByType.<TYPE>` — they're identical for every
+  // row of a given type, so the column that used to hold them was
+  // dropped to avoid duplicating static UI copy across rows.
   // ISO 639-1, defaulting to German. Kept on the row in case future
   // exercises target other languages.
   targetLanguage String         @default("de")
@@ -146,9 +157,21 @@ model Exercise {
   // Nullable: rows created before this column, or authored manually
   // without an AI call, leave it NULL.
   model          String?
+  // Optional localized hint shown behind a "Show tip" button. Same shape
+  // as instructions/explanation: `{ en, pt, tr, uk }`. When the learner
+  // reveals the tip before submitting, the exercise reward drops from
+  // EXERCISE_COMPLETE (10) to EXERCISE_COMPLETE_WITH_TIP (3). NULL = no
+  // tip available for this exercise.
+  tip            Json?
 
   authorId       String?
   author         User?          @relation("ExerciseAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  // The generation run that produced this exercise. NULL for rows that
+  // predate sessions or were authored manually. Deleting a session keeps
+  // its exercises (SetNull) — the session is an audit trail, not an owner.
+  generationSessionId String?
+  generationSession   GenerationSession? @relation(fields: [generationSessionId], references: [id], onDelete: SetNull)
 
   attempts       UserExercise[]
   comments       ExerciseComment[]
@@ -158,6 +181,7 @@ model Exercise {
 
   @@index([type, level, status])
   @@index([status])
+  @@index([generationSessionId])
 }
 
 // Sprint 02 Task 7 — per-exercise discussion thread. Soft-deleted rows
@@ -206,6 +230,10 @@ model UserExercise {
   // 0-100. AI- or rule-evaluated.
   score       Int
   feedback    String
+  // True iff the learner revealed the exercise tip before submitting.
+  // Persisted so the history page can render a "with tip" badge and so
+  // the reward path (3 vs 10 Münzen) is auditable after the fact.
+  tipUsed     Boolean  @default(false)
   completedAt DateTime @default(now())
 
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -241,6 +269,71 @@ model AIReviewRequest {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+}
+
+// --- Exercise generation ------------------------------------------------
+//
+// Foundation for the admin exercise generator (/admin/generate). Both the
+// web UI and the `pnpm gen:*` CLIs flow through shared/run.ts, which records
+// one GenerationSession per run. SavedPrompt stores reusable, per-admin
+// prompt templates. See CLAUDE.md → "Exercise generation".
+
+// A reusable, per-admin prompt template. `systemPrompt` / `userInstructions`
+// are NULL when the admin wants the per-type defaults; only the editable
+// "voice" is stored — the locked JSON shape + rules are always injected by
+// the runner (Decision 2). Private to the author for now (`authorId`);
+// cross-author sharing is a future sprint.
+model SavedPrompt {
+  id               String              @id @default(cuid())
+  name             String              @db.VarChar(120)
+  description      String?             @db.VarChar(500)
+  type             ExerciseType
+  systemPrompt     String?             @db.Text // null = use default for this type
+  userInstructions String?             @db.Text // null = use default for this type
+  authorId         String
+  author           User                @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  sessions         GenerationSession[]
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  useCount         Int                 @default(0) // incremented atomically each time a session uses it
+
+  @@index([authorId, type])
+}
+
+// One generation run: who, when, with which prompt, what came out. Written
+// for every run (UI and CLI) so it's a consistent unit of analysis for
+// future curation/rating dashboards. Never deleted in this sprint — it's an
+// audit trail. A dry run does NOT create a session.
+model GenerationSession {
+  id                 String           @id @default(cuid())
+  authorId           String
+  author             User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  // What was requested
+  source             GenerationSource
+  provider           String // "claude" | "gpt"
+  modelUsed          String // e.g. "claude-sonnet-4-6"
+  type               ExerciseType
+  level              CefrLevel
+  topic              String? // null when the runner rotated through topics
+  requestedCount     Int
+  // What was used
+  savedPromptId      String?
+  savedPrompt        SavedPrompt?     @relation(fields: [savedPromptId], references: [id], onDelete: SetNull)
+  customSystem       Boolean          @default(false)
+  customInstructions Boolean          @default(false)
+  // What came out
+  exercises          Exercise[]
+  successCount       Int              @default(0)
+  failureCount       Int              @default(0)
+  failures           Json? // array of { index, topic, reason, code }
+  durationMs         Int?
+  // Lifecycle
+  createdAt          DateTime         @default(now())
+  completedAt        DateTime?
+
+  @@index([authorId, createdAt])
+  @@index([type, level])
+  @@index([savedPromptId])
 }
 
 // --- AI infrastructure --------------------------------------------------

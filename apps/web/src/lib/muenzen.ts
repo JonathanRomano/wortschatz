@@ -3,6 +3,7 @@ import { prisma } from "@wortschatz/database";
 
 export const MUENZEN_RULES = {
   exerciseComplete: 10, // score >= 60
+  exerciseCompleteWithTip: 3, // score >= 60 AND tip was revealed
   perfectBonus: 5, // score === 100, additional
   dailyStreak: 20, // first exercise of a calendar day
   aiReviewCost: 30,
@@ -75,9 +76,15 @@ export async function debit(
 export function computeReward(
   score: number,
   isFirstOfDay: boolean,
+  tipUsed: boolean = false,
 ): { base: number; perfect: number; streakBonus: number } {
   const passed = score >= 60;
-  const base = passed ? MUENZEN_RULES.exerciseComplete : 0;
+  const baseAmount = tipUsed
+    ? MUENZEN_RULES.exerciseCompleteWithTip
+    : MUENZEN_RULES.exerciseComplete;
+  const base = passed ? baseAmount : 0;
+  // Perfect bonus and daily streak are independent of the tip — the tip
+  // reduces only the base completion credit.
   const perfect = score === 100 ? MUENZEN_RULES.perfectBonus : 0;
   const streakBonus = isFirstOfDay && passed ? MUENZEN_RULES.dailyStreak : 0;
   return { base, perfect, streakBonus };

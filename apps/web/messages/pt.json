@@ -114,6 +114,23 @@
     "completed": "Completado",
     "alreadyEarned": "Você já ganhou Münzen por este exercício.",
     "rewardEarned": "+{amount} Münzen ganhas",
+    "instructionsByType": {
+      "FILL_IN_THE_BLANK": "Complete a palavra que falta.",
+      "MULTIPLE_CHOICE": "Escolha a resposta correta.",
+      "TRANSLATION": "Traduza para o alemão.",
+      "WORD_ORDER": "Coloque as palavras na ordem correta.",
+      "MATCHING": "Combine as palavras alemãs com suas traduções.",
+      "LISTENING_COMPREHENSION": "Ouça e responda à pergunta.",
+      "READING_COMPREHENSION": "Leia o texto e responda à pergunta.",
+      "VERB_CONJUGATION": "Conjugue o verbo.",
+      "ERROR_CORRECTION": "Encontre e corrija o erro.",
+      "FREE_WRITING": "Escreva um texto curto sobre o tema."
+    },
+    "tip": {
+      "show": "Mostrar dica",
+      "label": "Dica",
+      "reducedRewardNotice": "Usar a dica limita a recompensa a {amount} Münzen."
+    },
     "debug": {
       "copyIdHint": "Clique para copiar o id do exercício"
     }
@@ -262,6 +279,121 @@
       "amount": "Quantia",
       "note": "Nota (opcional)",
       "apply": "Aplicar"
+    },
+    "generate": {
+      "title": "Gerar exercícios",
+      "subtitle": "Crie exercícios com o Claude usando os prompts por tipo.",
+      "nav": {
+        "generator": "Gerador",
+        "history": "Histórico",
+        "prompts": "Prompts salvos"
+      },
+      "form": {
+        "type": "Tipo de exercício",
+        "level": "Nível CEFR",
+        "topic": "Tema",
+        "topicHelp": "Deixe em branco para alternar entre os temas canônicos.",
+        "count": "Quantidade",
+        "savedPrompt": "Prompt salvo",
+        "savedPromptNone": "(nenhum — usar padrões)",
+        "customPrompt": "Personalizar prompt",
+        "systemOverride": "Prompt de sistema (voz)",
+        "systemOverrideHelp": "Substitui a voz padrão deste tipo. Deixe em branco para manter o padrão.",
+        "instructionsOverride": "Instruções",
+        "instructionsOverrideHelp": "Substitui a parte das instruções. O formato JSON e as regras permanecem fixos.",
+        "dryRun": "Execução de teste (não salvar)",
+        "noRecent": "Ignorar contexto de exemplos recentes",
+        "preview": "Pré-visualizar prompt",
+        "save": "Salvar como modelo",
+        "generate": "Gerar",
+        "generating": "Gerando…"
+      },
+      "preview": {
+        "title": "Pré-visualização do prompt",
+        "system": "Sistema",
+        "user": "Usuário",
+        "estimatedTokens": "Tokens estimados: {count}",
+        "close": "Fechar"
+      },
+      "save": {
+        "title": "Salvar modelo de prompt",
+        "name": "Nome",
+        "description": "Descrição (opcional)",
+        "submit": "Salvar",
+        "cancel": "Cancelar",
+        "saved": "Modelo salvo."
+      },
+      "results": {
+        "title": "Resultados",
+        "empty": "Execute uma geração para ver os resultados aqui.",
+        "summary": "Gerados {ok}/{total} com sucesso em {seconds}s.",
+        "summaryDry": "Execução de teste — gerados {ok}/{total} (nada salvo).",
+        "session": "ID da sessão: {id}",
+        "viewSession": "Ver esta sessão no histórico",
+        "viewExercise": "Ver",
+        "showJson": "Mostrar JSON",
+        "hideJson": "Ocultar JSON",
+        "failuresTitle": "Falhas ({count})"
+      },
+      "errors": {
+        "rate_limited": "Limite diário de geração atingido. Tente novamente mais tarde.",
+        "generic": "Algo deu errado. Tente novamente.",
+        "loadFailed": "Não foi possível carregar."
+      }
+    },
+    "prompts": {
+      "title": "Prompts salvos",
+      "subtitle": "Modelos de prompt reutilizáveis, privados a você.",
+      "empty": "Nenhum prompt salvo ainda.",
+      "new": "Novo modelo",
+      "columns": {
+        "name": "Nome",
+        "type": "Tipo",
+        "useCount": "Usos",
+        "lastUsed": "Último uso",
+        "created": "Criado",
+        "actions": "Ações"
+      },
+      "never": "Nunca",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "confirmDelete": "Excluir este modelo? As sessões que o usaram são mantidas.",
+      "deleted": "Modelo excluído."
+    },
+    "history": {
+      "title": "Histórico de geração",
+      "subtitle": "Cada execução que você iniciou, da mais recente para a mais antiga.",
+      "empty": "Nenhuma geração ainda.",
+      "filters": {
+        "type": "Tipo",
+        "level": "Nível",
+        "savedPrompt": "Prompt salvo",
+        "from": "De",
+        "to": "Até",
+        "all": "Todos",
+        "apply": "Aplicar",
+        "clear": "Limpar"
+      },
+      "adhoc": "(ad-hoc)",
+      "topicAuto": "(alternado)",
+      "view": "Ver",
+      "columns": {
+        "created": "Criado",
+        "type": "Tipo",
+        "level": "Nível",
+        "topic": "Tema",
+        "prompt": "Prompt",
+        "result": "Resultado",
+        "duration": "Duração",
+        "source": "Origem"
+      },
+      "detail": {
+        "title": "Sessão",
+        "exercises": "Exercícios",
+        "failures": "Falhas",
+        "noExercises": "Nenhum exercício foi produzido.",
+        "back": "Voltar ao histórico"
+      }
     }
   },
   "common": {

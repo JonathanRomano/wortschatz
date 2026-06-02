@@ -114,6 +114,23 @@
     "completed": "Completed",
     "alreadyEarned": "You already earned Münzen for this exercise.",
     "rewardEarned": "+{amount} Münzen earned",
+    "instructionsByType": {
+      "FILL_IN_THE_BLANK": "Fill in the missing word.",
+      "MULTIPLE_CHOICE": "Choose the correct answer.",
+      "TRANSLATION": "Translate into German.",
+      "WORD_ORDER": "Put the words in the correct order.",
+      "MATCHING": "Match the German words to their translations.",
+      "LISTENING_COMPREHENSION": "Listen and answer the question.",
+      "READING_COMPREHENSION": "Read the text and answer the question.",
+      "VERB_CONJUGATION": "Conjugate the verb.",
+      "ERROR_CORRECTION": "Find and correct the error.",
+      "FREE_WRITING": "Write a short text on the topic."
+    },
+    "tip": {
+      "show": "Show tip",
+      "label": "Tip",
+      "reducedRewardNotice": "Using the tip caps the reward at {amount} Münzen."
+    },
     "debug": {
       "copyIdHint": "Click to copy exercise id"
     }
@@ -262,6 +279,121 @@
       "amount": "Amount",
       "note": "Note (optional)",
       "apply": "Apply"
+    },
+    "generate": {
+      "title": "Generate exercises",
+      "subtitle": "Create exercises with Claude using the per-type prompts.",
+      "nav": {
+        "generator": "Generator",
+        "history": "History",
+        "prompts": "Saved prompts"
+      },
+      "form": {
+        "type": "Exercise type",
+        "level": "CEFR level",
+        "topic": "Topic",
+        "topicHelp": "Leave blank to rotate through canonical topics.",
+        "count": "Count",
+        "savedPrompt": "Saved prompt",
+        "savedPromptNone": "(none — use defaults)",
+        "customPrompt": "Customize prompt",
+        "systemOverride": "System prompt (voice)",
+        "systemOverrideHelp": "Overrides the default voice for this type. Leave blank to keep the default.",
+        "instructionsOverride": "Instructions",
+        "instructionsOverrideHelp": "Replaces the instructions portion. The JSON shape and rules stay locked.",
+        "dryRun": "Dry run (don't save)",
+        "noRecent": "Skip recent-examples context",
+        "preview": "Preview prompt",
+        "save": "Save as template",
+        "generate": "Generate",
+        "generating": "Generating…"
+      },
+      "preview": {
+        "title": "Prompt preview",
+        "system": "System",
+        "user": "User",
+        "estimatedTokens": "Estimated tokens: {count}",
+        "close": "Close"
+      },
+      "save": {
+        "title": "Save prompt template",
+        "name": "Name",
+        "description": "Description (optional)",
+        "submit": "Save",
+        "cancel": "Cancel",
+        "saved": "Template saved."
+      },
+      "results": {
+        "title": "Results",
+        "empty": "Run a generation to see results here.",
+        "summary": "Generated {ok}/{total} successfully in {seconds}s.",
+        "summaryDry": "Dry run — generated {ok}/{total} (nothing saved).",
+        "session": "Session ID: {id}",
+        "viewSession": "View this session in history",
+        "viewExercise": "View",
+        "showJson": "Show JSON",
+        "hideJson": "Hide JSON",
+        "failuresTitle": "Failures ({count})"
+      },
+      "errors": {
+        "rate_limited": "Daily generation limit reached. Try again later.",
+        "generic": "Something went wrong. Please try again.",
+        "loadFailed": "Could not load."
+      }
+    },
+    "prompts": {
+      "title": "Saved prompts",
+      "subtitle": "Reusable prompt templates, private to you.",
+      "empty": "No saved prompts yet.",
+      "new": "New template",
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "useCount": "Uses",
+        "lastUsed": "Last used",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "never": "Never",
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Delete this template? Sessions that used it are kept.",
+      "deleted": "Template deleted."
+    },
+    "history": {
+      "title": "Generation history",
+      "subtitle": "Every run you've started, newest first.",
+      "empty": "No generations yet.",
+      "filters": {
+        "type": "Type",
+        "level": "Level",
+        "savedPrompt": "Saved prompt",
+        "from": "From",
+        "to": "To",
+        "all": "All",
+        "apply": "Apply",
+        "clear": "Clear"
+      },
+      "adhoc": "(ad-hoc)",
+      "topicAuto": "(rotated)",
+      "view": "View",
+      "columns": {
+        "created": "Created",
+        "type": "Type",
+        "level": "Level",
+        "topic": "Topic",
+        "prompt": "Prompt",
+        "result": "Result",
+        "duration": "Duration",
+        "source": "Source"
+      },
+      "detail": {
+        "title": "Session",
+        "exercises": "Exercises",
+        "failures": "Failures",
+        "noExercises": "No exercises were produced.",
+        "back": "Back to history"
+      }
     }
   },
   "common": {

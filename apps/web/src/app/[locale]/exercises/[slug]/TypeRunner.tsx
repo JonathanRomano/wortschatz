@@ -15,6 +15,7 @@ import { ExerciseRenderer } from "@/components/exercises/renderers";
 import { ExerciseResult } from "@/components/exercises/ExerciseResult";
 import { IntroScreen } from "@/components/exercises/IntroScreen";
 import { IntroModal } from "@/components/exercises/IntroModal";
+import { TipPanel } from "@/components/exercises/TipPanel";
 import {
   submitExerciseAttempt,
   type SubmitResult,
@@ -29,13 +30,15 @@ export type LoadedExercise = {
   type: ExerciseType;
   level: CefrLevel;
   title: string;
-  instructions: string;
   explanation: string;
   content: Record<string, unknown>;
   alreadyEarned: boolean;
   // AI model that generated this exercise (NULL for stub / hand-authored).
   // Surfaced only in the dev id chip — not user-facing.
   model: string | null;
+  // Localized tip (already picked for the current locale). NULL when the
+  // exercise has no tip.
+  tip: string | null;
 };
 
 type Props = {
@@ -55,6 +58,7 @@ export function TypeRunner({
   initialSkipIntro,
 }: Props) {
   const t = useTranslations("exercises");
+  const tInstr = useTranslations("exercises.instructionsByType");
   const tIntro = useTranslations("exerciseIntros");
   const locale = useLocale() as Locale;
 
@@ -69,6 +73,10 @@ export function TypeRunner({
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [submitting, startSubmit] = useTransition();
   const [loadingNext, startNext] = useTransition();
+  // Tip-used state is per-exercise; reset alongside answer when Next
+  // swaps in a new exercise so the next prompt starts with the tip
+  // hidden and the full reward available.
+  const [tipUsed, setTipUsed] = useState(false);
 
   const submitted = result?.ok === true;
 
@@ -99,7 +107,7 @@ export function TypeRunner({
 
   const onSubmit = () => {
     startSubmit(async () => {
-      const r = await submitExerciseAttempt(exercise.id, answer);
+      const r = await submitExerciseAttempt(exercise.id, answer, tipUsed);
       setResult(r);
     });
   };
@@ -111,6 +119,7 @@ export function TypeRunner({
         setExercise(next);
         setAnswer({});
         setResult(null);
+        setTipUsed(false);
       }
     });
   };
@@ -202,7 +211,7 @@ export function TypeRunner({
             {exercise.title}
           </Typography>
           <Typography variant="body1" sx={{ mt: 1, color: "text.secondary" }}>
-            {exercise.instructions}
+            {tInstr(exercise.type)}
           </Typography>
         </Box>
 
@@ -232,6 +241,17 @@ export function TypeRunner({
             disabled={submitted}
           />
         </Box>
+
+        {exercise.tip ? (
+          <Box sx={{ mt: 3 }}>
+            <TipPanel
+              tip={exercise.tip}
+              revealed={tipUsed}
+              onReveal={() => setTipUsed(true)}
+              disabled={submitted}
+            />
+          </Box>
+        ) : null}
 
         {!submitted ? (
           <Button

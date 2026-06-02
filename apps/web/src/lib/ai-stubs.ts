@@ -12,69 +12,9 @@ import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 import type { LocalizedText } from "@wortschatz/types";
 import type { GeneratedExercise } from "@/lib/ai";
 
-// Per-type instruction translations. Keys: en, pt, tr, uk.
-const INSTRUCTIONS: Record<ExerciseType, LocalizedText> = {
-  FILL_IN_THE_BLANK: {
-    en: "Fill in the missing word.",
-    pt: "Complete a palavra que falta.",
-    tr: "Eksik kelimeyi doldurun.",
-    uk: "Заповніть пропущене слово.",
-  },
-  MULTIPLE_CHOICE: {
-    en: "Choose the correct answer.",
-    pt: "Escolha a resposta correta.",
-    tr: "Doğru cevabı seçin.",
-    uk: "Виберіть правильну відповідь.",
-  },
-  TRANSLATION: {
-    en: "Translate into German.",
-    pt: "Traduza para o alemão.",
-    tr: "Almancaya çevirin.",
-    uk: "Перекладіть німецькою.",
-  },
-  WORD_ORDER: {
-    en: "Put the words in the correct order.",
-    pt: "Coloque as palavras na ordem correta.",
-    tr: "Kelimeleri doğru sıraya koyun.",
-    uk: "Розставте слова у правильному порядку.",
-  },
-  MATCHING: {
-    en: "Match the German words to their translations.",
-    pt: "Combine as palavras alemãs com suas traduções.",
-    tr: "Almanca kelimeleri çevirileriyle eşleştirin.",
-    uk: "Зіставте німецькі слова з їх перекладом.",
-  },
-  LISTENING_COMPREHENSION: {
-    en: "Listen and answer the question.",
-    pt: "Ouça e responda à pergunta.",
-    tr: "Dinleyin ve soruyu cevaplayın.",
-    uk: "Прослухайте та дайте відповідь на запитання.",
-  },
-  READING_COMPREHENSION: {
-    en: "Read the text and answer the question.",
-    pt: "Leia o texto e responda à pergunta.",
-    tr: "Metni okuyun ve soruyu cevaplayın.",
-    uk: "Прочитайте текст і дайте відповідь на запитання.",
-  },
-  VERB_CONJUGATION: {
-    en: "Conjugate the verb.",
-    pt: "Conjugue o verbo.",
-    tr: "Fiili çekin.",
-    uk: "Провідміняйте дієслово.",
-  },
-  ERROR_CORRECTION: {
-    en: "Find and correct the error.",
-    pt: "Encontre e corrija o erro.",
-    tr: "Hatayı bulun ve düzeltin.",
-    uk: "Знайдіть і виправте помилку.",
-  },
-  FREE_WRITING: {
-    en: "Write a short text on the topic.",
-    pt: "Escreva um texto curto sobre o tema.",
-    tr: "Konu hakkında kısa bir metin yazın.",
-    uk: "Напишіть короткий текст на тему.",
-  },
-};
+// Per-type prompt instructions are no longer part of GeneratedExercise —
+// they live in `messages/*.json` (`exercises.instructionsByType`) and are
+// resolved by the runner. The stub doesn't need to emit them.
 
 function stubExplanation(
   type: ExerciseType,
@@ -90,6 +30,16 @@ function stubExplanation(
   };
 }
 
+function stubTip(type: ExerciseType): LocalizedText {
+  const label = type.toLowerCase().replace(/_/g, " ");
+  return {
+    en: `(Stub tip) Hint for the ${label} exercise.`,
+    pt: `(Dica de exemplo) Sugestão para o exercício de ${label}.`,
+    tr: `(Örnek ipucu) ${label} alıştırması için bir ipucu.`,
+    uk: `(Приклад підказки) Підказка до вправи ${label}.`,
+  };
+}
+
 export function stubExercise(
   type: ExerciseType,
   level: CefrLevel,
@@ -99,9 +49,9 @@ export function stubExercise(
   const base = {
     type,
     level,
-    instructions: INSTRUCTIONS[type],
     explanation: stubExplanation(type, level, topic),
     tags: [topic, level.toLowerCase(), "stub"],
+    tip: stubTip(type),
   };
 
   switch (type) {

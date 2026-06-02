@@ -20,6 +20,13 @@ const baseEnvSchema = z.object({
     .default("development"),
   DATABASE_URL: z.string().url(),
   ANTHROPIC_API_KEY: z.string().optional(),
+  /**
+   * Optional Helicone (helicone.ai) key. When set, LLM calls in both apps
+   * route through the Helicone proxy for prompt/response logging; when
+   * absent they hit the providers directly. See packages/config/src/helicone.ts.
+   * Lives on the base schema so both webEnvSchema and apiEnvSchema inherit it.
+   */
+  HELICONE_API_KEY: z.string().optional(),
 });
 
 export const webEnvSchema = baseEnvSchema.extend({

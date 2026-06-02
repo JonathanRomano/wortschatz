@@ -38,6 +38,8 @@ import { contentSchemaFor, solutionSchemaFor } from "@/lib/exercises/schemas";
 import {
   AI_CACHE_TTL_MS,
   estimateCostMicrocents,
+  heliconeAnthropicOverrides,
+  heliconeRequestHeaders,
   type AiEndpoint,
 } from "@wortschatz/config";
 import * as aiCache from "@/lib/ai-cache";
@@ -67,8 +69,12 @@ let cachedClient: Anthropic | null = null;
 function getClient(): Anthropic {
   if (cachedClient) return cachedClient;
   // The SDK reads ANTHROPIC_API_KEY from process.env by default; we pass
-  // it explicitly for clarity. Never log this value.
-  cachedClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  // it explicitly for clarity. Never log this value. The Helicone spread is
+  // `{}` unless HELICONE_API_KEY is set, so this is unchanged by default.
+  cachedClient = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+    ...heliconeAnthropicOverrides("web-ai-lib"),
+  });
   return cachedClient;
 }
 
@@ -88,11 +94,13 @@ export type GeneratedExercise = {
   type: ExerciseType;
   level: CefrLevel;
   title: string;
-  instructions: LocalizedText;
   content: Record<string, unknown>;
   solution: Record<string, unknown>;
   explanation: LocalizedText;
   tags: string[];
+  // Optional short hint that the learner can reveal at a Münzen cost.
+  // When absent, the exercise renders no tip button.
+  tip?: LocalizedText;
 };
 
 export type AIEvaluation = {
@@ -190,7 +198,7 @@ function textFromResponse(
 const GENERATE_SYSTEM = `You are a German-language exercise author for Wortschatz, a CEFR-aligned vocabulary trainer.
 Respond with a single JSON object and nothing else. No prose before or after, no markdown fences.
 The German content of the exercise must be in correct, idiomatic German for the requested CEFR level.
-Localized fields (instructions, explanation) must be a JSON object with keys en, pt, tr, uk and a non-empty string for each.
+Localized fields (explanation, tip) must be a JSON object with keys en, pt, tr, uk and a non-empty string for each.
 The content and solution objects must match the per-type schema described in the user message exactly.`;
 
 function generatePromptFor(
@@ -205,11 +213,11 @@ function generatePromptFor(
     targetLanguage: "de",
     requirements: {
       title: "short German title",
-      instructions: "object { en, pt, tr, uk }",
       content: `must satisfy the Zod schema for type ${type}; see src/lib/exercises/schemas.ts`,
       solution: `must satisfy the solution Zod schema for type ${type}`,
       explanation: "object { en, pt, tr, uk } explaining the grammar/vocab point",
       tags: "array of 1-5 short lowercase tags",
+      tip: "object { en, pt, tr, uk }, ONE short sentence each — a gentle nudge that hints at the structure or vocabulary needed WITHOUT revealing the solution. Examples: 'Watch out for the accusative case after “durch”.', 'The verb has a separable prefix.'. Keep it under ~120 characters per locale.",
     },
   });
 }
@@ -244,18 +252,23 @@ export async function generateExercise(
 
   if (userId) await checkAndIncrement(userId, endpoint);
 
-  const resp = await getClient().messages.create({
-    model: MODEL,
-    max_tokens: MAX_TOKENS[endpoint],
-    system: GENERATE_SYSTEM,
-    messages: [{ role: "user", content: userPrompt }],
-  });
+  const resp = await getClient().messages.create(
+    {
+      model: MODEL,
+      max_tokens: MAX_TOKENS[endpoint],
+      system: GENERATE_SYSTEM,
+      messages: [{ role: "user", content: userPrompt }],
+    },
+    // Tags the request with Helicone-User-Id when Helicone + a userId are
+    // present; an empty header set otherwise (no behavioral change).
+    { headers: heliconeRequestHeaders(userId) },
+  );
 
   const raw = textFromResponse(resp);
   const parsed = extractJson(raw) as Record<string, unknown>;
 
   // Validate the type-specific content + solution. We don't validate the
-  // localized instructions/explanation here — the renderer falls back to
+  // localized explanation here — the renderer falls back to
   // English via pickLocalized() if a locale is missing.
   const ContentSchema = contentSchemaFor[type];
   const SolutionSchema = solutionSchemaFor[type];
@@ -272,6 +285,20 @@ export async function generateExercise(
     );
   }
 
+  // Tip is best-effort. Accept only when it's an object with at least one
+  // non-empty string value — drop malformed/empty tips silently so a flaky
+  // Claude run doesn't fail the whole generation.
+  const rawTip = parsed.tip;
+  let tip: LocalizedText | undefined;
+  if (rawTip && typeof rawTip === "object" && !Array.isArray(rawTip)) {
+    const entries = Object.entries(rawTip as Record<string, unknown>).filter(
+      ([, v]) => typeof v === "string" && v.trim().length > 0,
+    );
+    if (entries.length > 0) {
+      tip = Object.fromEntries(entries) as LocalizedText;
+    }
+  }
+
   const out: GeneratedExercise = {
     type,
     level,
@@ -279,7 +306,6 @@ export async function generateExercise(
       typeof parsed.title === "string" && parsed.title.length > 0
         ? parsed.title
         : `${type.replace(/_/g, " ").toLowerCase()}: ${topic}`,
-    instructions: (parsed.instructions as LocalizedText | undefined) ?? {},
     content: contentParsed.data as Record<string, unknown>,
     solution: solutionParsed.data as Record<string, unknown>,
     explanation: (parsed.explanation as LocalizedText | undefined) ?? {},
@@ -288,6 +314,7 @@ export async function generateExercise(
           .filter((t): t is string => typeof t === "string")
           .slice(0, 5)
       : [topic, level.toLowerCase()],
+    ...(tip ? { tip } : {}),
   };
 
   await recordUsage({

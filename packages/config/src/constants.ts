@@ -26,6 +26,12 @@ export const DEFAULT_LOCALE: Locale = "en";
 export const MUENZEN_REWARDS = {
   /** Awarded once per (user, exercise) on the first pass (score >= 60). */
   EXERCISE_COMPLETE: 10,
+  /**
+   * Reduced base credit when the learner revealed the exercise tip
+   * before submitting. Still written as EXERCISE_COMPLETE — the
+   * UserExercise.tipUsed flag distinguishes the two paths.
+   */
+  EXERCISE_COMPLETE_WITH_TIP: 3,
   /** Additional credit when score === 100, written as its own transaction. */
   PERFECT_SCORE_BONUS: 5,
   /** First exercise of a calendar day. */

@@ -32,7 +32,9 @@ import {
   RADAR_LAST_N,
 } from "@/lib/dashboard/constants";
 
-const LEVELS: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+// Match the levels currently offered on /exercises. Legacy rows at B2+
+// are still counted into levelCounts but their breakdown row is hidden.
+const LEVELS: CefrLevel[] = ["A1", "A2", "B1"];
 const TYPES: ExerciseType[] = [
   "FILL_IN_THE_BLANK",
   "MULTIPLE_CHOICE",

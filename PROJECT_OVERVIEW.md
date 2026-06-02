@@ -296,6 +296,7 @@ section.
 | `ExerciseType` | `FILL_IN_THE_BLANK`, `MULTIPLE_CHOICE`, `TRANSLATION`, `WORD_ORDER`, `MATCHING`, `LISTENING_COMPREHENSION`, `READING_COMPREHENSION`, `VERB_CONJUGATION`, `ERROR_CORRECTION`, `FREE_WRITING` | Display names in `messages/<locale>.json` (`exerciseTypes`). Currently overloaded as `UserPreference.key` — **debt**. |
 | `ExerciseStatus` | `DRAFT`, `PUBLISHED`, `ARCHIVED` | Browse page filters to `PUBLISHED`. |
 | `MuenzenReason` | `EXERCISE_COMPLETE`, `PERFECT_SCORE_BONUS`, `DAILY_STREAK`, `SPENT_AI_REVIEW`, `ADMIN_ADJUSTMENT`, `BONUS` | `BONUS` is legacy, retained so old rows validate. |
+| `GenerationSource` | `UI`, `CLI` | On `GenerationSession.source` — whether a run came from `/admin/generate` or the `pnpm gen:*` CLIs. |
 
 ### Tables (text diagram)
 
@@ -368,6 +369,14 @@ AI infrastructure (no FK to User on AiCache; AiUsage.userId is nullable):
   AiCache         key (sha256) UNIQUE · endpoint · model · response JSON · expiresAt
   AiRateLimit     UNIQUE(userId, endpoint) · count · windowStart  (rolling 24h)
   AiUsage         userId? · endpoint · model · in/out tokens · costMicrocents · cacheHit
+
+Exercise generation (admin generator + CLI — see scripts/README.md):
+
+  SavedPrompt        per-admin template · name · type · systemPrompt? · userInstructions? · useCount · authorId→User
+  GenerationSession  one row per run · source (UI|CLI) · provider · modelUsed · type · level · topic?
+                     · requestedCount · savedPromptId?→SavedPrompt · customSystem · customInstructions
+                     · successCount · failureCount · failures JSON? · durationMs? · completedAt? · authorId→User
+  Exercise.generationSessionId?  →GenerationSession (onDelete SetNull; NULL for pre-session / manually-authored rows)
 ```
 
 ### Critical business rules

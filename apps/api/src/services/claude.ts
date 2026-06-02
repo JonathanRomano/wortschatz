@@ -18,6 +18,8 @@ import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 import {
   AI_CACHE_TTL_MS,
   estimateCostMicrocents,
+  heliconeAnthropicOverrides,
+  heliconeRequestHeaders,
   type AiEndpoint,
 } from "@wortschatz/config";
 
@@ -35,7 +37,12 @@ const MAX_TOKENS: Record<AiEndpoint, number> = {
 let cachedClient: Anthropic | null = null;
 function getClient(): Anthropic {
   if (cachedClient) return cachedClient;
-  cachedClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  // Helicone spread is `{}` unless HELICONE_API_KEY is set — identical to
+  // before by default.
+  cachedClient = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+    ...heliconeAnthropicOverrides("api-service"),
+  });
   return cachedClient;
 }
 
@@ -153,12 +160,15 @@ export async function reviewText(
   // REVIEW_TEXT TTL is 0 (personalized), so skip the lookup roundtrip.
   if (userId) await checkAndIncrement(userId, endpoint);
 
-  const resp = await getClient().messages.create({
-    model: MODEL,
-    max_tokens: MAX_TOKENS[endpoint],
-    system: REVIEW_SYSTEM,
-    messages: [{ role: "user", content: userPrompt }],
-  });
+  const resp = await getClient().messages.create(
+    {
+      model: MODEL,
+      max_tokens: MAX_TOKENS[endpoint],
+      system: REVIEW_SYSTEM,
+      messages: [{ role: "user", content: userPrompt }],
+    },
+    { headers: heliconeRequestHeaders(userId) },
+  );
   const feedback = textFromResponse(resp).trim();
   if (feedback.length === 0) {
     throw new Error("reviewText: Claude returned an empty response.");
@@ -235,12 +245,15 @@ export async function evaluateAnswer(
 
   if (userId) await checkAndIncrement(userId, endpoint);
 
-  const resp = await getClient().messages.create({
-    model: MODEL,
-    max_tokens: MAX_TOKENS[endpoint],
-    system: EVALUATE_SYSTEM,
-    messages: [{ role: "user", content: userPrompt }],
-  });
+  const resp = await getClient().messages.create(
+    {
+      model: MODEL,
+      max_tokens: MAX_TOKENS[endpoint],
+      system: EVALUATE_SYSTEM,
+      messages: [{ role: "user", content: userPrompt }],
+    },
+    { headers: heliconeRequestHeaders(userId) },
+  );
 
   const raw = textFromResponse(resp);
   const parsed = extractJson(raw) as Record<string, unknown>;

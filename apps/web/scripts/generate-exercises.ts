@@ -1,4 +1,9 @@
 /**
+ * DEPRECATED (Exercise Generation v2): prefer `pnpm gen:claude` /
+ * `pnpm gen:gpt` (scripts/{claude,gpt}/generate.ts), which use per-type
+ * prompts and anti-duplication. This generic-prompt seeder is kept only
+ * until a cleanup pass.
+ *
  * Generate 5 exercises of each ExerciseType (50 total) and insert them
  * as PUBLISHED rows authored by the seed admin.
  *
@@ -31,7 +36,7 @@ const TYPES: ExerciseType[] = [
 ];
 
 const TOPICS = ["food", "travel", "work", "family", "weather"];
-const LEVELS: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1"];
+const LEVELS: CefrLevel[] = ["A1", "A2", "B1"];
 
 async function main() {
   console.log(
@@ -59,7 +64,6 @@ async function main() {
           authorId: admin.id,
           type: ex.type,
           title: ex.title,
-          instructions: ex.instructions as Prisma.InputJsonValue,
           targetLanguage: "de",
           level: ex.level,
           content: ex.content as Prisma.InputJsonValue,
@@ -70,6 +74,11 @@ async function main() {
           // Stub runs aren't a real model call — keep model = NULL for
           // those so the column stays a faithful audit of AI usage.
           model: AI_CONFIGURED ? MODEL : null,
+          // Tip is best-effort from the generator. When absent we omit
+          // the column entirely so the row's tip stays SQL NULL — that's
+          // what the runner checks when deciding whether to render the
+          // tip button.
+          ...(ex.tip ? { tip: ex.tip as Prisma.InputJsonValue } : {}),
         },
       });
       created += 1;

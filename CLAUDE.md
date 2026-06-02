@@ -229,6 +229,39 @@ packages/
 - History UI lives at `/profile/historico` (same path across all four
   locales).
 
+### Exercise generation (admin UI + CLI)
+
+The `pnpm gen:claude` / `gen:gpt` CLIs and the admin generator at
+`/admin/generate` share one engine: `runGeneration` in
+`apps/web/scripts/shared/run.ts`. The web API imports it directly via the
+`@scripts/*` path alias (in `tsconfig.json` + `vitest.config.ts`) — **no CLI
+spawn**. Full details in [scripts/README.md](./apps/web/scripts/README.md).
+
+- **Prompt-builder seam (locked vs editable).** Each per-type prompt file
+  (`scripts/<provider>/prompts/<type>.ts`) exports `promptParts: PromptParts`
+  with four pieces. `system` + `instructions` are the editable "voice" an
+  admin may override; `jsonShape` + `rules` are **locked** — the runner always
+  injects the canonical versions so a custom prompt can never break Zod
+  validation. `shared/prompt-builder.ts` composes them, reproducing the legacy
+  monolithic prompt byte-for-byte (pinned by `scripts/shared/__tests__/prompt-parity.test.ts`;
+  regenerate the baseline only after an intentional prompt edit).
+- **Session model.** Every non-dry run writes exactly one `GenerationSession`
+  (Decision 8): `source` (`UI`/`CLI`), provider, model, type/level/topic,
+  requested count, optional `savedPromptId`, `customSystem`/`customInstructions`
+  flags, and the outcome (`successCount`/`failureCount`/`failures`/`durationMs`).
+  Exercises link back via `Exercise.generationSessionId` (`onDelete: SetNull`).
+  CLI runs author the session as the seed admin; UI runs as the acting admin.
+  Sessions are an audit trail — there is no delete. Create/finalize via
+  `shared/session.ts`; never write the table ad-hoc.
+- **`SavedPrompt`** rows are per-admin prompt templates (private; Decision 3).
+  `useCount` is bumped with an atomic Prisma `increment` each time a session
+  uses one. Deleting a template keeps its sessions (`SetNull`).
+- **Admin surface.** API routes under `apps/web/src/app/api/admin/`
+  (generate-exercises, saved-prompts CRUD, preview-prompt, generation-sessions)
+  are **ADMIN-only** (TEACHER excluded) and rate-limited through the existing
+  `AiRateLimit` `GENERATE_EXERCISE` window. UI pages: `/admin/generate`,
+  `/admin/prompts`, `/admin/generate/history[/:id]`. v1 exposes Claude only.
+
 ## Testing
 
 `vitest` is the runner; tests live under `__tests__/` directories beside
@@ -369,6 +402,17 @@ Constants, TTLs, rate limits, pricing:
   in `@wortschatz/config` returns integer microcents (1 cent = 100 µ¢;
   USD × 100 000). Persist on `AiUsage.costMicrocents` to avoid float
   drift.
+- **Observability (Helicone).** Every Anthropic/OpenAI client supports
+  optional routing through the [Helicone](https://helicone.ai) proxy for
+  prompt/response/cost logging. It's gated on the optional
+  `HELICONE_API_KEY` env var: when set, clients construct with the
+  `baseURL` + headers from `heliconeAnthropicOverrides` /
+  `heliconeOpenAIOverrides` (and per-request `heliconeRequestHeaders`) in
+  `@wortschatz/config`; when unset those helpers return `{}` and behavior
+  is identical to before. New LLM client instantiations should spread the
+  matching helper rather than inline the proxy config. Helicone is purely
+  additive — `AiUsage` stays the canonical internal log. Details in
+  [scripts/README.md](./apps/web/scripts/README.md#observability-with-helicone).
 
 ## What NOT to change without a request
 
@@ -382,3 +426,8 @@ Constants, TTLs, rate limits, pricing:
 - `@wortschatz/config` constant values (Münzen rules, rate limits,
   TTLs, pricing) — both apps depend on them being equal; bump in one
   place, not via local override.
+- `runGeneration`'s public shape (`scripts/shared/run.ts`) and the
+  per-type `promptParts` JSON-shape/rules — the CLI and the admin UI both
+  depend on them; the prompt-parity test guards against silent drift. The
+  `GenerationSession` table is the long-term foundation for curation: don't
+  denormalize it or skip writing it for performance without flagging it.

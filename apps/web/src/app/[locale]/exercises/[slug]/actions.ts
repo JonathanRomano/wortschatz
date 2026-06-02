@@ -13,11 +13,11 @@ export type NextExercisePayload = {
   type: ExerciseType;
   level: CefrLevel;
   title: string;
-  instructions: string;
   explanation: string;
   content: Record<string, unknown>;
   alreadyEarned: boolean;
   model: string | null;
+  tip: string | null;
 };
 
 /**
@@ -49,12 +49,12 @@ export async function fetchNextExerciseOfType(
       select: {
         id: true,
         title: true,
-        instructions: true,
         explanation: true,
         type: true,
         level: true,
         content: true,
         model: true,
+        tip: true,
       },
     }),
     prisma.userExercise.findFirst({
@@ -68,10 +68,10 @@ export async function fetchNextExerciseOfType(
     type: exercise.type,
     level: exercise.level,
     title: exercise.title,
-    instructions: pickLocalized(exercise.instructions, locale),
     explanation: pickLocalized(exercise.explanation, locale),
     content: exercise.content as Record<string, unknown>,
     alreadyEarned: Boolean(priorSuccess),
     model: exercise.model,
+    tip: exercise.tip ? pickLocalized(exercise.tip, locale) : null,
   };
 }

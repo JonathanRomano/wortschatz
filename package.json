@@ -27,8 +27,10 @@
     "db:studio": "pnpm --filter @wortschatz/database studio",
     "db:seed": "pnpm --filter @wortschatz/database seed",
     "db:generate-exercises": "pnpm --filter @wortschatz/web db:generate-exercises",
-    "db:migrate-exercise-i18n": "pnpm --filter @wortschatz/web db:migrate-exercise-i18n",
-    "db:seed-muenzen-history": "pnpm --filter @wortschatz/web db:seed-muenzen-history"
+    "db:generate-fitb": "pnpm --filter @wortschatz/web db:generate-fitb",
+    "db:seed-muenzen-history": "pnpm --filter @wortschatz/web db:seed-muenzen-history",
+    "gen:claude": "pnpm --filter @wortschatz/web gen:claude",
+    "gen:gpt": "pnpm --filter @wortschatz/web gen:gpt"
   },
   "devDependencies": {
     "turbo": "^2.3.3",

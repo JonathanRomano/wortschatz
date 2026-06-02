@@ -114,6 +114,23 @@
     "completed": "Tamamlandı",
     "alreadyEarned": "Bu alıştırma için Münzen'i zaten kazandınız.",
     "rewardEarned": "+{amount} Münzen kazanıldı",
+    "instructionsByType": {
+      "FILL_IN_THE_BLANK": "Eksik kelimeyi doldurun.",
+      "MULTIPLE_CHOICE": "Doğru cevabı seçin.",
+      "TRANSLATION": "Almancaya çevirin.",
+      "WORD_ORDER": "Kelimeleri doğru sıraya koyun.",
+      "MATCHING": "Almanca kelimeleri çevirileriyle eşleştirin.",
+      "LISTENING_COMPREHENSION": "Dinleyin ve soruyu cevaplayın.",
+      "READING_COMPREHENSION": "Metni okuyun ve soruyu cevaplayın.",
+      "VERB_CONJUGATION": "Fiili çekin.",
+      "ERROR_CORRECTION": "Hatayı bulun ve düzeltin.",
+      "FREE_WRITING": "Konu hakkında kısa bir metin yazın."
+    },
+    "tip": {
+      "show": "İpucunu göster",
+      "label": "İpucu",
+      "reducedRewardNotice": "İpucunu kullanmak ödülü {amount} Münzen ile sınırlar."
+    },
     "debug": {
       "copyIdHint": "Alıştırma id'sini kopyalamak için tıklayın"
     }
@@ -262,6 +279,121 @@
       "amount": "Miktar",
       "note": "Not (isteğe bağlı)",
       "apply": "Uygula"
+    },
+    "generate": {
+      "title": "Alıştırma üret",
+      "subtitle": "Türe özel istemleri kullanarak Claude ile alıştırmalar oluşturun.",
+      "nav": {
+        "generator": "Üretici",
+        "history": "Geçmiş",
+        "prompts": "Kayıtlı istemler"
+      },
+      "form": {
+        "type": "Alıştırma türü",
+        "level": "CEFR seviyesi",
+        "topic": "Konu",
+        "topicHelp": "Standart konular arasında dönmek için boş bırakın.",
+        "count": "Adet",
+        "savedPrompt": "Kayıtlı istem",
+        "savedPromptNone": "(yok — varsayılanları kullan)",
+        "customPrompt": "İstemi özelleştir",
+        "systemOverride": "Sistem istemi (üslup)",
+        "systemOverrideHelp": "Bu tür için varsayılan üslubu geçersiz kılar. Varsayılanı korumak için boş bırakın.",
+        "instructionsOverride": "Yönergeler",
+        "instructionsOverrideHelp": "Yönergeler kısmının yerini alır. JSON şekli ve kurallar sabit kalır.",
+        "dryRun": "Deneme çalıştırması (kaydetme)",
+        "noRecent": "Yakın örnek bağlamını atla",
+        "preview": "İstemi önizle",
+        "save": "Şablon olarak kaydet",
+        "generate": "Üret",
+        "generating": "Üretiliyor…"
+      },
+      "preview": {
+        "title": "İstem önizlemesi",
+        "system": "Sistem",
+        "user": "Kullanıcı",
+        "estimatedTokens": "Tahmini token: {count}",
+        "close": "Kapat"
+      },
+      "save": {
+        "title": "İstem şablonunu kaydet",
+        "name": "İsim",
+        "description": "Açıklama (isteğe bağlı)",
+        "submit": "Kaydet",
+        "cancel": "İptal",
+        "saved": "Şablon kaydedildi."
+      },
+      "results": {
+        "title": "Sonuçlar",
+        "empty": "Sonuçları burada görmek için bir üretim çalıştırın.",
+        "summary": "{seconds} sn içinde {total} alıştırmadan {ok} tanesi başarıyla üretildi.",
+        "summaryDry": "Deneme çalıştırması — {total} alıştırmadan {ok} tanesi üretildi (hiçbir şey kaydedilmedi).",
+        "session": "Oturum kimliği: {id}",
+        "viewSession": "Bu oturumu geçmişte görüntüle",
+        "viewExercise": "Görüntüle",
+        "showJson": "JSON'u göster",
+        "hideJson": "JSON'u gizle",
+        "failuresTitle": "Başarısızlıklar ({count})"
+      },
+      "errors": {
+        "rate_limited": "Günlük üretim sınırına ulaşıldı. Daha sonra tekrar deneyin.",
+        "generic": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+        "loadFailed": "Yüklenemedi."
+      }
+    },
+    "prompts": {
+      "title": "Kayıtlı istemler",
+      "subtitle": "Yalnızca size özel, yeniden kullanılabilir istem şablonları.",
+      "empty": "Henüz kayıtlı istem yok.",
+      "new": "Yeni şablon",
+      "columns": {
+        "name": "İsim",
+        "type": "Tür",
+        "useCount": "Kullanım",
+        "lastUsed": "Son kullanım",
+        "created": "Oluşturulma",
+        "actions": "İşlemler"
+      },
+      "never": "Hiç",
+      "edit": "Düzenle",
+      "delete": "Sil",
+      "confirmDelete": "Bu şablon silinsin mi? Onu kullanan oturumlar korunur.",
+      "deleted": "Şablon silindi."
+    },
+    "history": {
+      "title": "Üretim geçmişi",
+      "subtitle": "Başlattığınız her çalıştırma, en yeniden başlayarak.",
+      "empty": "Henüz üretim yok.",
+      "filters": {
+        "type": "Tür",
+        "level": "Seviye",
+        "savedPrompt": "Kayıtlı istem",
+        "from": "Başlangıç",
+        "to": "Bitiş",
+        "all": "Tümü",
+        "apply": "Uygula",
+        "clear": "Temizle"
+      },
+      "adhoc": "(ad-hoc)",
+      "topicAuto": "(döndürülmüş)",
+      "view": "Görüntüle",
+      "columns": {
+        "created": "Oluşturulma",
+        "type": "Tür",
+        "level": "Seviye",
+        "topic": "Konu",
+        "prompt": "İstem",
+        "result": "Sonuç",
+        "duration": "Süre",
+        "source": "Kaynak"
+      },
+      "detail": {
+        "title": "Oturum",
+        "exercises": "Alıştırmalar",
+        "failures": "Başarısızlıklar",
+        "noExercises": "Hiç alıştırma üretilmedi.",
+        "back": "Geçmişe dön"
+      }
     }
   },
   "common": {

@@ -37,7 +37,10 @@ const TYPES: ExerciseType[] = [
   "FREE_WRITING",
 ];
 
-const LEVELS: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+// Platform currently offers A1–B1 only. The Prisma enum still has B2/C1/C2
+// for legacy rows and for user.learningLevel, but those levels are not
+// surfaced in the exercise filter UI and not accepted via ?level=…
+const LEVELS: CefrLevel[] = ["A1", "A2", "B1"];
 
 function asType(slug: string): ExerciseType | null {
   return TYPES.includes(slug as ExerciseType) ? (slug as ExerciseType) : null;
@@ -60,13 +63,13 @@ async function loadExercise(
     select: {
       id: true,
       title: true,
-      instructions: true,
       explanation: true,
       type: true,
       level: true,
       content: true,
       status: true,
       model: true,
+      tip: true,
     },
   });
   if (!exercise || exercise.status !== "PUBLISHED") return null;
@@ -81,11 +84,11 @@ async function loadExercise(
     type: exercise.type,
     level: exercise.level,
     title: exercise.title,
-    instructions: pickLocalized(exercise.instructions, locale),
     explanation: pickLocalized(exercise.explanation, locale),
     content: exercise.content as Record<string, unknown>,
     alreadyEarned: Boolean(priorSuccess),
     model: exercise.model,
+    tip: exercise.tip ? pickLocalized(exercise.tip, locale) : null,
   };
 }
 
@@ -103,6 +106,7 @@ export default async function ExerciseSlugPage({
   if (!session?.user?.id) redirect(`/${locale}/login`);
 
   const t = await getTranslations("exercises");
+  const tInstr = await getTranslations("exercises.instructionsByType");
   const tt = await getTranslations("exerciseTypes");
   const td = await getTranslations("exerciseTypeDescriptions");
   const tf = await getTranslations("filters");
@@ -288,7 +292,7 @@ export default async function ExerciseSlugPage({
             lineHeight: 1.6,
           }}
         >
-          {detail.instructions}
+          {tInstr(detail.type)}
         </Typography>
       </Box>
 
@@ -300,6 +304,7 @@ export default async function ExerciseSlugPage({
           explanation={detail.explanation}
           alreadyEarned={detail.alreadyEarned}
           model={detail.model}
+          tip={detail.tip}
         />
       </Card>
 

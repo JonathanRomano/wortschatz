@@ -34,6 +34,7 @@ export type SubmitResult =
 export async function submitExerciseAttempt(
   exerciseId: string,
   rawAnswer: Record<string, unknown>,
+  tipUsed: boolean = false,
 ): Promise<SubmitResult> {
   const session = await auth();
   if (!session?.user?.id) return { ok: false, error: "Not authenticated." };
@@ -106,9 +107,16 @@ export async function submitExerciseAttempt(
   });
   const alreadyEarned = Boolean(priorSuccess);
 
+  // The client tells us whether the tip was revealed; we trust it
+  // (anti-cheat isn't meaningful — the same client could simply omit the
+  // flag). If the exercise has no tip column at all, treat the flag as
+  // false so a malformed payload can't dock the reward.
+  const exerciseHasTip = exercise.tip !== null && exercise.tip !== undefined;
+  const effectiveTipUsed = tipUsed && exerciseHasTip;
+
   const { base, perfect, streakBonus } = alreadyEarned
     ? { base: 0, perfect: 0, streakBonus: 0 }
-    : computeReward(score, isFirstOfDay);
+    : computeReward(score, isFirstOfDay, effectiveTipUsed);
   // The legacy `reward` surface in the SubmitResult bundles the
   // exercise-completion credit + perfect-score bonus into one figure for
   // the UI banner. We still write them as two separate transactions in
@@ -123,6 +131,7 @@ export async function submitExerciseAttempt(
         answer: rawAnswer as object,
         score,
         feedback,
+        tipUsed: effectiveTipUsed,
       },
     });
     await tx.user.update({
