@@ -1,24 +1,43 @@
 /**
- * Claude exercise generator (v2). Per-type prompts live in ./prompts; the
- * shared runner in ../shared/run.ts drives the generate → validate →
- * insert loop. See apps/web/scripts/README.md for usage.
+ * Claude exercise generator (v2). The shared runner in ../shared/run.ts
+ * drives the per-item generate → insert loop; the per-type prompts live in
+ * @wortschatz/exercises. See apps/web/scripts/README.md for usage.
  *
  *   pnpm gen:claude --type FILL_IN_THE_BLANK --level A2 --count 5 --topic food
  *   pnpm gen:claude --type MULTIPLE_CHOICE --level B1 --count 10 --dry-run
+ *
+ * Generation prefers the apps/api endpoint (POST /ai/generate-exercise) when
+ * the API is reachable and INTERNAL_API_SECRET is set, which keeps the heavy
+ * LLM work on the boundary-correct service. When the API isn't running it
+ * falls back to the in-process Anthropic SDK so local iteration doesn't
+ * require booting apps/api (Decision 3). The chosen path is logged.
  */
+import { claudePrompts } from "@wortschatz/exercises";
 import { prisma } from "@wortschatz/database";
 
 import { parseArgs } from "../shared/cli";
 import { runGeneration } from "../shared/run";
+import { makeDirectGenerator, makeRemoteGenerator } from "../shared/generators";
+import { isExpressReachable } from "../shared/express-health";
 import { callClaude, CLAUDE_DEFAULT_MODEL } from "./client";
-import { claudePrompts } from "./prompts";
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+
+  const useExpress =
+    Boolean(process.env.INTERNAL_API_SECRET) && (await isExpressReachable());
+  const generate = useExpress
+    ? makeRemoteGenerator("claude")
+    : makeDirectGenerator(callClaude, claudePrompts);
+  console.log(
+    useExpress
+      ? "[gen:claude] using the apps/api /ai/generate-exercise endpoint"
+      : "[gen:claude] apps/api unreachable — falling back to the in-process Anthropic SDK",
+  );
+
   await runGeneration({
     providerLabel: "claude",
-    client: callClaude,
-    prompts: claudePrompts,
+    generate,
     defaultModel: CLAUDE_DEFAULT_MODEL,
     request: {
       type: args.type,

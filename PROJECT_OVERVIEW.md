@@ -12,15 +12,23 @@
 > - `apps/web` — the Next.js app described below (paths starting with
 >   `src/`, `prisma/`, `scripts/`, `messages/` now live under
 >   `apps/web/`).
-> - `apps/api` — a small Express service that owns the AI endpoints
->   `/ai/review-text` and `/ai/evaluate-answer`. Web calls it via
->   `apps/web/src/lib/api-client.ts` with a shared-secret +
->   `X-User-Id` header pair.
+> - `apps/api` — a small Express service that owns **all** AI endpoints:
+>   `/ai/review-text`, `/ai/evaluate-answer`, and `/ai/generate-exercise`
+>   (the last added in the API-boundary sprint, moving exercise generation
+>   off the Next.js runtime). Web calls it via
+>   `apps/web/src/lib/api-client.ts` with a shared-secret + `X-User-Id`
+>   header pair. See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the boundary
+>   rules (no `@anthropic-ai/sdk` / `openai` import under `apps/web/src`).
 > - `packages/database` (`@wortschatz/database`) — Prisma schema +
 >   client.
 > - `packages/types` (`@wortschatz/types`) — cross-app wire formats.
 > - `packages/config` (`@wortschatz/config`) — constants, env schemas,
 >   `pickLocalized` / `findBlockedWord` / `estimateCostMicrocents`.
+> - `packages/exercises` (`@wortschatz/exercises`) — per-type Zod schemas,
+>   the prompt-builder + per-type prompts, recent-example rendering, and the
+>   validation gate; shared by the admin generator (apps/web) and
+>   `/ai/generate-exercise` (apps/api) so neither tier duplicates the
+>   generation domain logic.
 >
 > See [`MONOREPO.md`](./MONOREPO.md) for the full layout, commands,
 > and known follow-ups (compile packages to dist, port avatar route to

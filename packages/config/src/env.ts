@@ -46,6 +46,12 @@ export const apiEnvSchema = baseEnvSchema.extend({
   WEB_URL: z.string().url().default("http://localhost:3000"),
   /** Must equal apps/web's INTERNAL_API_SECRET. */
   INTERNAL_API_SECRET: z.string().min(32),
+  /**
+   * Optional. Enables GPT as a provider for POST /ai/generate-exercise.
+   * Absent → the endpoint returns a deterministic stub for provider="gpt"
+   * (same offline behavior as a missing ANTHROPIC_API_KEY for claude).
+   */
+  OPENAI_API_KEY: z.string().optional(),
 });
 
 export type WebEnv = z.infer<typeof webEnvSchema>;

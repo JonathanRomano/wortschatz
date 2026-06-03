@@ -1,86 +1,47 @@
 /**
- * Shared CLI + prompt contract for the v2 exercise generators.
+ * Web-only orchestration contract for the v2 exercise generators.
  *
- * Both providers (claude/, gpt/) depend on these shapes. As of the admin
- * generator sprint, each provider's per-type prompt file exports a
- * `promptParts: PromptParts` object — four independently-named pieces
- * (system / instructions / jsonShape / rules) so the admin UI can override
- * the editable "voice" (system + instructions) while the runner keeps the
- * JSON shape and rules locked. `buildPrompt` / `buildFinalUserPrompt` in
- * shared/prompt-builder.ts compose the pieces; the shared runner (run.ts)
- * drives the per-run flow against whichever provider client + registry it's
- * given and returns a structured GenerationResult.
+ * The prompt/content contract types (PromptParts, PromptInput, PromptOutput,
+ * PromptRegistry, RecentExample, CustomPrompt) now live in
+ * `@wortschatz/exercises` so apps/api can build + validate the exact same
+ * prompts the CLI does. They're re-exported here so existing
+ * `from "./types"` / `from "../../shared/types"` imports keep resolving.
  *
- * We intentionally do NOT reuse `GeneratedExercise` from
- * `@wortschatz/types` here — that type still carries the dropped
- * `instructions` field and lacks `tip`. These local types are the
- * source of truth for the generator scripts.
+ * This file keeps the things that are web-side only: the provider-client
+ * seam used by the CLI's direct SDK clients, the CLI arg shape, and the
+ * GenerationRequest / GenerationContext / GenerationResult orchestration
+ * types consumed by run.ts and the admin route.
  */
 import type { CefrLevel, ExerciseType } from "@wortschatz/database";
+import type {
+  CustomPrompt,
+  PromptInput,
+  PromptOutput,
+  PromptParts,
+  PromptRegistry,
+  RecentExample,
+} from "@wortschatz/exercises";
 
 export type { CefrLevel, ExerciseType };
+export type {
+  CustomPrompt,
+  PromptInput,
+  PromptOutput,
+  PromptParts,
+  PromptRegistry,
+  RecentExample,
+};
 
 /** Levels the generators currently target (schemas support up to C2). */
 export const SUPPORTED_LEVELS = ["A1", "A2", "B1", "B2"] as const;
 export type SupportedLevel = (typeof SUPPORTED_LEVELS)[number];
 
-/**
- * One previously-generated exercise, reduced to a single representative
- * line for the anti-duplication block in the user prompt.
- */
-export interface RecentExample {
-  title: string;
-  /** Type-specific excerpt, e.g. the FITB sentence or the MC question. */
-  excerpt: string;
-}
-
-export interface PromptInput {
-  level: CefrLevel;
-  topic: string;
-  /** Last N exercises of the same type+level. Empty when --no-recent. */
-  recentExamples: RecentExample[];
-}
-
-/** The composed prompt handed to a provider client. */
-export interface PromptOutput {
-  system: string;
-  user: string;
-  /** Type-specific token budget for the generation call. */
-  maxTokens: number;
-}
-
-/**
- * A per-type prompt, split into independently-named pieces.
- *
- * - `system` and `instructions` are the EDITABLE "voice": the admin UI may
- *   override them (Decision 2). `instructions` is everything that precedes
- *   the recent-examples block — the intro line plus the level/topic/target
- *   header.
- * - `jsonShape` and `rules` are LOCKED: the runner always injects the
- *   canonical versions so a custom prompt can't break validation.
- *
- * `buildFinalUserPrompt` assembles the user message as:
- *   instructions · recentBlock · jsonShape · rules
- * reproducing the legacy monolithic prompt byte-for-byte (see the parity
- * test in shared/__tests__).
- */
-export interface PromptParts {
-  /** Default system prompt for the type (editable voice). */
-  system: string;
-  /** Type-specific token budget for the generation call. */
-  maxTokens: number;
-  /** Editable instructions portion — intro + level/topic/target header. */
-  instructions: (input: PromptInput) => string;
-  /** LOCKED canonical JSON shape block (header line + literal template). */
-  jsonShape: (input: PromptInput) => string;
-  /** LOCKED rules / constraints portion. */
-  rules: (input: PromptInput) => string;
-}
-
-/** A provider's 10 prompt definitions, keyed by ExerciseType. */
-export type PromptRegistry = Record<ExerciseType, PromptParts>;
-
 // --- Provider client contract -----------------------------------------
+//
+// The text-in/text-out seam the CLI's direct SDK clients (scripts/{claude,
+// gpt}/client.ts) implement. The runtime/UI path no longer goes through a
+// ProviderClient — it calls the Express /ai/generate-exercise endpoint —
+// but the CLI's offline fallback still uses these.
 
 export interface ProviderCallOptions {
   system: string;
@@ -124,14 +85,6 @@ export interface CliArgs {
 // --- Generation request / context / result ----------------------------
 
 export type GenerationSource = "UI" | "CLI";
-
-/** Admin-supplied overrides for the editable portions of a prompt. */
-export interface CustomPrompt {
-  /** Replaces the default system prompt when a non-empty string. */
-  system?: string;
-  /** Replaces the default instructions portion when a non-empty string. */
-  userInstructions?: string;
-}
 
 /**
  * What a caller asks the runner to generate. The CLI maps its parsed
@@ -197,4 +150,54 @@ export interface GenerationResult {
   failed: GenerationFailure[];
   totalDurationMs: number;
   cacheHits: number;
+}
+
+// --- Per-item generation seam -----------------------------------------
+//
+// runGeneration delegates each item to an ExerciseGenerator. Two
+// implementations live in ./generators: a remote one (POST
+// /ai/generate-exercise on apps/api — the default for the UI and a reachable
+// CLI) and a direct one (the in-process SDK client, the CLI's offline
+// fallback). Both return the validated, normalized exercise; the loop only
+// orchestrates and inserts. See ARCHITECTURE.md for why the heavy work lives
+// on apps/api.
+
+export interface GenerateOneInput {
+  type: ExerciseType;
+  level: CefrLevel;
+  topic: string;
+  recentExamples: RecentExample[];
+  customPrompt?: CustomPrompt;
+  /** Provider model override (CLI --model). */
+  model?: string;
+}
+
+export interface GeneratedExercisePayload {
+  title: string;
+  content: Record<string, unknown>;
+  solution: Record<string, unknown>;
+  explanation: Record<string, unknown>;
+  tags: string[];
+  tip?: Record<string, unknown>;
+  /** The model that actually produced it. */
+  modelUsed: string;
+}
+
+export type ExerciseGenerator = (
+  input: GenerateOneInput,
+) => Promise<GeneratedExercisePayload>;
+
+/**
+ * Error a generator throws to signal a per-item failure with a specific
+ * code. `validation_error` / `parse_error` skip the item and the run
+ * continues; a rate limit throws AiRateLimitedError instead, which stops
+ * the batch.
+ */
+export class GenerationError extends Error {
+  readonly code: GenerationFailureCode;
+  constructor(code: GenerationFailureCode, message: string) {
+    super(message);
+    this.name = "GenerationError";
+    this.code = code;
+  }
 }

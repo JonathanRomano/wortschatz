@@ -7,8 +7,12 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@wortschatz/database", () => ({ prisma: {} }));
 
-import { buildFinalUserPrompt, buildPrompt, estimateTokens } from "../prompt-builder";
-import { claudePrompts } from "../../claude/prompts";
+import {
+  buildFinalUserPrompt,
+  buildPrompt,
+  claudePrompts,
+  estimateTokens,
+} from "@wortschatz/exercises";
 
 const parts = claudePrompts.FILL_IN_THE_BLANK;
 const input = { level: "A2" as const, topic: "Reisen", recentExamples: [] };

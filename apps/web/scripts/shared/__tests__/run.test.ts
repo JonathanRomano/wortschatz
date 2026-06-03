@@ -1,11 +1,12 @@
 /**
- * Behavioural tests for the shared runGeneration loop. The provider client
- * is injected (mocked), prisma is mocked, and the real claude PromptParts +
- * validators run so we exercise the actual prompt assembly and validation.
+ * Behavioural tests for the shared runGeneration loop. The per-item
+ * ExerciseGenerator is injected (mocked) and prisma is mocked, so these pin
+ * the orchestration the loop owns: CLI-vs-UI session lifecycle,
+ * exercise→session linking, the per-item model coming from the generator,
+ * recent-examples wiring, failure classification, and dry-run (no writes).
  *
- * Covers the Task 1.1 / 5.1 invariants: default vs custom prompts, locked
- * JSON shape, CLI-vs-UI session lifecycle, exercise→session linking,
- * failure tolerance, and dry-run (no writes).
+ * Prompt assembly + validation now live in the generator (covered by
+ * prompt-builder.test.ts / prompt-parity.test.ts), not in run.ts.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -27,20 +28,22 @@ vi.mock("@wortschatz/database", () => ({
 }));
 
 import { runGeneration } from "../run";
-import { claudePrompts } from "../../claude/prompts";
-import type { ProviderClient } from "../types";
+import { GenerationError, type ExerciseGenerator } from "../types";
 
-const VALID_FITB = JSON.stringify({
+const VALID_PAYLOAD = {
   title: "Lückentext",
   content: { sentence: "Ich ___ einen Apfel.", blanksCount: 1 },
   solution: { blanks: ["esse"] },
-  explanation: { en: "e", pt: "p", tr: "t", uk: "u" },
+  explanation: { en: "e" },
   tags: ["food"],
   tip: { en: "hint" },
-});
+  modelUsed: "claude-test",
+};
 
-function clientReturning(text: string): ProviderClient {
-  return vi.fn().mockResolvedValue({ text, modelUsed: "claude-test" });
+function generatorReturning(
+  payload: Record<string, unknown> = VALID_PAYLOAD,
+): ExerciseGenerator {
+  return vi.fn().mockResolvedValue(payload);
 }
 
 const baseRequest = {
@@ -53,8 +56,7 @@ const baseRequest = {
 function config(overrides: Record<string, unknown> = {}) {
   return {
     providerLabel: "claude",
-    client: clientReturning(VALID_FITB),
-    prompts: claudePrompts,
+    generate: generatorReturning(),
     defaultModel: "claude-default",
     request: baseRequest,
     ...overrides,
@@ -71,9 +73,8 @@ beforeEach(() => {
 });
 
 describe("runGeneration — CLI mode (no context)", () => {
-  it("opens a CLI session, links exercises to it, and finalizes", async () => {
-    const cfg = config({ request: { ...baseRequest, count: 2 } });
-    const result = await runGeneration(cfg);
+  it("opens a CLI session, links exercises to it with the per-item model, and finalizes", async () => {
+    const result = await runGeneration(config({ request: { ...baseRequest, count: 2 } }));
 
     expect(mocks.sessionCreate).toHaveBeenCalledTimes(1);
     const sessionData = mocks.sessionCreate.mock.calls[0]![0].data;
@@ -83,10 +84,11 @@ describe("runGeneration — CLI mode (no context)", () => {
     expect(sessionData.requestedCount).toBe(2);
     expect(sessionData.modelUsed).toBe("claude-default");
 
-    // Each exercise links to the created session.
     expect(mocks.exerciseCreate).toHaveBeenCalledTimes(2);
     for (const call of mocks.exerciseCreate.mock.calls) {
       expect(call[0].data.generationSessionId).toBe("sess-cli");
+      // The model persisted to the row is the one the generator reported.
+      expect(call[0].data.model).toBe("claude-test");
     }
 
     expect(mocks.sessionUpdate).toHaveBeenCalledTimes(1);
@@ -98,69 +100,62 @@ describe("runGeneration — CLI mode (no context)", () => {
   });
 });
 
-describe("runGeneration — prompts", () => {
-  it("uses the default system prompt when no customPrompt is given", async () => {
-    const client = clientReturning(VALID_FITB);
-    await runGeneration(config({ client }));
-    const sent = (client as ReturnType<typeof vi.fn>).mock.calls[0]![0];
-    expect(sent.system).toContain("German-language exercise author");
-    expect(sent.user).toContain("Output a single JSON object with this exact shape:");
-    expect(sent.user).toContain("Rules:");
+describe("runGeneration — generator wiring", () => {
+  it("passes the resolved topic, recent examples, and customPrompt to the generator", async () => {
+    mocks.exerciseFindMany.mockResolvedValueOnce([
+      { title: "T", content: { sentence: "Alt." }, solution: {} },
+    ]);
+    const generate = generatorReturning();
+    await runGeneration(
+      config({ generate, request: { ...baseRequest, customPrompt: { system: "VOICE" } } }),
+    );
+    const arg = (generate as ReturnType<typeof vi.fn>).mock.calls[0]![0];
+    expect(arg.type).toBe("FILL_IN_THE_BLANK");
+    expect(arg.level).toBe("A2");
+    expect(arg.topic).toBe("Essen");
+    expect(arg.customPrompt).toEqual({ system: "VOICE" });
+    expect(arg.recentExamples).toHaveLength(1);
   });
 
-  it("applies a custom system override but keeps the JSON shape + rules locked", async () => {
-    const client = clientReturning(VALID_FITB);
-    await runGeneration(
-      config({ client, request: { ...baseRequest, customPrompt: { system: "CUSTOM VOICE" } } }),
-    );
-    const sent = (client as ReturnType<typeof vi.fn>).mock.calls[0]![0];
-    expect(sent.system).toBe("CUSTOM VOICE");
-    // Locked pieces still present.
-    expect(sent.user).toContain("Output a single JSON object with this exact shape:");
-    expect(sent.user).toContain("Rules:");
-  });
-
-  it("applies custom instructions but still injects the locked JSON shape", async () => {
-    const client = clientReturning(VALID_FITB);
-    await runGeneration(
-      config({
-        client,
-        request: { ...baseRequest, customPrompt: { userInstructions: "DO EXACTLY THIS" } },
-      }),
-    );
-    const sent = (client as ReturnType<typeof vi.fn>).mock.calls[0]![0];
-    expect(sent.user.startsWith("DO EXACTLY THIS")).toBe(true);
-    expect(sent.user).not.toContain("Write ONE FILL_IN_THE_BLANK exercise.");
-    expect(sent.user).toContain("Output a single JSON object with this exact shape:");
-    expect(sent.user).toContain("Rules:");
+  it("skips the recent-examples fetch when noRecent is set", async () => {
+    const generate = generatorReturning();
+    await runGeneration(config({ generate, request: { ...baseRequest, noRecent: true } }));
+    expect(mocks.exerciseFindMany).not.toHaveBeenCalled();
+    expect((generate as ReturnType<typeof vi.fn>).mock.calls[0]![0].recentExamples).toEqual([]);
   });
 });
 
 describe("runGeneration — resilience", () => {
-  it("records a failure and continues when one item is unparseable", async () => {
-    // First call: garbage; second: valid.
-    const client = vi
+  it("records a validation failure and continues to the next item", async () => {
+    const generate = vi
       .fn()
-      .mockResolvedValueOnce({ text: "not json at all", modelUsed: "m" })
-      .mockResolvedValueOnce({ text: VALID_FITB, modelUsed: "m" });
-    const result = await runGeneration(config({ client, request: { ...baseRequest, count: 2 } }));
+      .mockRejectedValueOnce(new GenerationError("validation_error", "bad content"))
+      .mockResolvedValueOnce(VALID_PAYLOAD);
+    const result = await runGeneration(config({ generate, request: { ...baseRequest, count: 2 } }));
     expect(result.generated).toHaveLength(1);
     expect(result.failed).toHaveLength(1);
-    expect(result.failed[0]!.code).toBe("parse_error");
-    // The run still finalized the session with the partial outcome.
+    expect(result.failed[0]!.code).toBe("validation_error");
     expect(mocks.sessionUpdate.mock.calls[0]![0].data.failureCount).toBe(1);
   });
 
-  it("stops the batch and tags rate_limited when beforeEach throws", async () => {
+  it("stops the batch and tags rate_limited when the generator throws AiRateLimitedError", async () => {
     const rateErr = Object.assign(new Error("limit"), { name: "AiRateLimitedError" });
-    const beforeEach = vi.fn().mockRejectedValue(rateErr);
-    const client = clientReturning(VALID_FITB);
-    const result = await runGeneration(
-      config({ client, beforeEach, request: { ...baseRequest, count: 5 } }),
-    );
-    expect(client).not.toHaveBeenCalled();
+    const generate = vi.fn().mockRejectedValue(rateErr);
+    const result = await runGeneration(config({ generate, request: { ...baseRequest, count: 5 } }));
+    expect(generate).toHaveBeenCalledTimes(1);
     expect(result.generated).toHaveLength(0);
     expect(result.failed).toHaveLength(1);
+    expect(result.failed[0]!.code).toBe("rate_limited");
+  });
+
+  it("stops the batch when a beforeEach hook throws a rate-limit error", async () => {
+    const rateErr = Object.assign(new Error("limit"), { name: "AiRateLimitedError" });
+    const beforeEachHook = vi.fn().mockRejectedValue(rateErr);
+    const generate = generatorReturning();
+    const result = await runGeneration(
+      config({ generate, beforeEach: beforeEachHook, request: { ...baseRequest, count: 5 } }),
+    );
+    expect(generate).not.toHaveBeenCalled();
     expect(result.failed[0]!.code).toBe("rate_limited");
   });
 });
@@ -180,9 +175,7 @@ describe("runGeneration — dry run", () => {
 describe("runGeneration — UI context", () => {
   it("reuses a provided session and links exercises to it", async () => {
     const result = await runGeneration(
-      config({
-        context: { sessionId: "sess-ui", authorId: "admin-1", source: "UI" },
-      }),
+      config({ context: { sessionId: "sess-ui", authorId: "admin-1", source: "UI" } }),
     );
     expect(mocks.sessionCreate).not.toHaveBeenCalled();
     expect(mocks.exerciseCreate.mock.calls[0]![0].data.generationSessionId).toBe("sess-ui");

@@ -190,6 +190,45 @@ A 429 from the api maps back to `AiRateLimitedError` in the web so
 callers' existing `err instanceof AiRateLimitedError` branches keep
 working.
 
+## API Boundary Rules
+
+Two HTTP surfaces exist. Where new code goes is not a matter of preference.
+The full version (with a decision tree and the generation flow) lives in
+[ARCHITECTURE.md](./ARCHITECTURE.md); the rules in brief:
+
+### Next.js (`apps/web`) — owns:
+- Authentication and session handling
+- Lightweight DB CRUD (sub-100ms operations)
+- Read-only queries and pagination
+- Server actions tied to user sessions
+- UI rendering
+
+### Express (`apps/api`) — owns:
+- Any operation that calls an LLM provider (Anthropic, OpenAI, etc.)
+- Any operation expected to take > 5 seconds
+- Any operation that processes binary data (images, audio, PDFs, etc.)
+- Background jobs and cron-style work
+
+### Hard rules
+1. No file under `apps/web/src/` may import `@anthropic-ai/sdk` or `openai`
+   directly. CLI scripts under `apps/web/scripts/` may, for local-only
+   iteration. Enforced by `apps/web/src/__tests__/architecture.test.ts`.
+2. No file under `apps/web/src/` may run `sharp` on user-uploaded content.
+   (The existing avatar route is a known violation, tracked in ARCHITECTURE.md.)
+3. When adding a route, the first question is "does this take longer than 5
+   seconds or call an LLM?" If yes → Express.
+4. When a route in Next.js needs an LLM result, it calls Express via
+   `api-client.ts`. Period.
+5. Schemas needed by both tiers live in a shared package, never in
+   `apps/web/src/`. The exercise-generation domain (schemas, prompt-builder,
+   per-type prompts, validation) is `@wortschatz/exercises`.
+
+All three AI operations — `review-text`, `evaluate-answer`, and (since the
+API-boundary sprint) `generate-exercise` — now run on apps/api. The admin
+"Generate" UI and the `gen:claude` / `gen:gpt` CLIs both call
+`POST /ai/generate-exercise`; the CLI falls back to the in-process SDK only
+when apps/api is unreachable.
+
 ## Adding a new shared package
 
 ```bash

@@ -38,7 +38,8 @@ export type HeliconeSource =
   | "scripts-gpt"
   | "scripts-fitb"
   | "web-ai-lib"
-  | "api-service";
+  | "api-service"
+  | "express-ai-generate";
 
 /**
  * Provider-SDK constructor overrides. When Helicone is enabled this is the

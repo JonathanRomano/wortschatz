@@ -1,27 +1,26 @@
 /**
- * Provider-agnostic generation loop. Each provider's generate.ts parses
- * args and hands us its client + prompt registry + default model; the
- * per-run flow (session open → topic rotation → recent examples → build
- * prompt → call → extract → validate → insert → session finalize) lives
- * here so the two providers can't drift on the orchestration. Prompt
- * content and the SDK clients stay fully independent per provider.
+ * Provider-agnostic generation loop. Each caller hands us an
+ * ExerciseGenerator (which builds + calls + validates one item) plus its
+ * default model; the per-run flow (session open → topic rotation → recent
+ * examples → generate → insert → session finalize) lives here so the CLI and
+ * the admin UI can't drift on the orchestration.
  *
- * The runner is session-aware (Decision 8). When the caller supplies a
- * `context` (the admin API pre-creates a session to record UI metadata and
- * obtain its id), the runner links exercises to it and finalizes it. When
- * `context` is omitted (the CLI), the runner opens its own session marked
- * `source: "CLI"` authored by the seed admin. A dry run creates no session
- * and writes nothing.
+ * As of the API-boundary sprint the heavy work — prompt build + provider call
+ * + validation — lives behind `config.generate`: the admin UI and a reachable
+ * CLI use the remote generator (POST /ai/generate-exercise on apps/api); the
+ * CLI's offline fallback uses the in-process SDK generator. Both return a
+ * validated GeneratedExercisePayload, so this loop only orchestrates and
+ * inserts and never imports a provider SDK. See ARCHITECTURE.md.
  *
- * The runner is silent by default and returns a structured GenerationResult;
- * the CLI consumers pass an `onProgress` sink to render the human log they
- * used to print inline. Failures never halt the run — a parse/validation/
- * model error counts as failed and the loop moves on — except a rate-limit
- * error, which stops the batch (every remaining item would fail the same
- * way) after being recorded.
+ * The runner is session-aware (Decision 8): a supplied `context` (admin UI)
+ * links exercises to a pre-created session and finalizes it; without it (CLI)
+ * the runner opens its own `source: "CLI"` session authored by the seed
+ * admin. A dry run creates no session and writes nothing.
+ *
+ * Failures never halt the run — a parse/validation/model error counts as
+ * failed and the loop moves on — except a rate-limit error, which stops the
+ * batch (every remaining item would fail the same way) after being recorded.
  */
-import { extractJson } from "./json";
-import { buildPrompt } from "./prompt-builder";
 import { fetchRecentExamples } from "./recent-examples";
 import { insertExercise } from "./insert";
 import {
@@ -30,23 +29,26 @@ import {
   seedAdminId,
 } from "./session";
 import { topicForIndex } from "./topics";
-import { normalizeTags, normalizeTitle, validateExercise } from "./validate";
 import type {
+  ExerciseGenerator,
   GeneratedExerciseSummary,
   GenerationContext,
   GenerationFailure,
   GenerationFailureCode,
   GenerationRequest,
   GenerationResult,
-  ProviderClient,
-  PromptRegistry,
 } from "./types";
 
 export interface RunConfig {
   /** "claude" | "gpt" — used for logging and as GenerationSession.provider. */
   providerLabel: string;
-  client: ProviderClient;
-  prompts: PromptRegistry;
+  /** Produces one validated exercise per call (remote endpoint or direct SDK). */
+  generate: ExerciseGenerator;
+  /**
+   * Model recorded on the session header. The per-item model that actually
+   * produced each exercise comes back from `generate()` and is what gets
+   * persisted to Exercise.model.
+   */
   defaultModel: string;
   request: GenerationRequest;
   /**
@@ -55,18 +57,19 @@ export interface RunConfig {
    * seed admin).
    */
   context?: GenerationContext;
-  /** Provider model override (CLI --model). */
+  /** Provider model override (CLI --model), forwarded to the generator. */
   model?: string;
-  /** Delay between provider calls to dodge rate limits (CLI --delay-ms). */
+  /** Delay between generate() calls to dodge rate limits (CLI --delay-ms). */
   delayMs?: number;
   /** Print the recent-examples block that was sent (CLI --verbose). */
   verbose?: boolean;
   /** Progress sink. CLI passes a console logger; the API leaves it unset. */
   onProgress?: (line: string) => void;
   /**
-   * Called once before each provider call. The admin API injects the
-   * per-user rate-limit check here; the CLI leaves it unset. Throwing an
-   * AiRateLimitedError stops the batch.
+   * Called once before each generate() call. The per-user generation rate
+   * limit now lives on apps/api, so the admin UI path leaves this unset;
+   * retained for the CLI / future use. Throwing an AiRateLimitedError stops
+   * the batch.
    */
   beforeEach?: () => Promise<void>;
 }
@@ -77,21 +80,37 @@ function override(s: string | undefined): boolean {
   return !!(s && s.trim().length > 0);
 }
 
+/**
+ * Map a thrown generator error onto a failure code. Both generators signal
+ * the same way: AiRateLimitedError (stops the batch),
+ * GenerationValidationError (the remote 422) and GenerationError (the direct
+ * parse/validation miss) carry the specific code; anything else is a model
+ * error.
+ */
 function classifyError(err: unknown): GenerationFailureCode {
-  if (err instanceof Error && err.name === "AiRateLimitedError") {
-    return "rate_limited";
+  if (err instanceof Error) {
+    if (err.name === "AiRateLimitedError") return "rate_limited";
+    if (err.name === "GenerationValidationError") return "validation_error";
+    const code = (err as { code?: unknown }).code;
+    if (
+      code === "validation_error" ||
+      code === "parse_error" ||
+      code === "model_error" ||
+      code === "rate_limited"
+    ) {
+      return code;
+    }
   }
   return "model_error";
 }
 
 export async function runGeneration(config: RunConfig): Promise<GenerationResult> {
-  const { providerLabel, client, prompts, defaultModel, request, context } = config;
+  const { providerLabel, generate, defaultModel, request, context } = config;
   const { type, level, count } = request;
   const log = config.onProgress ?? (() => {});
   const dryRun = request.dryRun ?? false;
   const noRecent = request.noRecent ?? false;
   const modelUsed = config.model ?? defaultModel;
-  const parts = prompts[type];
 
   const startedAt = Date.now();
 
@@ -140,69 +159,35 @@ export async function runGeneration(config: RunConfig): Promise<GenerationResult
         for (const ex of recentExamples) log(`    · ${ex.excerpt}`);
       }
 
-      const { system, user, maxTokens } = buildPrompt(
-        parts,
-        { level, topic, recentExamples },
-        request.customPrompt,
-      );
-      const { text, modelUsed: usedModel } = await client({
-        system,
-        user,
-        maxTokens,
+      const ex = await generate({
+        type,
+        level,
+        topic,
+        recentExamples,
+        customPrompt: request.customPrompt,
         model: config.model,
       });
-
-      let parsed: unknown;
-      try {
-        parsed = extractJson(text);
-      } catch (err) {
-        failed.push({
-          index: i,
-          topic,
-          reason: err instanceof Error ? err.message : String(err),
-          code: "parse_error",
-        });
-        log(`  [SKIP] ${label} — could not parse JSON from the response.`);
-        continue;
-      }
-
-      const result = validateExercise(type, parsed);
-      if (!result.ok) {
-        failed.push({
-          index: i,
-          topic,
-          reason: result.errors.join("; "),
-          code: "validation_error",
-        });
-        log(`  [SKIP] ${label} — validation failed:`);
-        for (const err of result.errors) log(`         · ${err}`);
-        continue;
-      }
-
-      const raw = parsed as Record<string, unknown>;
-      const title = normalizeTitle(raw.title, type, topic);
-      const tags = normalizeTags(raw.tags, topic, level);
 
       const summary: GeneratedExerciseSummary = {
         id: null,
         type,
         level,
-        title,
+        title: ex.title,
         topic,
-        modelUsed: usedModel,
-        content: result.content,
-        solution: result.solution,
-        explanation: result.explanation,
-        tags,
-        tip: result.tip,
+        modelUsed: ex.modelUsed,
+        content: ex.content,
+        solution: ex.solution,
+        explanation: ex.explanation,
+        tags: ex.tags,
+        tip: ex.tip,
       };
 
       if (dryRun) {
         generated.push(summary);
-        log(`  [DRY] ${label} — "${title}"`);
+        log(`  [DRY] ${label} — "${ex.title}"`);
         log(
           JSON.stringify(
-            { title, content: result.content, solution: result.solution, tags, tip: result.tip },
+            { title: ex.title, content: ex.content, solution: ex.solution, tags: ex.tags, tip: ex.tip },
             null,
             2,
           ),
@@ -211,24 +196,24 @@ export async function runGeneration(config: RunConfig): Promise<GenerationResult
         const id = await insertExercise({
           type,
           level,
-          title,
-          content: result.content,
-          solution: result.solution,
-          explanation: result.explanation,
-          tip: result.tip,
-          tags,
-          modelUsed: usedModel,
+          title: ex.title,
+          content: ex.content,
+          solution: ex.solution,
+          explanation: ex.explanation,
+          tip: ex.tip,
+          tags: ex.tags,
+          modelUsed: ex.modelUsed,
           generationSessionId: sessionId || undefined,
         });
         summary.id = id;
         generated.push(summary);
-        log(`  [OK] ${label} — "${title}" (${id})`);
+        log(`  [OK] ${label} — "${ex.title}" (${id})`);
       }
     } catch (err) {
       const code = classifyError(err);
       const reason = err instanceof Error ? err.message : String(err);
       failed.push({ index: i, topic, reason, code });
-      log(`  [FAIL] ${label} — ${reason}`);
+      log(`  [${code === "rate_limited" ? "STOP" : "SKIP"}] ${label} — ${reason}`);
       // A rate-limit error would recur for every remaining item; stop here.
       if (code === "rate_limited") break;
     }

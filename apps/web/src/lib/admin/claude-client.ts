@@ -1,50 +1,28 @@
 /**
- * Claude provider wiring for the admin generator.
+ * Claude model-label helpers for the admin generator.
  *
- * v1 exposes only Claude (Decision 6). When ANTHROPIC_API_KEY is set we use
- * the same in-process client the CLI uses; otherwise we fall back to the
- * deterministic offline stub (mirroring the rest of the app's offline-safe
- * behaviour) so the UI is demoable without a key. The stub captures the
- * request's type/level/topic — which the generic ProviderClient signature
- * doesn't carry — via this closure.
+ * SDK-free by design (API-boundary sprint): the admin route delegates the
+ * actual generation to apps/api via `makeRemoteGenerator`, so nothing under
+ * apps/web/src imports @anthropic-ai/sdk. This module only supplies the model
+ * label recorded on the GenerationSession header — the per-exercise model
+ * that actually produced each row comes back from apps/api and is what's
+ * persisted to Exercise.model.
  */
-import { callClaude, CLAUDE_DEFAULT_MODEL } from "@scripts/claude/client";
-import type { ProviderClient } from "@scripts/shared/types";
-import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 
-import { stubExercise } from "@/lib/ai-stubs";
+/** Default Claude model, mirrored from the api/CLI default. */
+export const CLAUDE_DEFAULT_MODEL =
+  process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
 
-export { CLAUDE_DEFAULT_MODEL };
-
-export function aiConfigured(): boolean {
+function aiConfigured(): boolean {
   return Boolean(process.env.ANTHROPIC_API_KEY);
 }
 
-/** The model name recorded on the session for this run. */
+/**
+ * The model name stamped on a session at creation time. "stub" when no key
+ * is configured on the web env (the offline/demo path); otherwise the
+ * default model. Cosmetic — the authoritative per-exercise model is recorded
+ * from the api's response.
+ */
 export function claudeModelLabel(): string {
   return aiConfigured() ? CLAUDE_DEFAULT_MODEL : "stub";
-}
-
-/** Real Claude when configured, else a deterministic stub for offline dev. */
-export function selectClaudeClient(
-  type: ExerciseType,
-  level: CefrLevel,
-  topic: string | undefined,
-): ProviderClient {
-  if (aiConfigured()) return callClaude;
-  const t = topic ?? "Beispiel";
-  return async () => {
-    const ex = stubExercise(type, level, t);
-    return {
-      text: JSON.stringify({
-        title: ex.title,
-        content: ex.content,
-        solution: ex.solution,
-        explanation: ex.explanation,
-        tags: ex.tags,
-        tip: ex.tip,
-      }),
-      modelUsed: "stub",
-    };
-  };
 }

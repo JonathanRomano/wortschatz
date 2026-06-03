@@ -10,6 +10,15 @@ loop). Output is validated against the canonical Zod schemas in
 > at `/admin/generate` (the web API imports it directly — no CLI spawn).
 > Every run, CLI or UI, records one `GenerationSession` row (see
 > "Generation sessions" below).
+>
+> **Where the model call runs (API-boundary sprint).** `runGeneration`
+> orchestrates, but the heavy per-item work — prompt build + provider call +
+> validation — now happens on **apps/api** (`POST /ai/generate-exercise`), not
+> in the Next.js process. The admin UI always uses it; the CLI prefers it when
+> apps/api is reachable and `INTERNAL_API_SECRET` is set, and **falls back to
+> the in-process SDK** otherwise (logging which path it took). The shared
+> prompts + schemas live in `@wortschatz/exercises` so both paths produce
+> identical prompts. See [ARCHITECTURE.md](../../../ARCHITECTURE.md).
 
 ## Quick start
 
@@ -52,11 +61,13 @@ For each of `--count` items:
 1. Pick a topic (`--topic` or rotate the canonical list).
 2. Fetch the last 10 exercises of the same type+level (`--no-recent` skips
    this) and embed a "make it different from these" block in the prompt.
-3. Build the prompt (`<provider>/prompts/<type>.ts`).
-4. Call the provider; extract a JSON object from the response.
-5. Validate: the type's Zod content/solution schemas + type-specific
-   structural checks + a required English `explanation`.
-6. Insert as `PUBLISHED`, authored by the seed admin, `targetLanguage`
+3. Generate one exercise: the web sends the resolved topic + recent examples
+   to **apps/api** (`POST /ai/generate-exercise`), which builds the prompt
+   (`@wortschatz/exercises`), calls the provider, extracts JSON, and validates
+   it against the type's Zod content/solution schemas + structural checks + a
+   required English `explanation`. The CLI runs the same steps in-process when
+   apps/api is unreachable.
+4. Insert as `PUBLISHED`, authored by the seed admin, `targetLanguage`
    `"de"`, with `model` set to the actual provider model and
    `generationSessionId` set to this run's session. A revealed-tip field is
    written only when present.
@@ -77,37 +88,42 @@ totals.
 
 ```
 scripts/
-├── claude/                 # Anthropic provider (independent prompt set)
-│   ├── prompts/<type>.ts    # one promptParts per ExerciseType (4 pieces)
-│   ├── prompts/index.ts     # ExerciseType → PromptParts registry
-│   ├── client.ts            # callClaude
+├── claude/                 # Anthropic provider client (SDK)
+│   ├── client.ts            # callClaude (direct-SDK fallback)
 │   └── generate.ts          # CLI entrypoint  (pnpm gen:claude)
-├── gpt/                    # OpenAI provider (uses JSON mode)
-│   └── (same shape)         # CLI entrypoint  (pnpm gen:gpt)
+├── gpt/                    # OpenAI provider client (SDK, JSON mode)
+│   ├── client.ts            # callGPT (direct-SDK fallback)
+│   └── generate.ts          # CLI entrypoint  (pnpm gen:gpt)
 └── shared/
-    ├── types.ts             # PromptParts/Input/Output, CliArgs, Generation* types
+    ├── types.ts             # CliArgs, Generation* types + the ExerciseGenerator seam
     ├── topics.ts            # TOPICS_BY_LEVEL + topicForIndex
     ├── cli.ts               # hand-rolled arg parser
-    ├── json.ts              # tolerant extractJson
-    ├── recent-examples.ts   # fetchRecentExamples + renderRecentBlock
-    ├── prompt-builder.ts    # composes promptParts → final prompt (+ estimateTokens)
-    ├── validate.ts          # Zod reuse + per-type custom checks
+    ├── recent-examples.ts   # fetchRecentExamples (DB query)
+    ├── generators.ts        # makeRemoteGenerator (apps/api) + makeDirectGenerator (SDK)
+    ├── express-health.ts    # is apps/api reachable? (CLI fallback probe)
     ├── insert.ts            # Prisma write (seed admin author, links the session)
     ├── session.ts           # GenerationSession create/finalize + seed admin id
     └── run.ts               # provider-agnostic, session-aware generation loop
 ```
+
+The prompt machinery + schemas moved to **`@wortschatz/exercises`** so both
+apps/api and the CLI share one copy: `schemas.ts`, `prompt-types.ts`,
+`prompt-builder.ts`, `recent-block.ts` (`renderRecentBlock` + `excerptFor`),
+`validate.ts`, `json.ts`, and `prompts/{claude,gpt}/<type>.ts`.
 
 The web API reaches these via the `@scripts/*` path alias (wired in
 `tsconfig.json` + `vitest.config.ts`), e.g. `@scripts/shared/run`.
 
 ## Prompt file contract
 
-Each `<provider>/prompts/<type>.ts` exports a single `promptParts: PromptParts`
-split into four named pieces. `system` + `instructions` are the **editable
-"voice"**; `jsonShape` + `rules` are **locked** (see "Locked vs editable"):
+Each per-type prompt file in `@wortschatz/exercises`
+(`packages/exercises/src/prompts/<provider>/<type>.ts`) exports a single
+`promptParts: PromptParts` split into four named pieces. `system` +
+`instructions` are the **editable "voice"**; `jsonShape` + `rules` are
+**locked** (see "Locked vs editable"):
 
 ```ts
-import type { PromptParts } from "../../shared/types";
+import type { PromptParts } from "../../prompt-types.js";
 
 const SYSTEM = `…role, quality bar, localized-fields requirement…`;
 
@@ -123,7 +139,7 @@ export const promptParts: PromptParts = {
 };
 ```
 
-`shared/prompt-builder.ts` reassembles these
+The `@wortschatz/exercises` prompt-builder reassembles these
 (`instructions · recentBlock · jsonShape · rules`) via `buildFinalUserPrompt`
 / `buildPrompt`, injecting the recent-examples block between the instructions
 and the JSON shape. The assembly reproduces the legacy monolithic prompt
@@ -153,20 +169,24 @@ Conventions (keep these consistent across prompts):
 
 ## Tweaking a prompt
 
-Edit the relevant `<provider>/prompts/<type>.ts` and re-run. Nothing is
+Edit the relevant prompt file in `@wortschatz/exercises`
+(`packages/exercises/src/prompts/<provider>/<type>.ts`) and re-run. Nothing is
 cached — every run hits the provider fresh, so iteration is immediate.
 
 ## Adding a new exercise type
 
-1. Add the enum value in `prisma/schema.prisma` (`ExerciseType`).
+1. Add the enum value in `packages/database/prisma/schema.prisma`
+   (`ExerciseType`).
 2. Add `<Name>Content` / `<Name>Answer` / `<Name>Solution` in
-   `src/lib/exercises/schemas.ts` and wire the registries there.
-3. Add an excerpt case in `shared/recent-examples.ts` (`excerptFor`).
-4. (Optional) Add a structural check in `shared/validate.ts`.
-5. Add `claude/prompts/<type>.ts` and `gpt/prompts/<type>.ts`, then wire
-   both `prompts/index.ts` files. The `PromptRegistry` type turns a
-   missing key into a compile error, so `pnpm --filter @wortschatz/web
-   typecheck` will tell you what's left.
+   `@wortschatz/exercises` (`packages/exercises/src/schemas.ts`) and wire the
+   registries there.
+3. Add an excerpt case in `@wortschatz/exercises` `recent-block.ts`
+   (`excerptFor`).
+4. (Optional) Add a structural check in `@wortschatz/exercises` `validate.ts`.
+5. Add `src/prompts/claude/<type>.ts` and `src/prompts/gpt/<type>.ts` in
+   `@wortschatz/exercises`, then wire both `prompts/<provider>/index.ts`
+   files. The `PromptRegistry` type turns a missing key into a compile error,
+   so `pnpm typecheck` will tell you what's left.
 
 > Validation catches schema drift immediately — if you change a schema and
 > forget to update a prompt, generated items fail the Zod gate and are
@@ -185,9 +205,14 @@ The admin UI surfaces them at `/admin/generate/history`.
 
 ## Providers
 
-- **Claude** (`claude/`): Anthropic SDK. No JSON-mode flag; the tolerant
-  `extractJson` strips the occasional ```json fence.
-- **GPT** (`gpt/`): OpenAI SDK with `response_format: { type:
+Generation runs on **apps/api** (`POST /ai/generate-exercise`), which holds
+the provider keys and the cache/rate-limit/usage pipeline. The SDK clients
+below are the **CLI's offline fallback** (and what apps/api's own generate
+service mirrors):
+
+- **Claude** (`claude/client.ts`): Anthropic SDK. No JSON-mode flag; the
+  tolerant `extractJson` strips the occasional ```json fence.
+- **GPT** (`gpt/client.ts`): OpenAI SDK with `response_format: { type:
   "json_object" }`, which forces a valid JSON object. Sends
   `max_completion_tokens` (newer models reject `max_tokens`). Throws a
   clear error if `OPENAI_API_KEY` is missing.
@@ -248,7 +273,9 @@ dependency.
 
 ## Relationship to the old scripts
 
-`generate-exercises.ts` (one generic prompt for all 10 types, via
-`src/lib/ai.ts` + the AI cache) and `generate-fitb-exercises.ts` (the FITB
-prototype this v2 generalizes) are **deprecated** and kept only until a
-cleanup pass. Use `gen:claude` / `gen:gpt` instead.
+`generate-exercises.ts` (one generic prompt for all 10 types via the old
+in-process `src/lib/ai.ts` path) was **removed** in the API-boundary sprint,
+along with its `db:generate-exercises` npm script — exercise generation now
+runs through `gen:claude` / `gen:gpt` and the admin UI, which delegate to
+apps/api. `generate-fitb-exercises.ts` (the FITB prototype this v2
+generalizes) remains **deprecated** and kept only until a cleanup pass.

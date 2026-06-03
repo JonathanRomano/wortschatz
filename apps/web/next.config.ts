@@ -45,6 +45,7 @@ const nextConfig: NextConfig = {
     "@wortschatz/config",
     "@wortschatz/types",
     "@wortschatz/database",
+    "@wortschatz/exercises",
   ],
   webpack: (config) => {
     config.resolve.extensionAlias = {

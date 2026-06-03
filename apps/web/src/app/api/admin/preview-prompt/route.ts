@@ -7,8 +7,7 @@
  */
 import { prisma } from "@wortschatz/database";
 
-import { claudePrompts } from "@scripts/claude/prompts";
-import { buildPrompt, estimateTokens } from "@scripts/shared/prompt-builder";
+import { buildPrompt, claudePrompts, estimateTokens } from "@wortschatz/exercises";
 import { fetchRecentExamples } from "@scripts/shared/recent-examples";
 import { topicForIndex } from "@scripts/shared/topics";
 

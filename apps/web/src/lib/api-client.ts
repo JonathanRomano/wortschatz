@@ -21,6 +21,10 @@
 
 import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 import type { AIEvaluation, ReviewResult } from "@wortschatz/types";
+import type {
+  GenerateExerciseRequest,
+  GeneratedExerciseDTO,
+} from "@wortschatz/exercises";
 
 import { AiRateLimitedError } from "@/lib/ai-rate-limit";
 
@@ -103,4 +107,76 @@ export async function evaluateAnswerRemote(
     userId,
     "EVALUATE_ANSWER",
   );
+}
+
+/**
+ * Raised when the api returns 422 from /ai/generate-exercise — the model
+ * produced output that didn't parse or didn't pass the per-type schema.
+ * It's a per-item content miss, not a transport failure, so runGeneration
+ * records it as a `validation_error` and continues rather than aborting.
+ */
+export class GenerationValidationError extends Error {
+  readonly errors: string[];
+  constructor(errors: string[]) {
+    super(`Generated exercise failed validation: ${errors.join("; ")}`);
+    this.name = "GenerationValidationError";
+    this.errors = errors;
+  }
+}
+
+/**
+ * Generate one exercise via apps/api (POST /ai/generate-exercise). The api
+ * builds the prompt, calls the provider, and validates the output; this
+ * returns the validated exercise for the web to insert. Errors map to the
+ * classes runGeneration already understands:
+ *   429 → AiRateLimitedError (stops the batch),
+ *   422 → GenerationValidationError (skip this item, continue),
+ *   else → Error (treated as a model error, continue).
+ */
+export async function generateExerciseRemote(
+  input: GenerateExerciseRequest,
+  userId?: string,
+): Promise<GeneratedExerciseDTO> {
+  if (!SECRET) {
+    throw new Error(
+      "INTERNAL_API_SECRET is not set — apps/web cannot reach apps/api.",
+    );
+  }
+
+  const res = await fetch(`${API_URL}/ai/generate-exercise`, {
+    method: "POST",
+    headers: authHeaders(userId),
+    body: JSON.stringify(input),
+    cache: "no-store",
+  });
+
+  if (res.status === 429) {
+    const payload = (await res.json().catch(() => ({}))) as {
+      count?: number;
+      limit?: number;
+    };
+    throw new AiRateLimitedError(
+      "GENERATE_EXERCISE",
+      payload.count ?? 0,
+      payload.limit ?? 0,
+    );
+  }
+
+  if (res.status === 422) {
+    const payload = (await res.json().catch(() => ({}))) as {
+      errors?: string[];
+    };
+    throw new GenerationValidationError(
+      payload.errors ?? ["Generated exercise failed validation."],
+    );
+  }
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(
+      `api /ai/generate-exercise failed: HTTP ${res.status} ${res.statusText} ${text.slice(0, 200)}`,
+    );
+  }
+
+  return (await res.json()) as GeneratedExerciseDTO;
 }

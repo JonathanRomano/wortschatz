@@ -1,16 +1,17 @@
 /**
- * Integration smoke test (Task 5.2). Unlike route.test.ts, this does NOT
- * mock runGeneration — it drives the real route → createSession →
- * runGeneration → buildPrompt → (offline stub client) → validate → insert →
- * finalize pipeline, with only prisma, the rate limiter, and the Anthropic
- * SDK client module mocked. With no ANTHROPIC_API_KEY the generator falls
- * back to the deterministic stub, so no network call happens.
+ * Integration smoke test. Unlike route.test.ts (which mocks runGeneration),
+ * this drives the REAL web-side pipeline: route → createSession →
+ * runGeneration → the real makeRemoteGenerator → insert → finalize. Only the
+ * HTTP hop to apps/api is stubbed, at the api-client seam
+ * (generateExerciseRemote), so no network call happens and the test stays in
+ * apps/web. The Express side (prompt build + provider + validation) has its
+ * own tests under apps/api.
  */
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
-  checkAndIncrement: vi.fn(),
+  generateExerciseRemote: vi.fn(),
   userFindUnique: vi.fn(),
   exerciseFindMany: vi.fn(),
   exerciseCreate: vi.fn(),
@@ -21,9 +22,13 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/auth", () => ({ auth: mocks.auth }));
-vi.mock("@/lib/ai-rate-limit", () => ({ checkAndIncrement: mocks.checkAndIncrement }));
-// Avoid importing the node-only Anthropic SDK under jsdom; the stub path
-// (no key) means callClaude is never actually invoked.
+// Stub the boundary: makeRemoteGenerator calls this; the api builds + validates
+// for real, but here we return a ready exercise so the web pipeline runs offline.
+vi.mock("@/lib/api-client", () => ({
+  generateExerciseRemote: mocks.generateExerciseRemote,
+}));
+// claudeModelLabel/CLAUDE_DEFAULT_MODEL pull in @scripts/claude/client, which
+// imports the node-only Anthropic SDK; stub it so jsdom doesn't load it.
 vi.mock("@scripts/claude/client", () => ({
   callClaude: vi.fn(),
   CLAUDE_DEFAULT_MODEL: "claude-test",
@@ -42,6 +47,16 @@ import { POST } from "@/app/api/admin/generate-exercises/route";
 
 const ADMIN = { user: { id: "admin-1", role: "ADMIN" } };
 
+const STUB_DTO = {
+  title: "Lückentext: Essen",
+  content: { sentence: "Ich ___ einen Apfel.", blanksCount: 1 },
+  solution: { blanks: ["esse"] },
+  explanation: { en: "stub" },
+  tags: ["food", "a1"],
+  tip: { en: "hint" },
+  modelUsed: "claude-test",
+};
+
 function req(body: unknown) {
   return new Request("http://test/api/admin/generate-exercises", {
     method: "POST",
@@ -50,13 +65,9 @@ function req(body: unknown) {
   });
 }
 
-beforeAll(() => {
-  delete process.env.ANTHROPIC_API_KEY; // force the offline stub client
-});
-
 beforeEach(() => {
   mocks.auth.mockReset().mockResolvedValue(ADMIN);
-  mocks.checkAndIncrement.mockReset().mockResolvedValue(undefined);
+  mocks.generateExerciseRemote.mockReset().mockResolvedValue(STUB_DTO);
   mocks.userFindUnique.mockReset().mockResolvedValue({ id: "admin-seed" });
   mocks.exerciseFindMany.mockReset().mockResolvedValue([]);
   let n = 0;
@@ -68,13 +79,17 @@ beforeEach(() => {
 });
 
 describe("generate-exercises smoke", () => {
-  it("generates 2 exercises, all linked to one new session", async () => {
+  it("generates 2 exercises via the api, all linked to one new session", async () => {
     const res = await POST(req({ type: "FILL_IN_THE_BLANK", level: "A1", count: 2 }));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(body.result.generated).toHaveLength(2);
     expect(body.result.sessionId).toBe("sess-smoke");
+
+    // The api was called once per item, scoped to the acting admin.
+    expect(mocks.generateExerciseRemote).toHaveBeenCalledTimes(2);
+    expect(mocks.generateExerciseRemote.mock.calls[0]![1]).toBe("admin-1");
 
     // One session created (by the route), with UI source.
     expect(mocks.sessionCreate).toHaveBeenCalledTimes(1);

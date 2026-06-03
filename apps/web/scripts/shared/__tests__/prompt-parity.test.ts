@@ -16,10 +16,13 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@wortschatz/database", () => ({ prisma: {} }));
 
 import baseline from "./__fixtures__/prompt-baseline.json";
-import { buildPrompt } from "../prompt-builder";
-import { claudePrompts } from "../../claude/prompts";
-import { gptPrompts } from "../../gpt/prompts";
-import type { PromptInput, PromptRegistry } from "../types";
+import {
+  buildPrompt,
+  claudePrompts,
+  gptPrompts,
+  type PromptInput,
+  type PromptRegistry,
+} from "@wortschatz/exercises";
 
 type Snapshot = { system: string; user: string; maxTokens: number };
 type Branch = { withRecent: Snapshot; noRecent: Snapshot };

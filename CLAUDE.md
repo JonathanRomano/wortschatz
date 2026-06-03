@@ -2,6 +2,27 @@
 
 Operational notes for AI assistants working in this repo.
 
+## Boundary: which surface gets the new code
+
+**Read this before adding any route, endpoint, or server action.** Two HTTP
+surfaces exist and the split is a hard rule, not a preference — full details
+in [ARCHITECTURE.md](./ARCHITECTURE.md), deployment context in
+[MONOREPO.md](./MONOREPO.md#api-boundary-rules).
+
+- **Express (`apps/api`)** owns anything that **calls an LLM provider**, takes
+  **> 5 seconds**, **processes binary data** (images/audio/PDF), or is a
+  background job. All three AI endpoints live here: `/ai/review-text`,
+  `/ai/evaluate-answer`, `/ai/generate-exercise`.
+- **Next.js (`apps/web`)** owns auth/sessions, lightweight DB CRUD, read-only
+  queries, session-bound server actions, and UI.
+- **No file under `apps/web/src/` may import `@anthropic-ai/sdk` or `openai`.**
+  CLI scripts under `apps/web/scripts/` may (offline-fallback generators
+  only). A static test (`apps/web/src/__tests__/architecture.test.ts`) fails
+  the build if this is violated.
+- When Next.js needs an LLM result it calls Express via
+  `src/lib/api-client.ts`. Schemas/logic both tiers need live in a shared
+  package (`@wortschatz/exercises`), never in `apps/web/src/`.
+
 ## Stack
 
 - **pnpm workspaces + Turborepo 2.x** monorepo

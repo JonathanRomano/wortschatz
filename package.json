@@ -26,7 +26,6 @@
     "db:generate": "pnpm --filter @wortschatz/database generate",
     "db:studio": "pnpm --filter @wortschatz/database studio",
     "db:seed": "pnpm --filter @wortschatz/database seed",
-    "db:generate-exercises": "pnpm --filter @wortschatz/web db:generate-exercises",
     "db:generate-fitb": "pnpm --filter @wortschatz/web db:generate-fitb",
     "db:seed-muenzen-history": "pnpm --filter @wortschatz/web db:seed-muenzen-history",
     "gen:claude": "pnpm --filter @wortschatz/web gen:claude",

@@ -53,7 +53,7 @@ export const DAILY_GOAL_DEFAULT = 5;
 export const AI_RATE_LIMITS = {
   REVIEW_TEXT: { perDay: 20 },
   EVALUATE_ANSWER: { perDay: 200 },
-  GENERATE_EXERCISE: { perDay: 50 },
+  GENERATE_EXERCISE: { perDay: 5000 },
 } as const;
 
 export type AiEndpoint = keyof typeof AI_RATE_LIMITS;

@@ -15,7 +15,7 @@
  */
 import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 
-import { contentSchemaFor } from "@/lib/exercises/schemas";
+import { contentSchemaFor } from "@wortschatz/exercises";
 
 import { SUPPORTED_LEVELS, type CliArgs } from "./types";
 

@@ -10,6 +10,7 @@ import { prisma } from "@wortschatz/database";
 
 import { sharedSecretAuth } from "../middleware/auth.js";
 import { evaluateAnswer, reviewText } from "../services/claude.js";
+import { generateExercise } from "../services/generate.js";
 
 const router = Router();
 
@@ -86,20 +87,49 @@ router.post("/evaluate-answer-by-id", async (req, res, next) => {
 
 // --- POST /ai/generate-exercise ---------------------------------------
 //
-// 501 stub: the per-type Zod content/solution schemas still live in
-// apps/web/src/lib/exercises/schemas.ts. Moving them into a shared
-// package (probably @wortschatz/exercises) is out of scope for Sprint
-// 03. Admin generation continues to run via
-// apps/web/scripts/generate-exercises.ts, which calls Claude directly.
+// Full-ownership generation (sprint Task 2.1). apps/api builds the prompt,
+// calls the provider, validates the output against the canonical per-type
+// schemas in @wortschatz/exercises, and returns the validated exercise.
+// The web's runGeneration resolves the topic, fetches recent examples,
+// inserts the row, and owns the GenerationSession — see ARCHITECTURE.md.
 
-router.post("/generate-exercise", async (_req, res) => {
-  res.status(501).json({
-    error: "not_implemented",
-    detail:
-      "generateExercise is currently served by apps/web/scripts/generate-exercises.ts. " +
-      "Exposing it via the API requires extracting the per-type Zod schemas from " +
-      "apps/web/src/lib/exercises/schemas.ts into a shared package.",
-  });
+const generateBodySchema = z.object({
+  type: exerciseTypeSchema,
+  level: cefrLevelSchema.default("B1"),
+  topic: z.string().min(1).max(200),
+  recentExamples: z
+    .array(z.object({ title: z.string(), excerpt: z.string() }))
+    .default([]),
+  customPrompt: z
+    .object({
+      system: z.string().optional(),
+      userInstructions: z.string().optional(),
+    })
+    .optional(),
+  provider: z.enum(["claude", "gpt"]).default("claude"),
+  model: z.string().optional(),
+});
+
+router.post("/generate-exercise", async (req, res, next) => {
+  try {
+    const body = generateBodySchema.parse(req.body);
+    const outcome = await generateExercise({ ...body, userId: req.userId });
+    if (!outcome.ok) {
+      // Model output didn't parse / validate — a content miss, not a
+      // server fault. 422 so the caller can record it as a per-item
+      // validation failure and move on.
+      res.status(422).json({
+        error: "validation_failed",
+        code: "validation_failed",
+        errors: outcome.errors,
+      });
+      return;
+    }
+    res.json(outcome.exercise);
+  } catch (err) {
+    // ZodError → 400, AiRateLimitedError → 429, anything else → 500.
+    next(err);
+  }
 });
 
 export { router as aiRouter };

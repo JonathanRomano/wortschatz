@@ -1,28 +1,27 @@
 /**
- * POST /api/admin/generate-exercises — admin exercise generation (Decision 1:
- * in-process call into the shared runGeneration, no CLI spawn).
+ * POST /api/admin/generate-exercises — admin exercise generation.
+ *
+ * This route is a thin orchestrator (API-boundary sprint): the heavy LLM work
+ * — prompt build + provider call + validation — runs on apps/api via
+ * `makeRemoteGenerator` (POST /ai/generate-exercise), NOT in this Next.js
+ * serverless function. See ARCHITECTURE.md.
  *
  * Flow: ADMIN auth → validate body → resolve saved prompt (ownership + type)
- * → create the GenerationSession (UI source) → runGeneration (which links the
- * exercises and finalizes the session) → bump SavedPrompt.useCount → shape
- * the response. Per-exercise rate limiting is injected via `beforeEach`
- * against the existing AiRateLimit GENERATE_EXERCISE window (Decision 7); a
- * batch that's fully rate-limited before producing anything returns 429.
- * A dry run creates no session and writes nothing.
+ * → create the GenerationSession (UI source) → runGeneration (which calls
+ * apps/api per item, links the exercises, and finalizes the session) → bump
+ * SavedPrompt.useCount → shape the response. The per-user GENERATE_EXERCISE
+ * rate limit now fires on apps/api (it receives X-User-Id); a batch that's
+ * fully rate-limited before producing anything still returns 429 here. A dry
+ * run creates no session and writes nothing.
  */
 import { prisma } from "@wortschatz/database";
 
 import { runGeneration } from "@scripts/shared/run";
 import { createGenerationSession } from "@scripts/shared/session";
-import { claudePrompts } from "@scripts/claude/prompts";
+import { makeRemoteGenerator } from "@scripts/shared/generators";
 import type { GenerationRequest } from "@scripts/shared/types";
 
-import { checkAndIncrement } from "@/lib/ai-rate-limit";
-import {
-  CLAUDE_DEFAULT_MODEL,
-  claudeModelLabel,
-  selectClaudeClient,
-} from "@/lib/admin/claude-client";
+import { CLAUDE_DEFAULT_MODEL, claudeModelLabel } from "@/lib/admin/claude-client";
 import { mergeCustomPrompt } from "@/lib/admin/custom-prompt";
 import { jsonError, jsonOk, requireAdmin } from "@/lib/admin/guard";
 import { GenerateRequestSchema } from "@/lib/admin/schemas";
@@ -67,7 +66,6 @@ export async function POST(request: Request) {
 
     const customPrompt = mergeCustomPrompt(input.customPrompt, saved);
     const dryRun = input.dryRun ?? false;
-    const client = selectClaudeClient(input.type, input.level, input.topic);
 
     const genRequest: GenerationRequest = {
       type: input.type,
@@ -101,12 +99,10 @@ export async function POST(request: Request) {
 
     const result = await runGeneration({
       providerLabel: "claude",
-      client,
-      prompts: claudePrompts,
+      generate: makeRemoteGenerator("claude", userId),
       defaultModel: CLAUDE_DEFAULT_MODEL,
       request: genRequest,
       context: dryRun ? undefined : { sessionId, authorId: userId, source: "UI" },
-      beforeEach: () => checkAndIncrement(userId, "GENERATE_EXERCISE"),
     });
 
     if (!dryRun && input.savedPromptId) {

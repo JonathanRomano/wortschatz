@@ -14,10 +14,13 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { claudePrompts } from "../../../claude/prompts";
-import { gptPrompts } from "../../../gpt/prompts";
-import { buildPrompt } from "../../prompt-builder";
-import type { PromptInput, PromptRegistry } from "../../types";
+import {
+  buildPrompt,
+  claudePrompts,
+  gptPrompts,
+  type PromptInput,
+  type PromptRegistry,
+} from "@wortschatz/exercises";
 
 const LEVEL: PromptInput["level"] = "A2";
 const TOPIC = "Im Restaurant";

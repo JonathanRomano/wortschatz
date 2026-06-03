@@ -1,7 +1,11 @@
 /**
  * POST /api/admin/generate-exercises — auth, validation, session creation,
- * saved-prompt resolution + useCount, and the rate-limited 429 path. The
- * runner is mocked (no Anthropic, no DB writes); prisma is mocked.
+ * saved-prompt resolution + useCount, and the rate-limited 429 path.
+ *
+ * Boundary assertion (API-boundary sprint): the route must delegate the LLM
+ * work to apps/api via `makeRemoteGenerator`, NOT call a provider SDK in
+ * process. runGeneration + the generator are mocked; prisma is mocked; no
+ * Anthropic/OpenAI, no DB writes.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -9,20 +13,26 @@ const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
   runGeneration: vi.fn(),
   createSession: vi.fn(),
-  checkAndIncrement: vi.fn(),
+  makeRemoteGenerator: vi.fn(),
   savedPromptFindUnique: vi.fn(),
   savedPromptUpdate: vi.fn(),
 }));
 
+// Sentinel returned by the mocked makeRemoteGenerator so we can assert the
+// route passes exactly it to runGeneration (i.e. delegates to Express).
+const REMOTE_GENERATOR = async () => {
+  throw new Error("generator should be mocked away by runGeneration");
+};
+
 vi.mock("@/auth", () => ({ auth: mocks.auth }));
 vi.mock("@scripts/shared/run", () => ({ runGeneration: mocks.runGeneration }));
 vi.mock("@scripts/shared/session", () => ({ createGenerationSession: mocks.createSession }));
-vi.mock("@scripts/claude/prompts", () => ({ claudePrompts: {} }));
-vi.mock("@/lib/ai-rate-limit", () => ({ checkAndIncrement: mocks.checkAndIncrement }));
+vi.mock("@scripts/shared/generators", () => ({
+  makeRemoteGenerator: mocks.makeRemoteGenerator,
+}));
 vi.mock("@/lib/admin/claude-client", () => ({
   CLAUDE_DEFAULT_MODEL: "claude-test",
   claudeModelLabel: () => "claude-test",
-  selectClaudeClient: () => vi.fn(),
 }));
 vi.mock("@wortschatz/database", () => ({
   prisma: {
@@ -60,7 +70,7 @@ beforeEach(() => {
   mocks.auth.mockReset().mockResolvedValue(ADMIN);
   mocks.runGeneration.mockReset().mockResolvedValue(okResult());
   mocks.createSession.mockReset().mockResolvedValue("sess-1");
-  mocks.checkAndIncrement.mockReset().mockResolvedValue(undefined);
+  mocks.makeRemoteGenerator.mockReset().mockReturnValue(REMOTE_GENERATOR);
   mocks.savedPromptFindUnique.mockReset();
   mocks.savedPromptUpdate.mockReset().mockResolvedValue({});
 });
@@ -92,7 +102,7 @@ describe("validation", () => {
 });
 
 describe("happy path", () => {
-  it("200, creates a UI session, runs, returns the result", async () => {
+  it("200, creates a UI session, delegates to Express, returns the result", async () => {
     const res = await POST(req(VALID));
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -105,9 +115,14 @@ describe("happy path", () => {
     expect(sessionInput.authorId).toBe("admin-1");
     expect(sessionInput.requestedCount).toBe(1);
 
+    // Delegation: the generator is the remote (Express) one, scoped to the
+    // acting admin so the api enforces their per-user rate limit. No
+    // in-process rate-limit hook is wired anymore.
+    expect(mocks.makeRemoteGenerator).toHaveBeenCalledWith("claude", "admin-1");
     const runCfg = mocks.runGeneration.mock.calls[0]![0];
+    expect(runCfg.generate).toBe(REMOTE_GENERATOR);
+    expect(runCfg.beforeEach).toBeUndefined();
     expect(runCfg.context).toEqual({ sessionId: "sess-1", authorId: "admin-1", source: "UI" });
-    expect(typeof runCfg.beforeEach).toBe("function");
   });
 });
 
