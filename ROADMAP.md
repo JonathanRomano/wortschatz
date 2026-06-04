@@ -184,8 +184,8 @@ per task.
 ## What's done
 
 - Next.js 15 (App Router) + TypeScript strict + Tailwind CSS v4 project shell
-- PostgreSQL 16 via `docker-compose.yml` (no live DB started — Docker isn't
-  installed in this environment)
+- PostgreSQL 16 via `docker-compose.dev.yml` (no live DB started — Docker
+  isn't installed in this environment)
 - Prisma schema with all required models: `User`, `Exercise`, `UserExercise`,
   `MuenzenTransaction`, `AIReviewRequest` + NextAuth tables
 - NextAuth.js v5 with Credentials + Google OAuth, Prisma adapter, JWT sessions
@@ -216,7 +216,7 @@ per task.
 Docker isn't installed in the scaffolding environment. To bring up the DB:
 
 ```bash
-docker compose up -d
+docker compose -f docker-compose.dev.yml up -d
 npm install
 npm run db:generate
 npm run db:push       # or `npm run db:migrate -- --name init`

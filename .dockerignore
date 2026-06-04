@@ -1,0 +1,38 @@
+# Build context for apps/api/Dockerfile (context = repo root). Keep it lean:
+# only the workspace manifests, source, and Prisma schema/migrations are needed
+# — deps are reinstalled and the Prisma client is regenerated inside the image.
+
+# Dependencies (reinstalled via pnpm install --frozen-lockfile)
+node_modules
+**/node_modules
+
+# Build outputs / caches
+.next
+**/.next
+.turbo
+**/.turbo
+dist
+**/dist
+coverage
+**/coverage
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Local env / secrets — never bake these into the image
+.env
+.env.*
+**/.env
+**/.env.*
+
+# VCS
+.git
+.gitignore
+
+# Docs
+*.md
+**/*.md
+
+# Docker assets themselves
+docker-compose*.yml
+**/Dockerfile
+.dockerignore

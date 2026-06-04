@@ -1,0 +1,29 @@
+# Local development Postgres (NOT for production — see docker-compose.yml for
+# the Hetzner API + Postgres deployment).
+#
+#   docker compose -f docker-compose.dev.yml up -d     # Postgres on :5432
+#   docker compose -f docker-compose.dev.yml down
+#
+# apps/web and the CLI/seed scripts connect to this at
+# postgresql://wortschatz:wortschatz_dev@localhost:5432/wortschatz.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: wortschatz-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: wortschatz
+      POSTGRES_PASSWORD: wortschatz_dev
+      POSTGRES_DB: wortschatz
+    ports:
+      - "5432:5432"
+    volumes:
+      - wortschatz_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wortschatz -d wortschatz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  wortschatz_pg_data:

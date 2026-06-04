@@ -41,7 +41,8 @@ wortschatz/
 │   │   └── src/{exercise,ai,user,muenzen,locale}.ts
 │   └── config/               @wortschatz/config
 │       └── src/{constants,env,validators,utils}.ts
-├── docker-compose.yml        Postgres for dev
+├── docker-compose.yml        API + Postgres (prod / Hetzner deploy)
+├── docker-compose.dev.yml    Postgres only (local dev)
 ├── pnpm-workspace.yaml
 ├── turbo.json                Turbo 2.x `tasks` config
 ├── package.json              Workspace root + delegator scripts
@@ -73,8 +74,8 @@ pnpm install
 # 3. Generate the Prisma client (writes into node_modules/.prisma/client)
 pnpm db:generate
 
-# 4. Start Postgres
-docker compose up -d
+# 4. Start Postgres (local dev)
+docker compose -f docker-compose.dev.yml up -d
 
 # 5. Apply migrations + seed
 pnpm db:migrate         # creates / updates schema

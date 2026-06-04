@@ -103,7 +103,7 @@ five hand-written migrations have never been applied to a live database
 | Component library | Material UI v9 + emotion | `@mui/material@^9.0.1` |
 | MUI Next.js bridge | `@mui/material-nextjs` | `^9.0.1` |
 | Layout utilities | Tailwind CSS v4 (beta) | `^4.0.0-beta.7` |
-| Database | PostgreSQL | `16-alpine` (docker-compose) |
+| Database | PostgreSQL | `16-alpine` (docker-compose.dev.yml) |
 | ORM | Prisma | `^5.22.0` |
 | Auth | NextAuth.js v5 (beta) | `5.0.0-beta.25` |
 | i18n | next-intl | `^3.26.0` |
@@ -1231,8 +1231,8 @@ npm install -g pnpm@9
 # 3. Install all workspaces
 pnpm install
 
-# 4. Start Postgres
-docker compose up -d           # PostgreSQL 16 on :5432
+# 4. Start Postgres (local dev)
+docker compose -f docker-compose.dev.yml up -d   # PostgreSQL 16 on :5432
                                 # Volume: wortschatz_pg_data
 
 # 5. Configure env — each app has its own .env (both gitignored)

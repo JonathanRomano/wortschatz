@@ -17,7 +17,7 @@ Claude for review and evaluation.
 
 ```bash
 npm install -g pnpm@9                 # if you don't already have it
-docker compose up -d                  # PostgreSQL on :5432
+docker compose -f docker-compose.dev.yml up -d   # PostgreSQL on :5432
 pnpm install
 pnpm db:generate
 pnpm db:migrate                       # creates / updates schema
