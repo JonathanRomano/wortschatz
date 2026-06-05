@@ -2,11 +2,10 @@ import type { NextFunction, Request, Response } from "express";
 
 import { env } from "../env.js";
 
-declare module "express-serve-static-core" {
-  interface Request {
-    userId?: string;
-  }
-}
+// The `Request.userId` field this middleware sets is declared in
+// src/types/express.d.ts (a global Express.Request augmentation), so it's
+// available to every route without depending on @types/express-serve-static-core
+// being hoisted to a resolvable path.
 
 /**
  * Shared-secret middleware. Trusts callers that supply both:
