@@ -8,10 +8,12 @@
  * the client bundle.
  */
 import type {
+  CreateDraftInput,
   GenerateRequestInput,
   PreviewRequestInput,
   SavedPromptCreateInput,
   SavedPromptUpdateInput,
+  TestGenerateInput,
 } from "@/lib/admin/schemas";
 import type { GenerationResult } from "@scripts/shared/types";
 
@@ -85,6 +87,70 @@ export type SessionsListResponse =
   | Err;
 export type SessionDetailResponse = Ok<{ session: SessionDetail }> | Err;
 
+// --- Base-prompt curation ---------------------------------------------
+
+export type PromptStatusDTO = "DRAFT" | "ACTIVE" | "INACTIVE";
+
+export type BasePromptVersionDTO = {
+  id: string;
+  versionNumber: number;
+  status: PromptStatusDTO;
+  systemPrompt: string;
+  userInstructions: string;
+  changeNote: string | null;
+  authorId: string | null;
+  authorEmail: string | null;
+  authorRole: string | null;
+  createdAt: string;
+  publishedAt: string | null;
+  deactivatedAt: string | null;
+};
+
+export type BasePromptListItem = {
+  id: string;
+  type: string;
+  level: string;
+  description: string | null;
+  activeVersionNumber: number | null;
+  hasDraftPending: boolean;
+  /** The latest pending DRAFT, if any — the publish target. */
+  draftVersionId: string | null;
+  lastEditedAt: string | null;
+  lastEditedByEmail: string | null;
+  lastEditedByRole: string | null;
+};
+
+/** The code-locked technical blocks, rendered for read-only display. */
+export type LockedBlocks = { jsonShape: string; rules: string };
+
+export type BasePromptDetail = {
+  id: string;
+  type: string;
+  level: string;
+  description: string | null;
+  activeVersion: BasePromptVersionDTO | null;
+  /** All versions, latest first, with full content. */
+  versions: BasePromptVersionDTO[];
+  locked: LockedBlocks;
+};
+
+export type TestGeneratedExercise = {
+  title: string;
+  content: unknown;
+  solution: unknown;
+  explanation: unknown;
+  tags: string[];
+  tip?: unknown;
+  modelUsed: string;
+};
+
+export type BasePromptListResponse = Ok<{ prompts: BasePromptListItem[] }> | Err;
+export type BasePromptDetailResponse = Ok<{ prompt: BasePromptDetail }> | Err;
+export type BasePromptVersionResponse = Ok<{ version: BasePromptVersionDTO }> | Err;
+export type TestGenerateResponse =
+  | Ok<{ exercise: TestGeneratedExercise; tokenCost: number }>
+  | Err;
+
 async function postJson<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
     method: "POST",
@@ -142,4 +208,49 @@ export function listSessions(params: Record<string, string | undefined>) {
 
 export function getSession(id: string) {
   return getJson<SessionDetailResponse>(`/api/admin/generation-sessions/${id}`);
+}
+
+// --- Base-prompt curation wrappers ------------------------------------
+
+export function listBasePrompts(params: Record<string, string | undefined>) {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) if (v) qs.set(k, v);
+  const s = qs.toString();
+  return getJson<BasePromptListResponse>(`/api/admin/base-prompts${s ? `?${s}` : ""}`);
+}
+
+export function getBasePrompt(id: string) {
+  return getJson<BasePromptDetailResponse>(`/api/admin/base-prompts/${id}`);
+}
+
+export function createDraftVersion(id: string, body: CreateDraftInput) {
+  return postJson<BasePromptVersionResponse>(
+    `/api/admin/base-prompts/${id}/versions`,
+    body,
+  );
+}
+
+export function testGenerateVersion(
+  id: string,
+  versionId: string,
+  body: TestGenerateInput,
+) {
+  return postJson<TestGenerateResponse>(
+    `/api/admin/base-prompts/${id}/versions/${versionId}/test-generate`,
+    body,
+  );
+}
+
+export function publishVersion(id: string, versionId: string) {
+  return postJson<BasePromptVersionResponse>(
+    `/api/admin/base-prompts/${id}/versions/${versionId}/publish`,
+    {},
+  );
+}
+
+export function revertVersion(id: string, versionId: string) {
+  return postJson<BasePromptVersionResponse>(
+    `/api/admin/base-prompts/${id}/versions/${versionId}/revert`,
+    {},
+  );
 }

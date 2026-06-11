@@ -86,6 +86,41 @@ export const SavedPromptUpdateSchema = SavedPromptCreateSchema.partial().refine(
 
 export type SavedPromptUpdateInput = z.infer<typeof SavedPromptUpdateSchema>;
 
+// --- Base-prompt curation (prompt-curation sprint) --------------------
+//
+// A BasePromptVersion stores only the editable VOICE (system + instructions).
+// The locked jsonShape/rules are NEVER submitted — they stay code-locked in
+// the per-type prompt file (DB-first decision) — so there are no admin-only
+// body fields to strip for TEACHER. The ADMIN-only action is `revert`,
+// enforced in its route, not here.
+
+export const CreateDraftSchema = z
+  .object({
+    systemPrompt: z.string().trim().min(1).max(PROMPT_MAX),
+    userInstructions: z.string().trim().min(1).max(PROMPT_MAX),
+    changeNote: z.string().trim().max(500).optional(),
+  })
+  .strict();
+
+export type CreateDraftInput = z.infer<typeof CreateDraftSchema>;
+
+/** Test-generate always produces exactly one exercise — topic only. */
+export const TestGenerateSchema = z
+  .object({ topic: z.string().trim().min(1).max(120) })
+  .strict();
+
+export type TestGenerateInput = z.infer<typeof TestGenerateSchema>;
+
+/** Base-prompt list filters (query params). `hasDraft` narrows to prompts
+ *  with a pending DRAFT version. */
+export const BasePromptListQuerySchema = z
+  .object({
+    type: ExerciseTypeSchema.optional(),
+    level: GeneratorLevelSchema.optional(),
+    hasDraft: z.enum(["true", "false"]).optional(),
+  })
+  .strict();
+
 export const DEFAULT_PAGE_SIZE = 20;
 
 /** Generation-history list filters (parsed from query params). */
