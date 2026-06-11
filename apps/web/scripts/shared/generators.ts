@@ -15,6 +15,7 @@
  * direct path throws GenerationError(parse_error | validation_error).
  */
 import {
+  applyPromptVoice,
   buildPrompt,
   extractJson,
   normalizeTags,
@@ -23,6 +24,7 @@ import {
   type GenerationProvider,
   type PromptRegistry,
 } from "@wortschatz/exercises";
+import { getActiveBasePromptVoice } from "@wortschatz/database";
 
 import { generateExerciseRemote } from "@/lib/api-client";
 
@@ -58,6 +60,7 @@ export function makeRemoteGenerator(
       tags: dto.tags,
       tip: dto.tip as Record<string, unknown> | undefined,
       modelUsed: dto.modelUsed,
+      basePromptVersionId: dto.basePromptVersionId ?? null,
     };
   };
 }
@@ -71,9 +74,25 @@ export function makeRemoteGenerator(
 export function makeDirectGenerator(
   client: ProviderClient,
   prompts: PromptRegistry,
+  provider: GenerationProvider = "claude",
 ): ExerciseGenerator {
   return async (input) => {
-    const parts = prompts[input.type];
+    const baseParts = prompts[input.type];
+    // Honor DB-curated prompts even on the offline path (Decision 6): resolve
+    // the ACTIVE version for (type, level) and override the editable voice,
+    // exactly like apps/api does. Claude-only in v1; GPT uses its file.
+    let parts = baseParts;
+    let basePromptVersionId: string | null = null;
+    if (provider === "claude") {
+      const active = await getActiveBasePromptVoice(input.type, input.level);
+      if (active) {
+        parts = applyPromptVoice(baseParts, {
+          systemPrompt: active.systemPrompt,
+          userInstructions: active.userInstructions,
+        });
+        basePromptVersionId = active.versionId;
+      }
+    }
     const { system, user, maxTokens } = buildPrompt(
       parts,
       {
@@ -114,6 +133,7 @@ export function makeDirectGenerator(
       tags: normalizeTags(obj.tags, input.topic, input.level),
       tip: result.tip,
       modelUsed,
+      basePromptVersionId,
     };
   };
 }

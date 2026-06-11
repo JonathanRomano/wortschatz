@@ -24,7 +24,7 @@
  */
 import Anthropic from "@anthropic-ai/sdk";
 
-import { prisma } from "@wortschatz/database";
+import { getActiveBasePromptVoice, prisma } from "@wortschatz/database";
 import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 import {
   estimateCostMicrocents,
@@ -33,6 +33,7 @@ import {
   type AiEndpoint,
 } from "@wortschatz/config";
 import {
+  applyPromptVoice,
   buildPrompt,
   claudePrompts,
   extractJson,
@@ -43,6 +44,7 @@ import {
   type CustomPrompt,
   type GeneratedExerciseDTO,
   type GenerationProvider,
+  type PromptVoiceOverride,
   type RecentExample,
 } from "@wortschatz/exercises";
 
@@ -102,6 +104,8 @@ async function recordUsage(args: {
   model: string;
   inputTokens: number;
   outputTokens: number;
+  /** Provenance tag (e.g. "test-generate"); NULL for normal runs. */
+  source?: string;
 }): Promise<void> {
   await prisma.aiUsage.create({
     data: {
@@ -116,6 +120,7 @@ async function recordUsage(args: {
         args.outputTokens,
       ),
       cacheHit: false,
+      source: args.source ?? null,
     },
   });
 }
@@ -130,6 +135,13 @@ export interface GenerateInput {
   model?: string;
   /** Acting user (from X-User-Id) — drives the per-user rate limit. */
   userId?: string;
+  /**
+   * Forces a specific editable voice, bypassing the ACTIVE-version lookup —
+   * the curation UI's "test-generate" passes a DRAFT's content here.
+   */
+  promptVoiceOverride?: PromptVoiceOverride;
+  /** Provenance tag persisted to AiUsage.source (e.g. "test-generate"). */
+  source?: string;
 }
 
 /**
@@ -144,17 +156,47 @@ export type GenerateOutcome =
 export async function generateExercise(
   input: GenerateInput,
 ): Promise<GenerateOutcome> {
-  const { type, level, topic, recentExamples, customPrompt, provider, model, userId } =
-    input;
+  const {
+    type,
+    level,
+    topic,
+    recentExamples,
+    customPrompt,
+    provider,
+    model,
+    userId,
+    promptVoiceOverride,
+    source,
+  } = input;
 
   // Offline stub when the chosen provider has no key — mirrors the
-  // review/evaluate stub behavior; writes nothing.
+  // review/evaluate stub behavior; writes nothing (no prompt resolved, so
+  // no basePromptVersionId).
   const providerConfigured = provider === "gpt" ? GPT_CONFIGURED() : AI_CONFIGURED;
   if (!providerConfigured) {
     return { ok: true, exercise: stubGenerate(type, level, topic) };
   }
 
-  const parts = (provider === "gpt" ? gptPrompts : claudePrompts)[type];
+  // Resolve the editable voice (Decision 5/6/8): an explicit override
+  // (test-generate of a DRAFT) wins; otherwise the ACTIVE DB version for
+  // (type, level) on the Claude path (v1 is Claude-only); otherwise the
+  // hardcoded per-type file unchanged. jsonShape/rules always stay locked.
+  const baseParts = (provider === "gpt" ? gptPrompts : claudePrompts)[type];
+  let parts = baseParts;
+  let basePromptVersionId: string | null = null;
+  if (promptVoiceOverride) {
+    parts = applyPromptVoice(baseParts, promptVoiceOverride);
+  } else if (provider === "claude") {
+    const active = await getActiveBasePromptVoice(type, level);
+    if (active) {
+      parts = applyPromptVoice(baseParts, {
+        systemPrompt: active.systemPrompt,
+        userInstructions: active.userInstructions,
+      });
+      basePromptVersionId = active.versionId;
+    }
+  }
+
   const { system, user, maxTokens } = buildPrompt(
     parts,
     { level, topic, recentExamples },
@@ -175,7 +217,7 @@ export async function generateExercise(
   try {
     parsed = extractJson(raw.text);
   } catch (err) {
-    await recordUsage({ userId, model: raw.modelUsed, inputTokens: raw.inputTokens, outputTokens: raw.outputTokens });
+    await recordUsage({ userId, model: raw.modelUsed, inputTokens: raw.inputTokens, outputTokens: raw.outputTokens, source });
     return {
       ok: false,
       errors: [err instanceof Error ? err.message : "Response was not valid JSON."],
@@ -184,7 +226,7 @@ export async function generateExercise(
 
   const result = validateExercise(type, parsed);
   if (!result.ok) {
-    await recordUsage({ userId, model: raw.modelUsed, inputTokens: raw.inputTokens, outputTokens: raw.outputTokens });
+    await recordUsage({ userId, model: raw.modelUsed, inputTokens: raw.inputTokens, outputTokens: raw.outputTokens, source });
     return { ok: false, errors: result.errors };
   }
 
@@ -197,8 +239,11 @@ export async function generateExercise(
     tags: normalizeTags(obj.tags, topic, level),
     tip: result.tip,
     modelUsed: raw.modelUsed,
+    basePromptVersionId,
+    inputTokens: raw.inputTokens,
+    outputTokens: raw.outputTokens,
   };
 
-  await recordUsage({ userId, model: raw.modelUsed, inputTokens: raw.inputTokens, outputTokens: raw.outputTokens });
+  await recordUsage({ userId, model: raw.modelUsed, inputTokens: raw.inputTokens, outputTokens: raw.outputTokens, source });
   return { ok: true, exercise };
 }

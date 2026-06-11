@@ -28,7 +28,7 @@ async function main() {
     Boolean(process.env.INTERNAL_API_SECRET) && (await isExpressReachable());
   const generate = useExpress
     ? makeRemoteGenerator("gpt")
-    : makeDirectGenerator(callGPT, gptPrompts);
+    : makeDirectGenerator(callGPT, gptPrompts, "gpt");
   console.log(
     useExpress
       ? "[gen:gpt] using the apps/api /ai/generate-exercise endpoint"

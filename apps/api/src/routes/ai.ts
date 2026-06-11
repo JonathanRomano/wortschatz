@@ -108,6 +108,16 @@ const generateBodySchema = z.object({
     .optional(),
   provider: z.enum(["claude", "gpt"]).default("claude"),
   model: z.string().optional(),
+  // Curation "test-generate": force a DRAFT version's editable voice instead
+  // of resolving the ACTIVE one. Both strings are required when present.
+  promptVoiceOverride: z
+    .object({
+      systemPrompt: z.string(),
+      userInstructions: z.string(),
+    })
+    .optional(),
+  // Provenance tag → AiUsage.source. Capped so it can't be abused as a blob.
+  source: z.string().max(40).optional(),
 });
 
 router.post("/generate-exercise", async (req, res, next) => {

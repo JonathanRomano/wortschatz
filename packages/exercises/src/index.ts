@@ -13,6 +13,7 @@
  */
 export * from "./schemas.js";
 export * from "./prompt-types.js";
+export * from "./prompt-override.js";
 export * from "./api-contracts.js";
 export * from "./json.js";
 export * from "./recent-block.js";

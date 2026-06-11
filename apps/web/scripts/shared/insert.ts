@@ -24,6 +24,9 @@ export interface InsertArgs {
   modelUsed: string;
   /** Links the exercise to the run that produced it. */
   generationSessionId?: string;
+  /** The ACTIVE prompt version that produced it (Decision 7). NULL when the
+   *  hardcoded file fallback was used. */
+  basePromptVersionId?: string | null;
 }
 
 export async function insertExercise(args: InsertArgs): Promise<string> {
@@ -44,6 +47,9 @@ export async function insertExercise(args: InsertArgs): Promise<string> {
       ...(args.tip ? { tip: args.tip as Prisma.InputJsonValue } : {}),
       ...(args.generationSessionId
         ? { generationSessionId: args.generationSessionId }
+        : {}),
+      ...(args.basePromptVersionId
+        ? { basePromptVersionId: args.basePromptVersionId }
         : {}),
     },
     select: { id: true },

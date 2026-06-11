@@ -15,6 +15,7 @@
 import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 
 import type { CustomPrompt, RecentExample } from "./prompt-types.js";
+import type { PromptVoiceOverride } from "./prompt-override.js";
 
 export type GenerationProvider = "claude" | "gpt";
 
@@ -27,6 +28,17 @@ export interface GenerateExerciseRequest {
   provider?: GenerationProvider;
   /** Overrides the provider's default model when set. */
   model?: string;
+  /**
+   * Forces a specific editable voice (system + userInstructions), bypassing
+   * the ACTIVE-version lookup. Used by the curation UI's "test-generate" to
+   * preview a DRAFT version's content before publishing it (Task 3.4).
+   */
+  promptVoiceOverride?: PromptVoiceOverride;
+  /**
+   * Provenance tag persisted to AiUsage.source. "test-generate" marks a
+   * draft-prompt preview so its tokens are distinguishable from real runs.
+   */
+  source?: string;
 }
 
 /** Success body — the validated exercise, ready for the web to insert. */
@@ -39,6 +51,17 @@ export interface GeneratedExerciseDTO {
   tip?: unknown;
   /** The model that actually produced it — persisted to Exercise.model. */
   modelUsed: string;
+  /**
+   * The ACTIVE BasePromptVersion that drove this generation, or null when
+   * the hardcoded file fallback was used (no active DB version) or the run
+   * was a draft preview / stub. Threaded onto Exercise.basePromptVersionId
+   * by the web inserter (Decision 7).
+   */
+  basePromptVersionId?: string | null;
+  /** Real provider token usage (omitted by the stub). Surfaced by the
+   *  curation "test-generate" UI as the token cost of the preview. */
+  inputTokens?: number;
+  outputTokens?: number;
 }
 
 export type GenerateExerciseErrorCode =

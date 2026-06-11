@@ -28,7 +28,7 @@ async function main() {
     Boolean(process.env.INTERNAL_API_SECRET) && (await isExpressReachable());
   const generate = useExpress
     ? makeRemoteGenerator("claude")
-    : makeDirectGenerator(callClaude, claudePrompts);
+    : makeDirectGenerator(callClaude, claudePrompts, "claude");
   console.log(
     useExpress
       ? "[gen:claude] using the apps/api /ai/generate-exercise endpoint"

@@ -72,6 +72,16 @@ enum GenerationSource {
   CLI
 }
 
+// Lifecycle of a BasePromptVersion. DRAFT = saved but not used by
+// generation; ACTIVE = the single version currently driving generation for
+// its (type, level); INACTIVE = was active, now superseded. Versions are
+// append-only — they are never deleted, only deactivated (Decision 1).
+enum PromptStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
 // --- App models ---------------------------------------------------------
 
 model User {
@@ -114,6 +124,10 @@ model User {
   commentLikes      CommentLike[]
   savedPrompts       SavedPrompt[]
   generationSessions GenerationSession[]
+  // Base-prompt versions this user authored (drafts, publishes, seeds).
+  // Append-only audit trail — SetNull on the version side so deleting a
+  // user never destroys prompt history.
+  basePromptVersions BasePromptVersion[]
 }
 
 // Sprint 02 Task 8 — per-exercise-type user preferences. Currently used
@@ -173,6 +187,14 @@ model Exercise {
   generationSessionId String?
   generationSession   GenerationSession? @relation(fields: [generationSessionId], references: [id], onDelete: SetNull)
 
+  // The exact prompt version that produced this exercise (Decision 7).
+  // NULL for rows generated before this sprint, by a hardcoded-file
+  // fallback (no active DB version existed), or by the stub generator.
+  // Deleting a version keeps its exercises (SetNull) — provenance, not
+  // ownership.
+  basePromptVersionId String?
+  basePromptVersion   BasePromptVersion? @relation(fields: [basePromptVersionId], references: [id], onDelete: SetNull)
+
   attempts       UserExercise[]
   comments       ExerciseComment[]
 
@@ -182,6 +204,7 @@ model Exercise {
   @@index([type, level, status])
   @@index([status])
   @@index([generationSessionId])
+  @@index([basePromptVersionId])
 }
 
 // Sprint 02 Task 7 — per-exercise discussion thread. Soft-deleted rows
@@ -336,6 +359,70 @@ model GenerationSession {
   @@index([savedPromptId])
 }
 
+// --- Prompt curation ----------------------------------------------------
+//
+// The system-of-record for AI generation prompts, editable in production by
+// ADMIN/TEACHER (Decision 4). One BasePrompt per (ExerciseType, CefrLevel);
+// each has an append-only chain of BasePromptVersion rows. At generation
+// time the runtime resolves the single ACTIVE version for a (type, level)
+// and overrides the editable "voice" (system + instructions) of the
+// hardcoded per-type prompt file; the locked jsonShape/rules always come
+// from the file (Decision: DB-first override seam). When no DB row exists,
+// generation falls back to the hardcoded file unchanged (Decision 5).
+model BasePrompt {
+  id          String              @id @default(cuid())
+  type        ExerciseType
+  level       CefrLevel
+  description String?             @db.VarChar(500)
+  versions    BasePromptVersion[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  // One canonical prompt per (type, level). The unique constraint also
+  // provides the lookup index used by the active-version resolver.
+  @@unique([type, level])
+}
+
+// One immutable revision of a BasePrompt's editable voice. Versions are
+// append-only and monotonic per basePromptId (Decision 1): editing creates
+// a new DRAFT, publishing flips it to ACTIVE and the previous ACTIVE to
+// INACTIVE, reverting reactivates a historical row. jsonShape/rules are NOT
+// stored here — they stay code-locked in the per-type prompt file so a bad
+// edit can never break Zod validation.
+model BasePromptVersion {
+  id               String       @id @default(cuid())
+  basePromptId     String
+  basePrompt       BasePrompt   @relation(fields: [basePromptId], references: [id], onDelete: Cascade)
+  // Monotonic per basePromptId, NOT global. Assigned as max(existing)+1.
+  versionNumber    Int
+  status           PromptStatus @default(DRAFT)
+
+  // Editable "voice" only. systemPrompt is used verbatim; userInstructions
+  // may contain {level}/{topic} placeholders, interpolated at resolve time
+  // so a DB version reproduces the level/topic-aware header of the
+  // hardcoded file.
+  systemPrompt     String       @db.Text
+  userInstructions String       @db.Text
+
+  changeNote       String?      @db.VarChar(500)
+
+  // Who authored this revision. Nullable + SetNull so deleting a user never
+  // destroys prompt history (append-only audit trail, like Exercise.author).
+  authorId         String?
+  author           User?        @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  // Exercises generated while this version was ACTIVE (Decision 7).
+  exercises        Exercise[]
+
+  createdAt        DateTime     @default(now())
+  publishedAt      DateTime?    // set when status went DRAFT -> ACTIVE
+  deactivatedAt    DateTime?    // set when this version stopped being ACTIVE
+
+  @@unique([basePromptId, versionNumber])
+  @@index([basePromptId, status])
+  @@index([authorId])
+}
+
 // --- AI infrastructure --------------------------------------------------
 //
 // Persisted cache, per-user rate-limit windows, and per-call usage log for
@@ -383,6 +470,11 @@ model AiUsage {
   // Stored as integer microcents (cost * 100000) to avoid float drift.
   costMicrocents Int
   cacheHit       Boolean  @default(false)
+  // Provenance marker for non-standard calls. "test-generate" tags a
+  // draft-prompt preview from the curation UI so those tokens can be
+  // distinguished from real generation runs. NULL for normal
+  // generate/review/evaluate traffic.
+  source         String?
   createdAt      DateTime @default(now())
 
   @@index([userId, createdAt])

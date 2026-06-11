@@ -180,6 +180,7 @@ export async function runGeneration(config: RunConfig): Promise<GenerationResult
         explanation: ex.explanation,
         tags: ex.tags,
         tip: ex.tip,
+        basePromptVersionId: ex.basePromptVersionId ?? null,
       };
 
       if (dryRun) {
@@ -204,6 +205,7 @@ export async function runGeneration(config: RunConfig): Promise<GenerationResult
           tags: ex.tags,
           modelUsed: ex.modelUsed,
           generationSessionId: sessionId || undefined,
+          basePromptVersionId: ex.basePromptVersionId ?? null,
         });
         summary.id = id;
         generated.push(summary);

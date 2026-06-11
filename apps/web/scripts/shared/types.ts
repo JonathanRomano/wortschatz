@@ -127,6 +127,8 @@ export interface GeneratedExerciseSummary {
   explanation: unknown;
   tags: string[];
   tip?: unknown;
+  /** The ACTIVE BasePromptVersion that produced it, or null (file fallback). */
+  basePromptVersionId?: string | null;
 }
 
 export type GenerationFailureCode =
@@ -181,6 +183,11 @@ export interface GeneratedExercisePayload {
   tip?: Record<string, unknown>;
   /** The model that actually produced it. */
   modelUsed: string;
+  /**
+   * The ACTIVE BasePromptVersion that drove generation, or null when the
+   * hardcoded file fallback was used. Threaded onto Exercise.basePromptVersionId.
+   */
+  basePromptVersionId?: string | null;
 }
 
 export type ExerciseGenerator = (
