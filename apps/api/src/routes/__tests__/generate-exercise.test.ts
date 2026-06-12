@@ -31,6 +31,7 @@ const hoisted = vi.hoisted(() => {
     messagesCreate: vi.fn(),
     completionsCreate: vi.fn(),
     aiUsageCreate: vi.fn(),
+    getActiveBasePromptVoice: vi.fn(),
     checkAndIncrement: vi.fn(),
     AiRateLimitedError,
   };
@@ -66,9 +67,12 @@ vi.mock("openai", () => ({
   },
 }));
 
-// prisma: capture usage writes; nothing else is touched.
+// prisma: capture usage writes; nothing else is touched. The base-prompt
+// resolver is mocked to return null by default → the generate service falls
+// back to the hardcoded per-type prompt file (the behavior these tests assert).
 vi.mock("@wortschatz/database", () => ({
   prisma: { aiUsage: { create: hoisted.aiUsageCreate } },
+  getActiveBasePromptVoice: hoisted.getActiveBasePromptVoice,
 }));
 
 // rate limiter: the same error class the errorHandler does `instanceof` against.
@@ -115,6 +119,7 @@ beforeEach(() => {
   hoisted.messagesCreate.mockReset().mockResolvedValue(claudeText(VALID_FITB));
   hoisted.completionsCreate.mockReset();
   hoisted.aiUsageCreate.mockReset().mockResolvedValue({});
+  hoisted.getActiveBasePromptVoice.mockReset().mockResolvedValue(null);
   hoisted.checkAndIncrement.mockReset().mockResolvedValue(undefined);
 });
 
