@@ -305,6 +305,7 @@ section.
 | `ExerciseStatus` | `DRAFT`, `PUBLISHED`, `ARCHIVED` | Browse page filters to `PUBLISHED`. |
 | `MuenzenReason` | `EXERCISE_COMPLETE`, `PERFECT_SCORE_BONUS`, `DAILY_STREAK`, `SPENT_AI_REVIEW`, `ADMIN_ADJUSTMENT`, `BONUS` | `BONUS` is legacy, retained so old rows validate. |
 | `GenerationSource` | `UI`, `CLI` | On `GenerationSession.source` — whether a run came from `/admin/generate` or the `pnpm gen:*` CLIs. |
+| `PromptStatus` | `DRAFT`, `ACTIVE`, `INACTIVE` | On `BasePromptVersion.status`. Exactly one `ACTIVE` per `(type, level)`; append-only, never deleted. |
 
 ### Tables (text diagram)
 
@@ -385,6 +386,14 @@ Exercise generation (admin generator + CLI — see scripts/README.md):
                      · requestedCount · savedPromptId?→SavedPrompt · customSystem · customInstructions
                      · successCount · failureCount · failures JSON? · durationMs? · completedAt? · authorId→User
   Exercise.generationSessionId?  →GenerationSession (onDelete SetNull; NULL for pre-session / manually-authored rows)
+
+Prompt curation (DB-backed prompts — see docs/prompts.md):
+
+  BasePrompt         one per (type, level) · @@unique([type, level]) · 40 rows (10 types × A1–B2)
+  BasePromptVersion  append-only revision · versionNumber (monotonic per basePromptId) · status (DRAFT|ACTIVE|INACTIVE)
+                     · systemPrompt · userInstructions (editable voice; jsonShape/rules stay code-locked in the file)
+                     · changeNote? · authorId?→User (SetNull) · publishedAt? · deactivatedAt?
+  Exercise.basePromptVersionId?  →BasePromptVersion (onDelete SetNull; the exact version that generated the row)
 ```
 
 ### Critical business rules
@@ -448,10 +457,13 @@ to bring a fresh DB in line with the schema.
   Both registered in [`src/auth.ts`](./src/auth.ts) (full config) and
   [`src/auth.config.ts`](./src/auth.config.ts) (edge-safe slice for
   middleware — no Prisma, no bcrypt).
-- **Roles.** `USER`, `TEACHER`, `ADMIN`. Currently consumed only by
-  the admin pages (gate at the top of `/admin/**/page.tsx`). Teacher
-  doesn't yet have a UI to *create* exercises (the schema supports it
-  via `Exercise.authorId` — see [debt](#10-technical-debt--open-issues)).
+- **Roles.** `USER`, `TEACHER`, `ADMIN`. As of the prompt-curation
+  sprint, `TEACHER` has a real job: editing the DB-backed generation
+  prompts at `/admin/prompts/base` (draft → test → publish; **revert is
+  ADMIN-only**). Guards: `requireAdminOrTeacher()` / `requireAdmin()` in
+  `src/lib/admin/guard.ts`. The older generator surface
+  (`/admin/generate`, saved-prompts) stays ADMIN-only. Teacher still has
+  no UI to hand-*author* exercises. See [docs/prompts.md](./docs/prompts.md).
 - **Session.** JWT (`session.strategy: 'jwt'`). The token carries `id`,
   `role`, and `avatarUrl`. Augmented in `src/types/next-auth.d.ts`.
 - **Profile fields** (Sprint 02 Task 6): `bio` (≤280), `nativeLanguage`

@@ -283,6 +283,36 @@ spawn**. Full details in [scripts/README.md](./apps/web/scripts/README.md).
   `AiRateLimit` `GENERATE_EXERCISE` window. UI pages: `/admin/generate`,
   `/admin/prompts`, `/admin/generate/history[/:id]`. v1 exposes Claude only.
 
+### Base prompts (DB-backed prompt curation)
+
+Per-`(ExerciseType, CefrLevel)` generation prompts live in the **database**,
+editable in production by ADMIN/TEACHER — the hardcoded per-type files are the
+fallback. Full guide in [docs/prompts.md](./docs/prompts.md).
+
+- **DB-first resolution.** At generation time `getActiveBasePromptVoice(type,
+  level)` (in `@wortschatz/database`) returns the one `ACTIVE`
+  `BasePromptVersion`, or `null` → the hardcoded file is used unchanged
+  (Decision 5; the parity test stays green because the files are never edited).
+  The pure `applyPromptVoice` (in `@wortschatz/exercises`) layers the stored
+  `system`+`userInstructions` (with `{level}`/`{topic}` interpolation) onto the
+  file's **locked** `jsonShape`/`rules`. Resolution happens on the Express
+  generate service (live path) and the web CLI-offline generator. GPT always
+  uses its file (curation is Claude-only in v1).
+- **Versioning (append-only).** Editing creates a new `DRAFT`; **publish** flips
+  it to `ACTIVE` and demotes the prior `ACTIVE` to `INACTIVE` in one
+  transaction; **revert** reactivates an `INACTIVE` row. Versions are never
+  deleted. `versionNumber` is monotonic **per `basePromptId`**, not global.
+  `Exercise.basePromptVersionId` (`SetNull`) traces each exercise to its prompt.
+- **Roles.** TEACHER can list/draft/test/publish; **revert is ADMIN-only**.
+  `jsonShape`/`rules` are code-locked for everyone (no admin-only editable
+  field) — so there's nothing to strip for TEACHER on draft create. Use
+  `requireAdminOrTeacher()` for the curation routes (under
+  `apps/web/src/app/api/admin/base-prompts/`), `requireAdmin()` for revert.
+- **test-generate** spends real tokens (counts against `GENERATE_EXERCISE`,
+  writes `AiUsage` with `source="test-generate"`) but inserts nothing and writes
+  no `GenerationSession`. The 40 seed rows + v1 content live in
+  `packages/database/prisma/seed-data/base-prompts.ts`; the seed is idempotent.
+
 ## Testing
 
 `vitest` is the runner; tests live under `__tests__/` directories beside
@@ -452,3 +482,9 @@ Constants, TTLs, rate limits, pricing:
   depend on them; the prompt-parity test guards against silent drift. The
   `GenerationSession` table is the long-term foundation for curation: don't
   denormalize it or skip writing it for performance without flagging it.
+- The hardcoded per-type prompt files are the **fallback of record** for
+  DB-backed curation — don't edit their text to "fix a prompt" (edit the DB
+  version via `/admin/prompts/base`), and never remove the file fallback or the
+  locked `jsonShape`/`rules` seam. `BasePromptVersion` is append-only: don't add
+  an update/delete path or fold `jsonShape`/`rules` into the DB. See
+  [docs/prompts.md](./docs/prompts.md).

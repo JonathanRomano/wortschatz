@@ -230,6 +230,19 @@ API-boundary sprint) `generate-exercise` — now run on apps/api. The admin
 `POST /ai/generate-exercise`; the CLI falls back to the in-process SDK only
 when apps/api is unreachable.
 
+## Prompt curation (DB-backed prompts)
+
+Per-`(type, level)` generation prompts are versioned rows
+(`BasePrompt`/`BasePromptVersion`), editable in production by ADMIN/TEACHER at
+`/admin/prompts/base`. The hardcoded per-type files stay as the fallback. This
+respects the boundary cleanly: the active-version **read** lives in
+`@wortschatz/database` (`getActiveBasePromptVoice`), the pure
+voice-override **transform** in `@wortschatz/exercises` (`applyPromptVoice`,
+Prisma-free), and the LLM call still happens on apps/api. The new admin REST
+surface (`apps/web/src/app/api/admin/base-prompts/`) is lightweight CRUD →
+Next.js; only `test-generate` reaches across to apps/api (it spends tokens).
+Full guide: [docs/prompts.md](./docs/prompts.md).
+
 ## Adding a new shared package
 
 ```bash
