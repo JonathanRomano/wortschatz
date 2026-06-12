@@ -286,7 +286,8 @@
       "nav": {
         "generator": "Gerador",
         "history": "Histórico",
-        "prompts": "Prompts salvos"
+        "prompts": "Prompts salvos",
+        "base": "Prompts base"
       },
       "form": {
         "type": "Tipo de exercício",
@@ -393,6 +394,87 @@
         "failures": "Falhas",
         "noExercises": "Nenhum exercício foi produzido.",
         "back": "Voltar ao histórico"
+      }
+    },
+    "basePrompts": {
+      "title": "Prompts base",
+      "subtitle": "Edite os prompts por nível que controlam a geração de exercícios por IA.",
+      "loadFailed": "Não foi possível carregar os prompts base.",
+      "empty": "Nenhum prompt base corresponde a esses filtros.",
+      "filters": {
+        "type": "Tipo",
+        "level": "Nível",
+        "all": "Todos",
+        "draftsOnly": "Com rascunho pendente"
+      },
+      "columns": {
+        "type": "Tipo",
+        "level": "Nível",
+        "active": "Ativo",
+        "status": "Status",
+        "lastEdited": "Última edição",
+        "actions": "Ações"
+      },
+      "version": "v{n}",
+      "noActive": "nenhum",
+      "draftPending": "Rascunho pendente",
+      "published": "Publicado",
+      "edit": "Editar",
+      "open": "Abrir",
+      "back": "Voltar aos prompts base",
+      "by": "por {email}",
+      "editor": {
+        "heading": "{type} · {level}",
+        "activeLabel": "Ativo: v{n}",
+        "noActiveYet": "Nenhuma versão ativa ainda.",
+        "system": "Prompt do sistema",
+        "systemHint": "O papel do modelo e o padrão de qualidade para este tipo e nível.",
+        "userInstructions": "Instruções do usuário",
+        "userInstructionsHint": "O que gerar. {level} e {topic} são preenchidos no momento da geração.",
+        "lockedTitle": "Contrato técnico bloqueado (somente leitura)",
+        "lockedHint": "O formato JSON e as regras são bloqueados no código para que uma edição nunca quebre a validação. Apenas um administrador os gerencia no código.",
+        "jsonShape": "Formato JSON",
+        "rules": "Regras",
+        "changeNote": "Nota de alteração (opcional)",
+        "saveDraft": "Salvar como rascunho",
+        "saving": "Salvando…",
+        "draftSaved": "Rascunho v{n} salvo.",
+        "publish": "Publicar rascunho",
+        "publishing": "Publicando…",
+        "publishedToast": "v{n} publicado. Agora é o prompt ativo.",
+        "publishHint": "Salve um rascunho, teste-o e depois publique para torná-lo o prompt ativo.",
+        "saveFailed": "Não foi possível salvar. Tente novamente."
+      },
+      "test": {
+        "title": "Testar geração",
+        "subtitle": "Gere um exercício a partir do rascunho atual sem salvá-lo.",
+        "topic": "Tópico",
+        "topicPlaceholder": "ex. Im Restaurant",
+        "generate": "Gerar teste",
+        "generating": "Gerando…",
+        "needDraft": "Salve um rascunho primeiro e depois teste-o.",
+        "cost": "Este teste custou cerca de {tokens} tokens.",
+        "empty": "Nenhuma execução de teste ainda.",
+        "rate_limited": "Limite diário de geração atingido. Tente novamente mais tarde.",
+        "failed": "A geração falhou. Verifique o prompt e tente novamente.",
+        "showJson": "Mostrar JSON",
+        "hideJson": "Ocultar JSON"
+      },
+      "history": {
+        "title": "Histórico de versões",
+        "active": "ativo",
+        "draft": "rascunho",
+        "inactive": "inativo",
+        "revert": "Reverter para esta versão",
+        "reverting": "Revertendo…",
+        "reverted": "Revertido para v{n}.",
+        "confirmTitle": "Reverter prompt?",
+        "confirmBody": "Isso torna v{n} o prompt ativo novamente; a versão ativa atual passa a ser inativa.",
+        "confirm": "Reverter",
+        "cancel": "Cancelar",
+        "expand": "Ver conteúdo",
+        "collapse": "Ocultar conteúdo",
+        "revertFailed": "Não foi possível reverter. Tente novamente."
       }
     }
   },

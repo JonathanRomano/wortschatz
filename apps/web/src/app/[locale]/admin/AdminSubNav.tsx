@@ -9,17 +9,16 @@ import { ButtonLink } from "@/components/ui/ButtonLink";
  * Top-right links shared by the generator pages. The current page's own
  * link is omitted so only the destinations show.
  */
-export function AdminSubNav({
-  current,
-}: {
-  current: "generate" | "prompts" | "history";
-}) {
+type NavKey = "generate" | "prompts" | "history" | "base";
+
+export function AdminSubNav({ current }: { current: NavKey }) {
   const t = useTranslations("admin.generate.nav");
 
-  const links: Array<{ key: "generate" | "prompts" | "history"; href: string; label: string }> = [
+  const links: Array<{ key: NavKey; href: string; label: string }> = [
     { key: "generate", href: "/admin/generate", label: t("generator") },
     { key: "history", href: "/admin/generate/history", label: t("history") },
     { key: "prompts", href: "/admin/prompts", label: t("prompts") },
+    { key: "base", href: "/admin/prompts/base", label: t("base") },
   ];
 
   return (

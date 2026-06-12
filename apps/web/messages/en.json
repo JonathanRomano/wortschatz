@@ -286,7 +286,8 @@
       "nav": {
         "generator": "Generator",
         "history": "History",
-        "prompts": "Saved prompts"
+        "prompts": "Saved prompts",
+        "base": "Base prompts"
       },
       "form": {
         "type": "Exercise type",
@@ -393,6 +394,87 @@
         "failures": "Failures",
         "noExercises": "No exercises were produced.",
         "back": "Back to history"
+      }
+    },
+    "basePrompts": {
+      "title": "Base prompts",
+      "subtitle": "Edit the per-level prompts that drive AI exercise generation.",
+      "loadFailed": "Could not load the base prompts.",
+      "empty": "No base prompts match these filters.",
+      "filters": {
+        "type": "Type",
+        "level": "Level",
+        "all": "All",
+        "draftsOnly": "With pending draft"
+      },
+      "columns": {
+        "type": "Type",
+        "level": "Level",
+        "active": "Active",
+        "status": "Status",
+        "lastEdited": "Last edited",
+        "actions": "Actions"
+      },
+      "version": "v{n}",
+      "noActive": "none",
+      "draftPending": "Draft pending",
+      "published": "Published",
+      "edit": "Edit",
+      "open": "Open",
+      "back": "Back to base prompts",
+      "by": "by {email}",
+      "editor": {
+        "heading": "{type} · {level}",
+        "activeLabel": "Active: v{n}",
+        "noActiveYet": "No active version yet.",
+        "system": "System prompt",
+        "systemHint": "The model's role and the quality bar for this type and level.",
+        "userInstructions": "User instructions",
+        "userInstructionsHint": "What to generate. {level} and {topic} are filled in at generation time.",
+        "lockedTitle": "Locked technical contract (read-only)",
+        "lockedHint": "The JSON shape and rules are code-locked so an edit can never break validation. Only an admin manages these in code.",
+        "jsonShape": "JSON shape",
+        "rules": "Rules",
+        "changeNote": "Change note (optional)",
+        "saveDraft": "Save as draft",
+        "saving": "Saving…",
+        "draftSaved": "Draft v{n} saved.",
+        "publish": "Publish draft",
+        "publishing": "Publishing…",
+        "publishedToast": "Published v{n}. It is now the active prompt.",
+        "publishHint": "Save a draft, test it, then publish to make it the active prompt.",
+        "saveFailed": "Could not save. Please try again."
+      },
+      "test": {
+        "title": "Test generate",
+        "subtitle": "Generate one exercise from the current draft without saving it.",
+        "topic": "Topic",
+        "topicPlaceholder": "e.g. Im Restaurant",
+        "generate": "Generate test",
+        "generating": "Generating…",
+        "needDraft": "Save a draft first, then test it.",
+        "cost": "This test cost about {tokens} tokens.",
+        "empty": "No test run yet.",
+        "rate_limited": "Daily generation limit reached. Try again later.",
+        "failed": "Generation failed. Check the prompt and try again.",
+        "showJson": "Show JSON",
+        "hideJson": "Hide JSON"
+      },
+      "history": {
+        "title": "Version history",
+        "active": "active",
+        "draft": "draft",
+        "inactive": "inactive",
+        "revert": "Revert to this version",
+        "reverting": "Reverting…",
+        "reverted": "Reverted to v{n}.",
+        "confirmTitle": "Revert prompt?",
+        "confirmBody": "This makes v{n} the active prompt again; the current active version becomes inactive.",
+        "confirm": "Revert",
+        "cancel": "Cancel",
+        "expand": "View content",
+        "collapse": "Hide content",
+        "revertFailed": "Could not revert. Please try again."
       }
     }
   },

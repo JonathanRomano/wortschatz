@@ -286,7 +286,8 @@
       "nav": {
         "generator": "Üretici",
         "history": "Geçmiş",
-        "prompts": "Kayıtlı istemler"
+        "prompts": "Kayıtlı istemler",
+        "base": "Temel istemler"
       },
       "form": {
         "type": "Alıştırma türü",
@@ -393,6 +394,87 @@
         "failures": "Başarısızlıklar",
         "noExercises": "Hiç alıştırma üretilmedi.",
         "back": "Geçmişe dön"
+      }
+    },
+    "basePrompts": {
+      "title": "Temel istemler",
+      "subtitle": "Yapay zeka alıştırma üretimini yönlendiren seviye bazlı istemleri düzenleyin.",
+      "loadFailed": "Temel istemler yüklenemedi.",
+      "empty": "Bu filtrelerle eşleşen temel istem yok.",
+      "filters": {
+        "type": "Tür",
+        "level": "Seviye",
+        "all": "Tümü",
+        "draftsOnly": "Bekleyen taslağı olanlar"
+      },
+      "columns": {
+        "type": "Tür",
+        "level": "Seviye",
+        "active": "Etkin",
+        "status": "Durum",
+        "lastEdited": "Son düzenleme",
+        "actions": "İşlemler"
+      },
+      "version": "v{n}",
+      "noActive": "yok",
+      "draftPending": "Taslak bekliyor",
+      "published": "Yayımlandı",
+      "edit": "Düzenle",
+      "open": "Aç",
+      "back": "Temel istemlere dön",
+      "by": "{email} tarafından",
+      "editor": {
+        "heading": "{type} · {level}",
+        "activeLabel": "Etkin: v{n}",
+        "noActiveYet": "Henüz etkin sürüm yok.",
+        "system": "Sistem istemi",
+        "systemHint": "Bu tür ve seviye için modelin rolü ve kalite eşiği.",
+        "userInstructions": "Kullanıcı talimatları",
+        "userInstructionsHint": "Ne üretileceği. {level} ve {topic} üretim sırasında doldurulur.",
+        "lockedTitle": "Kilitli teknik sözleşme (salt okunur)",
+        "lockedHint": "JSON yapısı ve kurallar kodda kilitlidir, böylece bir düzenleme doğrulamayı asla bozamaz. Bunları yalnızca bir yönetici kod içinde yönetir.",
+        "jsonShape": "JSON yapısı",
+        "rules": "Kurallar",
+        "changeNote": "Değişiklik notu (isteğe bağlı)",
+        "saveDraft": "Taslak olarak kaydet",
+        "saving": "Kaydediliyor…",
+        "draftSaved": "Taslak v{n} kaydedildi.",
+        "publish": "Taslağı yayımla",
+        "publishing": "Yayımlanıyor…",
+        "publishedToast": "v{n} yayımlandı. Artık etkin istem bu.",
+        "publishHint": "Bir taslak kaydedin, test edin, ardından etkin istem yapmak için yayımlayın.",
+        "saveFailed": "Kaydedilemedi. Lütfen tekrar deneyin."
+      },
+      "test": {
+        "title": "Test üretimi",
+        "subtitle": "Mevcut taslaktan kaydetmeden bir alıştırma üretin.",
+        "topic": "Konu",
+        "topicPlaceholder": "ör. Im Restaurant",
+        "generate": "Test üret",
+        "generating": "Üretiliyor…",
+        "needDraft": "Önce bir taslak kaydedin, sonra test edin.",
+        "cost": "Bu test yaklaşık {tokens} jeton harcadı.",
+        "empty": "Henüz test çalıştırması yok.",
+        "rate_limited": "Günlük üretim sınırına ulaşıldı. Daha sonra tekrar deneyin.",
+        "failed": "Üretim başarısız oldu. İstemi kontrol edip tekrar deneyin.",
+        "showJson": "JSON'u göster",
+        "hideJson": "JSON'u gizle"
+      },
+      "history": {
+        "title": "Sürüm geçmişi",
+        "active": "etkin",
+        "draft": "taslak",
+        "inactive": "etkin değil",
+        "revert": "Bu sürüme geri dön",
+        "reverting": "Geri dönülüyor…",
+        "reverted": "v{n} sürümüne geri dönüldü.",
+        "confirmTitle": "İstem geri alınsın mı?",
+        "confirmBody": "Bu, v{n} sürümünü yeniden etkin istem yapar; mevcut etkin sürüm etkisiz hale gelir.",
+        "confirm": "Geri al",
+        "cancel": "İptal",
+        "expand": "İçeriği görüntüle",
+        "collapse": "İçeriği gizle",
+        "revertFailed": "Geri alınamadı. Lütfen tekrar deneyin."
       }
     }
   },
