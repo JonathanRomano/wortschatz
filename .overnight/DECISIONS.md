@@ -343,3 +343,28 @@ test harness (would need to mock the server actions + transitions). The progress
 follow-up.
 **Verification:** typecheck ✓ (7/7) · test ✓ (web 51 files, +7; api 5) · build ✓ (60/60). Lint n/a.
 **Next:** iter 12 = candidate **T** (tap-to-pair matching) or another safe item.
+
+---
+
+## Iteration 12 — 2026-07-02 01:36 CEST — Streak celebration in the result panel
+**Status:** IMPLEMENTED
+**Inspired by:** Duolingo streak moments (queue item C2). Completes the streak arc (iters 5/6).
+**What they do:** the moment your streak ticks up gets a little celebration, which is what makes a streak
+feel worth protecting.
+**What we had:** iters 5–6 award and correctly (idempotently) credit the streak/milestone bonus and fold
+it into the reward badge total — but there was no explicit "your streak went up" moment in the UI.
+**What I changed:** `ExerciseResult` takes `newStreak` and shows a "🔥 {days}-day streak!" line exactly
+when the streak advanced this attempt (`streakBonus > 0`, i.e. the first pass of the day — which after
+iter 5 shows even on a repeat exercise). Both runners pass `result.newStreak`. Added the `streakDays`
+i18n key × 4 locales, and the first-ever `ExerciseResult` test (4 cases: shows on advance, hidden with no
+bonus / no streak, correct-answer line still renders). No money path touched — purely presentational off
+existing `SubmitResult` fields. (Chose this over a Recharts radar-trend overlay I couldn't visually
+verify, and it avoids pulling `muenzen.ts`/Prisma into a client component.)
+**Files touched:** `ExerciseResult.tsx`, `TypeRunner.tsx`, `ExerciseRunner.tsx`,
+`messages/{en,pt,tr,uk}.json` (+1 key each), `__tests__/ExerciseResult.test.tsx` (new, 4 tests).
+**Feature flag:** none — additive UI reading existing result fields; `git revert` removes it.
+**Risk / open questions:** trivial/additive. A milestone-specific banner (distinguishing a 7/30/100-day
+moment, which currently only shows as extra coins) is queued as **C3** — it needs the milestone value
+threaded through `SubmitResult` from `actions.ts`.
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 52 files, +4; api 5) · build ✓ (60/60). Lint n/a.
+**Next:** iter 13 = candidate **T** (tap-to-pair matching) or **R** (radar trend) / **L** (achievements).

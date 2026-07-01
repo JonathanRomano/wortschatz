@@ -13,3 +13,4 @@
 | 9 | 01:18 | IMPLEMENTED | Relative activity-heatmap buckets (+3 tests, i18n×4) | — (visual) | ✓/✓/✓ |
 | 10 | 01:24 | IMPLEMENTED | Longest-streak + goal-met-days stat cards (+6 tests, i18n×4) | — (dashboard) | ✓/✓/✓ |
 | 11 | 01:30 | IMPLEMENTED | Bounded practice session + completion screen (+7 tests, i18n×4) | `PRACTICE_SESSIONS` | ✓/✓/✓ |
+| 12 | 01:36 | IMPLEMENTED | Streak celebration line in result panel (+4 tests, i18n×4) | — (additive UI) | ✓/✓/✓ |

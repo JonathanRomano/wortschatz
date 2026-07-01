@@ -16,6 +16,9 @@ type Props = {
   streakBonus: number;
   alreadyEarned: boolean;
   correctAnswer?: string;
+  // The user's streak after this attempt. A celebratory line is shown when the
+  // streak advanced this attempt (i.e. streakBonus > 0, the first pass of the day).
+  newStreak?: number;
 };
 
 /**
@@ -30,6 +33,7 @@ export function ExerciseResult({
   streakBonus,
   alreadyEarned,
   correctAnswer,
+  newStreak,
 }: Props) {
   const t = useTranslations("exercises");
   const passed = score >= 60;
@@ -125,6 +129,11 @@ export function ExerciseResult({
             sx={{ fontWeight: 500, color: "secondary.main" }}
           >
             {t("rewardEarned", { amount: totalReward })}
+          </Typography>
+        ) : null}
+        {streakBonus > 0 && newStreak ? (
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "tertiary.main" }}>
+            {t("streakDays", { days: newStreak })}
           </Typography>
         ) : null}
       </Stack>

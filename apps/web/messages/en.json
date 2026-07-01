@@ -123,6 +123,7 @@
     "completed": "Completed",
     "alreadyEarned": "You already earned Münzen for this exercise.",
     "rewardEarned": "+{amount} Münzen earned",
+    "streakDays": "🔥 {days}-day streak!",
     "instructionsByType": {
       "FILL_IN_THE_BLANK": "Fill in the missing word.",
       "MULTIPLE_CHOICE": "Choose the correct answer.",

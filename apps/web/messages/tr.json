@@ -123,6 +123,7 @@
     "completed": "Tamamlandı",
     "alreadyEarned": "Bu alıştırma için Münzen'i zaten kazandınız.",
     "rewardEarned": "+{amount} Münzen kazanıldı",
+    "streakDays": "🔥 {days} günlük seri!",
     "instructionsByType": {
       "FILL_IN_THE_BLANK": "Eksik kelimeyi doldurun.",
       "MULTIPLE_CHOICE": "Doğru cevabı seçin.",

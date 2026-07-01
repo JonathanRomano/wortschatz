@@ -23,10 +23,11 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
   first completions of the SAME exercise can each award base+perfect (10+5). Fix likely needs a per-
   (user,exercise) idempotency key or an in-tx guard. Lower value than BUG2 (small amounts, same-exercise
   concurrency only). — files: `lib/exercises/actions.ts`. Noted during iter 6.
-- [ ] **C2. Streak-milestone celebration UI** — Impact 3 / Size 4 / Risk 4 / Indep 4 — Σ15 — MIG:no
-  — iter 5 credits the milestone bonus and folds it into the result badge total, but there's no explicit
-  "🔥 7-day streak! +30" moment. Surface `newStreak`/milestone in ExerciseResult with a celebratory
-  line. — files: `components/exercises/ExerciseResult.tsx`, runners, `messages/*.json`.
+- [x] **C2. Streak celebration in the result panel** — Σ15 — **DONE iter 12** (🔥 streak line when the
+  streak advances). Milestone-specific banner (distinguishing a 7/30/100 moment) still open as **C3**.
+- [ ] **C3. Milestone-specific celebration banner** — Impact 3 / Size 4 / Risk 4 / Indep 3 — Σ14 — MIG:no
+  — thread the milestone value through `SubmitResult` (from actions.ts) so the result panel can show a
+  distinct "7-day milestone! +30" moment vs a normal streak tick. — files: actions.ts, ExerciseResult, i18n.
 - [x] **F. WORD_ORDER partial credit** — Σ17 — **DONE iter 4** (LCS-based, folding-aware).
 - [ ] **D. Daily-goal reward hook** — Impact 4 / Size 4 / Risk 3 / Indep 4 — Σ15 — MIG:no*
   — one-time Münzen bonus when countToday hits dailyGoal (reuse BONUS reason, refId=`daily-goal:<UTCday>`).

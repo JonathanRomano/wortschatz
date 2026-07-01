@@ -171,6 +171,7 @@ export function ExerciseRunner({
               streakBonus={result.streakBonus}
               alreadyEarned={result.alreadyEarned}
               correctAnswer={result.correctAnswer}
+              newStreak={result.newStreak}
             />
             <Box sx={{ display: "flex", justifyContent: { xs: "stretch", sm: "flex-end" } }}>
               <Button

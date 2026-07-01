@@ -123,6 +123,7 @@
     "completed": "Виконано",
     "alreadyEarned": "Ви вже заробили Münzen за цю вправу.",
     "rewardEarned": "+{amount} Münzen зароблено",
+    "streakDays": "🔥 Серія {days} днів!",
     "instructionsByType": {
       "FILL_IN_THE_BLANK": "Заповніть пропущене слово.",
       "MULTIPLE_CHOICE": "Виберіть правильну відповідь.",

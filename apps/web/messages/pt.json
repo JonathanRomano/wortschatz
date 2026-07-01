@@ -123,6 +123,7 @@
     "completed": "Completado",
     "alreadyEarned": "Você já ganhou Münzen por este exercício.",
     "rewardEarned": "+{amount} Münzen ganhas",
+    "streakDays": "🔥 Sequência de {days} dias!",
     "instructionsByType": {
       "FILL_IN_THE_BLANK": "Complete a palavra que falta.",
       "MULTIPLE_CHOICE": "Escolha a resposta correta.",
