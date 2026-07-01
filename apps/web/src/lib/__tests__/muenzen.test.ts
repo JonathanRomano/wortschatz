@@ -4,10 +4,12 @@ import {
   applyEarnedGuard,
   computeReward,
   isSameCalendarDay,
+  levelForXp,
   MUENZEN_RULES,
   startOfUtcDay,
   STREAK_MILESTONES,
   streakMilestoneBonus,
+  XP_LEVELS_ENABLED,
 } from "@/lib/muenzen";
 
 describe("MUENZEN_RULES", () => {
@@ -169,6 +171,43 @@ describe("streakMilestoneBonus", () => {
       expect(streakMilestoneBonus(days[i]!)).toBeGreaterThan(
         streakMilestoneBonus(days[i - 1]!),
       );
+    }
+  });
+});
+
+describe("levelForXp", () => {
+  it("ships XP_LEVELS_ENABLED on", () => {
+    expect(XP_LEVELS_ENABLED).toBe(true);
+  });
+
+  it("is level 1 across the first band (0–99 XP)", () => {
+    expect(levelForXp(0)).toMatchObject({ level: 1, progressPct: 0 });
+    expect(levelForXp(99)).toMatchObject({ level: 1, progressPct: 99 });
+  });
+
+  it("advances at the documented thresholds (100 / 300 / 600)", () => {
+    expect(levelForXp(100).level).toBe(2);
+    expect(levelForXp(299).level).toBe(2);
+    expect(levelForXp(300).level).toBe(3);
+    expect(levelForXp(600).level).toBe(4);
+  });
+
+  it("reports progress within the current level", () => {
+    // Level 2 spans [100, 300): 200 XP is halfway.
+    expect(levelForXp(200)).toMatchObject({ level: 2, progressPct: 50 });
+  });
+
+  it("clamps negative/fractional XP", () => {
+    expect(levelForXp(-50)).toMatchObject({ level: 1, progressPct: 0 });
+    expect(levelForXp(150.9).level).toBe(2);
+  });
+
+  it("is monotonic in XP", () => {
+    let prev = 0;
+    for (let xp = 0; xp <= 5000; xp += 137) {
+      const lvl = levelForXp(xp).level;
+      expect(lvl).toBeGreaterThanOrEqual(prev);
+      prev = lvl;
     }
   });
 });

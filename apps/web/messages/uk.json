@@ -66,6 +66,8 @@
     "exercisesTotal": "Виконано вправ",
     "longestStreak": "Найдовша серія",
     "goalMetDays": "Днів із досягнутою метою",
+    "level": "Рівень {level}",
+    "levelProgress": "{pct}% до наступного рівня",
     "exercisesThisWeek": "Цього тижня",
     "exercisesThisMonth": "Цього місяця",
     "toReview": "Вправи для повторення",

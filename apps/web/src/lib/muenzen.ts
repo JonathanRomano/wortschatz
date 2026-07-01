@@ -218,3 +218,34 @@ export function isSameCalendarDay(a: Date, b: Date): boolean {
 export function startOfUtcDay(d: Date): Date {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 }
+
+/**
+ * Feature flag — Overnight loop iter 15. Show a derived XP level (from lifetime
+ * earned Münzen) so learners have long-horizon progression separate from their
+ * CEFR proficiency. Flip to `false` to hide the level badge.
+ */
+export const XP_LEVELS_ENABLED: boolean = true;
+
+/**
+ * XP level derived from lifetime earned Münzen. Level L (1-indexed) starts at
+ * `50·L·(L−1)` cumulative XP, so each level needs 100·L more than the last —
+ * quick early levels that gradually slow down (1→2 at 100, 2→3 at 300, 3→4 at
+ * 600, 4→5 at 1000…). Pure; returns the level plus progress within it.
+ */
+export function levelForXp(xp: number): {
+  level: number;
+  intoLevel: number;
+  levelSpan: number;
+  progressPct: number;
+} {
+  const clamped = Math.max(0, Math.floor(xp));
+  const xpForLevel = (l: number) => 50 * l * (l - 1);
+  let level = 1;
+  while (xpForLevel(level + 1) <= clamped) level++;
+  const floor = xpForLevel(level);
+  const levelSpan = xpForLevel(level + 1) - floor;
+  const intoLevel = clamped - floor;
+  const progressPct =
+    levelSpan > 0 ? Math.min(100, Math.round((intoLevel / levelSpan) * 100)) : 0;
+  return { level, intoLevel, levelSpan, progressPct };
+}

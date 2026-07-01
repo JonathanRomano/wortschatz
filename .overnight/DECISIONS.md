@@ -423,3 +423,29 @@ correct and theme-token based. Drag-to-pair and matched-pair "lock/vanish" anima
 follow-ups.
 **Verification:** typecheck ✓ (7/7) · test ✓ (web 53 files, +5; api 5) · build ✓ (60/60). Lint n/a.
 **Next:** iter 15 = a safe pure item — candidate **S** (weekly recap) or **V** (dashboard groupBy perf).
+
+---
+
+## Iteration 15 — 2026-07-02 01:57 CEST — Derived XP level badge
+**Status:** IMPLEMENTED
+**Inspired by:** Duolingo XP levels / Busuu progression (queue item N, Σ13).
+**What they do:** a lifetime level that always ticks up gives a sense of long-horizon progress separate
+from proficiency.
+**What we had:** no XP/level system at all — `LevelChip` is CEFR proficiency (A1–C2), which can't go up
+just by practising. Nothing captured "how far have I come overall".
+**What I changed:** a pure `levelForXp(xp)` in `muenzen.ts` (level L starts at 50·L·(L−1) cumulative XP —
+fast early, gradually slower; returns level + progress %), fed by lifetime earned Münzen (a
+`muenzenTransaction.aggregate({ amount > 0 })` folded into the dashboard's existing `Promise.all`, so no
+extra round-trip). A new `XpLevelBadge` (tertiary-tinted star chip, tooltip = "% to next level") sits in
+the hero next to the streak + Münzen chips. Added `level` / `levelProgress` i18n × 4 locales and 6
+`levelForXp` unit tests (thresholds, progress, clamping, monotonicity).
+**Files touched:** `lib/muenzen.ts` (+levelForXp/flag), `components/ui/XpLevelBadge.tsx` (new),
+`app/[locale]/dashboard/page.tsx` (query + render), `messages/{en,pt,tr,uk}.json` (+2 keys each),
+`__tests__/muenzen.test.ts` (+6 tests).
+**Feature flag:** `XP_LEVELS_ENABLED` (exported const in muenzen.ts, default **on**). Off = no level badge.
+**Risk / open questions:** read-only aggregate (no money writes) + presentational — pure level curve is
+unit-tested; the chip's visuals aren't verifiable headless but it's a stock MUI Chip on theme tokens.
+XP = lifetime *earned* (positive txns), so spending Münzen never lowers the level. A level-up celebration
+toast is a possible follow-up.
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 53 files, muenzen 35; api 5) · build ✓ (60/60). Lint n/a.
+**Next:** iter 16 = candidate **L** (achievements shelf) or **S** (weekly recap) / **V** (perf).

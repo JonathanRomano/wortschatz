@@ -66,6 +66,8 @@
     "exercisesTotal": "Tamamlanan alıştırmalar",
     "longestStreak": "En uzun seri",
     "goalMetDays": "Hedefe ulaşılan gün",
+    "level": "Seviye {level}",
+    "levelProgress": "Sonraki seviyeye %{pct}",
     "exercisesThisWeek": "Bu hafta",
     "exercisesThisMonth": "Bu ay",
     "toReview": "Gözden geçirilecek alıştırmalar",

@@ -66,6 +66,8 @@
     "exercisesTotal": "Exercises completed",
     "longestStreak": "Longest streak",
     "goalMetDays": "Days goal met",
+    "level": "Level {level}",
+    "levelProgress": "{pct}% to next level",
     "exercisesThisWeek": "This week",
     "exercisesThisMonth": "This month",
     "toReview": "Exercises to review",

@@ -13,6 +13,8 @@ import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card } from "@/components/ui/Card";
 import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
 import { StreakFlame } from "@/components/ui/StreakFlame";
+import { XpLevelBadge } from "@/components/ui/XpLevelBadge";
+import { levelForXp, XP_LEVELS_ENABLED } from "@/lib/muenzen";
 import { LevelChip } from "@/components/ui/LevelChip";
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
 import { ChartCard } from "@/components/dashboard/ChartCard";
@@ -84,6 +86,7 @@ export default async function DashboardPage({
     attemptsByType,
     recent,
     mistakesRows,
+    lifetimeXpAgg,
     chartData,
   ] = await Promise.all([
     prisma.userExercise.count({ where: { userId } }),
@@ -112,6 +115,10 @@ export default async function DashboardPage({
       ) latest
       WHERE latest."score" < 60
     `,
+    prisma.muenzenTransaction.aggregate({
+      where: { userId, amount: { gt: 0 } },
+      _sum: { amount: true },
+    }),
     fetchDashboardChartData(userId, now),
   ]);
 
@@ -163,6 +170,8 @@ export default async function DashboardPage({
   // default is the same number).
   const doneToday = chartData.todayCount;
   const dailyGoal = user.dailyGoal ?? DAILY_GOAL_DEFAULT;
+  // Derived XP level from lifetime earned Münzen (positive transactions only).
+  const xp = levelForXp(lifetimeXpAgg._sum.amount ?? 0);
   // Windowed motivation stats derived purely from the 90-day heatmap (no extra
   // query): the best consecutive-day run and how many days the goal was met.
   const bestStreak = longestStreak(heatmap);
@@ -203,6 +212,9 @@ export default async function DashboardPage({
         <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", flexWrap: "wrap" }}>
           <StreakFlame days={user.streak} size="lg" />
           <MuenzenBadge amount={user.muenzen} size="lg" />
+          {XP_LEVELS_ENABLED ? (
+            <XpLevelBadge level={xp.level} progressPct={xp.progressPct} size="lg" />
+          ) : null}
         </Stack>
       </Stack>
 

@@ -55,8 +55,7 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
 - [ ] **R. Radar trend (recent vs previous window)** — Impact 3 / Size 3 / Risk 4 / Indep 4 — Σ14 — MIG:no
   — files: `lib/dashboard/aggregations.ts`, `components/dashboard/ProficiencyRadar.tsx`.
 - [x] **T. Tap-to-pair matching board** — Σ14 — **DONE iter 14** (flag `MATCHING_TAP_TO_PAIR`; dropdown retained).
-- [ ] **N. Derived XP-level system** — Impact 4 / Size 3 / Risk 3 / Indep 3 — Σ13 — MIG:no
-  — level from Σ positive txns; level ring + progress. — files: aggregations, LevelChip, header/dashboard.
+- [x] **N. Derived XP-level system** — Σ13 — **DONE iter 15** (flag `XP_LEVELS_ENABLED`; hero level badge).
 - [ ] **M. "Practice these mistakes" queue runner** — Impact 4 / Size 3 / Risk 3 / Indep 3 — Σ13 — MIG:no
   — sequential player over getMistakes rows. — files: mistakes/page.tsx, TypeRunner.tsx, actions.ts.
 - [ ] **L. Derived achievements/badges shelf** — Impact 4 / Size 2 / Risk 3 / Indep 4 — Σ13 — MIG:no
