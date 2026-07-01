@@ -186,6 +186,9 @@
     "freeWritingPlaceholder": "Metninizi buraya yazın…",
     "freeWritingWordCount": "{count} / {min} kelime",
     "listeningAudioMissing": "Ses yakında geliyor — şimdilik aşağıdaki transkripti okuyun.",
+    "listeningPlay": "Sesi oynat",
+    "listeningShowTranscript": "Metni göster",
+    "listeningHideTranscript": "Metni gizle",
     "listeningAnswerPlaceholder": "Cevabınız…"
   },
   "exerciseIntros": {

@@ -9,3 +9,4 @@
 | 5 | 00:38 | IMPLEMENTED | Escalating streak milestones + day-level bonus fix (+10 tests) | `STREAK_MILESTONE_REWARDS` | ✓/✓/✓ |
 | 6 | 00:52 | IMPLEMENTED | Streak-award concurrency: atomic claim-the-day (+3 tests) | — (bugfix) | ✓/✓/✓ |
 | 7 | 01:05 | IMPLEMENTED | Reveal correct answer in result panel (+8 tests, i18n×4) | `REVEAL_CORRECT_ANSWER` | ✓/✓/✓ |
+| 8 | 01:13 | IMPLEMENTED | TTS for listening exercises (SpeechSynthesis, +4 tests) | `LISTENING_TTS` | ✓/✓/✓ |

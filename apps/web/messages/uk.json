@@ -186,6 +186,9 @@
     "freeWritingPlaceholder": "Пишіть свій текст тут…",
     "freeWritingWordCount": "{count} / {min} слів",
     "listeningAudioMissing": "Аудіо буде доступне згодом — прочитайте розшифровку нижче.",
+    "listeningPlay": "Відтворити аудіо",
+    "listeningShowTranscript": "Показати розшифровку",
+    "listeningHideTranscript": "Сховати розшифровку",
     "listeningAnswerPlaceholder": "Ваша відповідь…"
   },
   "exerciseIntros": {

@@ -233,3 +233,33 @@ is queued as **E2**.
 **Verification:** typecheck ✓ (7/7) · test ✓ (web 49 files, grade 29; api 5) · build ✓ (60/60). Lint n/a.
 **Next:** iter 8 = candidate **P** (TTS for listening when audioUrl is null) or **J**/**K** — a safe UI
 / read-only item.
+
+---
+
+## Iteration 8 — 2026-07-02 01:13 CEST — Text-to-speech for listening exercises
+**Status:** IMPLEMENTED
+**Inspired by:** Duolingo/Babbel TTS, Clozemaster listening mode (queue item P, Σ15).
+**What they do:** listening practice actually plays audio; you don't read the answer off the screen.
+**What we had:** when a `LISTENING_COMPREHENSION` exercise had no `audioUrl` (the common case), the
+renderer just **printed the German transcript** — turning every listening item into a reading item and
+removing all listening value.
+**What I changed:** in the no-audio branch, `ListeningComprehensionRenderer` now speaks the transcript
+via the browser `SpeechSynthesis` API (`de-DE`, rate 0.9) behind a "Play audio" button, with the
+transcript hidden behind a "Show/Hide transcript" toggle so the learner listens first. TTS support is
+resolved after mount (hydration-safe: SSR and first client render are identical — controls with the
+play button disabled, no transcript — then it enables post-mount). When TTS is unavailable (old browser
+/ SSR) or the flag is off, it falls back to showing the transcript (original behavior). No new
+dependency (SpeechSynthesis is built into browsers). Added 4 i18n keys × 4 locales and a component test
+mocking `speechSynthesis`/`SpeechSynthesisUtterance` (play → speaks de-DE, toggle reveals transcript,
+no-TTS fallback, audioUrl path unchanged).
+**Files touched:** `renderers/ListeningComprehension.tsx` (rewrite), `messages/{en,pt,tr,uk}.json`
+(+3 keys each), `renderers/__tests__/ListeningComprehension.test.tsx` (new, 4 tests).
+**Feature flag:** `LISTENING_TTS` (exported const in the renderer, default **on**). Off = original
+always-show-transcript fallback.
+**Risk / open questions:** isolated to one renderer; no money/data. Main subtlety (hydration) verified.
+Browser voice availability varies (de-DE voice may be absent on some OSes) — the API still speaks with a
+default voice; a voice-picker/rate control is a possible follow-up. Self-reviewed (not sent to an
+adversarial agent) given the low blast radius and test coverage.
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 50 files, +4; api 5) · build ✓ (60/60). Lint n/a.
+**Next:** iter 9 = a safe read-only dashboard item — candidate **K** (longest-streak + goal-met-days) or
+**J** (relative heatmap buckets).

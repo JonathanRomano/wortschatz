@@ -186,6 +186,9 @@
     "freeWritingPlaceholder": "Escreva seu texto aqui…",
     "freeWritingWordCount": "{count} / {min} palavras",
     "listeningAudioMissing": "O áudio chega em breve — leia a transcrição abaixo por enquanto.",
+    "listeningPlay": "Reproduzir áudio",
+    "listeningShowTranscript": "Mostrar transcrição",
+    "listeningHideTranscript": "Ocultar transcrição",
     "listeningAnswerPlaceholder": "Sua resposta…"
   },
   "exerciseIntros": {

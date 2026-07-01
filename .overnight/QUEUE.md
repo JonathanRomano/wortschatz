@@ -37,9 +37,7 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
 - [ ] **J. Relative activity-heatmap buckets** — Impact 2 / Size 5 / Risk 4 / Indep 5 — Σ16 — MIG:no
   — quantile thresholds from the user's own 90d data vs hardcoded 0/1/2/3/4+. — files:
   `components/dashboard/ActivityHeatmap.tsx`, `lib/dashboard/aggregations.ts` — src: GitHub graph.
-- [ ] **P. TTS for listening when audioUrl null** — Impact 4 / Size 3 / Risk 3 / Indep 5 — Σ15 — MIG:no
-  — SpeechSynthesis (de-DE); hide transcript behind a toggle (no dep). — files:
-  `components/exercises/renderers/ListeningComprehension.tsx` — src: Duolingo/Babbel TTS.
+- [x] **P. TTS for listening when audioUrl null** — Σ15 — **DONE iter 8** (flag `LISTENING_TTS`).
 - [x] **E. Reveal correct answer in result panel** — Σ15 — **DONE iter 7** (flag `REVEAL_CORRECT_ANSWER`).
   Scoped to an additive "Correct answer" line in ExerciseResult (no renderer changes). Per-blank inline
   highlighting in the renderers (the richer version) remains available as a follow-up (**E2**).
