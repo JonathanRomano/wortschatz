@@ -5,6 +5,10 @@ import { prisma } from "@wortschatz/database";
 import { auth } from "@/auth";
 import { gradeLocally } from "@/lib/exercises/grade";
 import {
+  buildSelectionWheres,
+  PREFER_UNSEEN_EXERCISES,
+} from "@/lib/exercises/selection";
+import {
   evaluateAnswer,
   AI_CONFIGURED,
   AiRateLimitedError,
@@ -163,40 +167,57 @@ export async function submitExerciseAttempt(
  * Fetch a random PUBLISHED exercise of the given type. Optionally
  * filter by user level. Used by `/exercises/[type]` and the
  * "Next exercise" button to avoid handing back the same prompt twice.
+ *
+ * When {@link PREFER_UNSEEN_EXERCISES} is on and we can resolve the current
+ * user, the draw prefers exercises they haven't already passed (score ≥ 60),
+ * falling back to the full pool once everything of this type/level is mastered
+ * so the "Next" stream never dead-ends. See `selection.ts` for the tiering.
  */
 export async function getRandomExerciseOfType(
   type: ExerciseType,
   excludeId?: string,
   level?: CefrLevel,
 ): Promise<{ id: string } | null> {
-  const where = {
-    type,
-    status: "PUBLISHED" as const,
-    ...(excludeId ? { id: { not: excludeId } } : {}),
-    ...(level ? { level } : {}),
-  };
+  const session = await auth();
+  const userId = session?.user?.id;
 
-  const count = await prisma.exercise.count({ where });
-  if (count === 0) {
-    // When the user picked a level filter, respect it — don't silently
-    // hand back an exercise from a different level. Only fall back when
-    // we're cycling to "Next" without a level (excludeId is set).
-    if (excludeId && !level) {
-      const any = await prisma.exercise.findFirst({
-        where: { type, status: "PUBLISHED" },
-        select: { id: true },
-      });
-      return any;
-    }
-    return null;
+  let passedIds: string[] = [];
+  if (PREFER_UNSEEN_EXERCISES && userId) {
+    const passed = await prisma.userExercise.findMany({
+      where: {
+        userId,
+        score: { gte: 60 },
+        exercise: { type, ...(level ? { level } : {}) },
+      },
+      select: { exerciseId: true },
+      distinct: ["exerciseId"],
+    });
+    passedIds = passed.map((p) => p.exerciseId);
   }
 
-  const skip = Math.floor(Math.random() * count);
-  const [ex] = await prisma.exercise.findMany({
-    where,
-    skip,
-    take: 1,
-    select: { id: true },
-  });
-  return ex ?? null;
+  // Try each tier (unseen-preferred, then the full pool) in order.
+  for (const where of buildSelectionWheres(type, excludeId, level, passedIds)) {
+    const count = await prisma.exercise.count({ where });
+    if (count === 0) continue;
+    const skip = Math.floor(Math.random() * count);
+    const [ex] = await prisma.exercise.findMany({
+      where,
+      skip,
+      take: 1,
+      select: { id: true },
+    });
+    if (ex) return ex;
+  }
+
+  // Cross-level fallback: when the user picked a level filter, respect it —
+  // don't silently hand back an exercise from a different level. Only fall
+  // back when we're cycling to "Next" without a level (excludeId is set).
+  if (excludeId && !level) {
+    const any = await prisma.exercise.findFirst({
+      where: { type, status: "PUBLISHED" },
+      select: { id: true },
+    });
+    return any;
+  }
+  return null;
 }

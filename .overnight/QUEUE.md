@@ -15,9 +15,7 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
   — iter 2's ß↔ss fold accepts real homographs (Maße/Masse, Buße/Busse, in Maßen/in Massen). Optional
   follow-up: umlaut-only strict mode, or a small homograph blocklist that forces exact ß, or fold-only-
   as-partial-credit. Operator may instead just flip the flag. — files: `lib/exercises/grade.ts`.
-- [ ] **B. Don't re-serve already-passed exercises** — Impact 4 / Size 5 / Risk 4 / Indep 5 — Σ18 — MIG:no
-  — in `getRandomExerciseOfType`, exclude ids the user already passed (UserExercise score≥60), fall back
-  when pool exhausted. — files: `lib/exercises/actions.ts` — source: Anki/Duolingo mastered-leave-queue.
+- [x] **B. Don't re-serve already-passed exercises** — Σ18 — **DONE iter 3** (flag `PREFER_UNSEEN_EXERCISES`).
 - [ ] **C. Escalating streak milestone bonuses** — Impact 4 / Size 5 / Risk 4 / Indep 4 — Σ17 — MIG:no
   — pass `newStreak` into `computeReward`; milestone bonus at 7/30/100 (reuse DAILY_STREAK reason).
   — files: `lib/muenzen.ts`, `lib/exercises/actions.ts`, `packages/config/src/constants.ts` — src: Duolingo.

@@ -76,3 +76,30 @@ Lint n/a (non-functional baseline).
 **Next:** iter 3 = candidate **B** (don't re-serve already-passed exercises).
 
 ---
+
+## Iteration 3 — 2026-07-01 22:36 CEST — Prefer unseen exercises in the "Next" draw
+**Status:** IMPLEMENTED
+**Inspired by:** Anki/Duolingo — mastered items leave the active queue (queue item B, Σ18).
+**What they do:** Practice surfaces material you haven't nailed yet; you don't get handed a prompt you
+just aced two draws ago.
+**What we had:** `getRandomExerciseOfType` was uniform-random over the whole published pool with no
+learner memory — it could immediately re-serve an exercise the user had already passed, and never
+prioritized fresh material.
+**What I changed:** Added a pure, DB-free `buildSelectionWheres` (new `lib/exercises/selection.ts`)
+that returns tiered `where` clauses: tier 1 = the filter minus every already-passed exercise id
+("unseen"), tier 2 = the full pool (unchanged). The action now resolves the current user via `auth()`,
+loads their passed ids (score≥60) for this type/level, and tries each tier in order; the original
+cross-level fallback (`excludeId && !level`) is preserved verbatim. When there's no user or nothing
+passed, behavior is byte-equivalent to before. Added `selection.test.ts` (7 tests on the tiering).
+**Files touched:** `apps/web/src/lib/exercises/selection.ts` (new), `.../actions.ts` (+48/-27),
+`.../__tests__/selection.test.ts` (new, 7 tests).
+**Feature flag:** `PREFER_UNSEEN_EXERCISES` (exported const in selection.ts, default **on**). Off =
+pure uniform-random over the full pool (pre-iter-3).
+**Risk / open questions:** the helper is `"use server"`-safe (lives in a plain module — a sync export
+from actions.ts would be rejected by Next). Adversarial review (2nd opinion) checked the new `auth()`
+call across call sites, fallback equivalence, and dead-end safety. Extra per-draw queries (auth + passed
+lookup + count/tier) are acceptable; a groupBy/perf pass is queued separately (V).
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 49 files, +7 new; api 5) · build ✓ (60/60). Lint n/a.
+**Next:** iter 4 = candidate **F** (WORD_ORDER partial credit).
+
+---
