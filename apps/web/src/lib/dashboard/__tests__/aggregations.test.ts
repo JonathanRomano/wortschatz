@@ -6,9 +6,50 @@ import {
   buildHeatmap,
   buildRadar,
   countToday,
+  goalMetDays,
   heatmapThresholds,
+  longestStreak,
 } from "@/lib/dashboard/aggregations";
 import type { ExerciseType } from "@wortschatz/database";
+
+const heat = (counts: number[]) =>
+  counts.map((count, i) => ({
+    // Dates are irrelevant to these helpers (they only read `count` and rely
+    // on array order = calendar order), so a synthetic index key is fine.
+    date: `2026-01-${String(i + 1).padStart(2, "0")}`,
+    count,
+  }));
+
+describe("longestStreak", () => {
+  it("is 0 for empty or all-zero data", () => {
+    expect(longestStreak([])).toBe(0);
+    expect(longestStreak(heat([0, 0, 0]))).toBe(0);
+  });
+
+  it("finds the longest consecutive run of active days", () => {
+    expect(longestStreak(heat([1, 1, 0, 1, 1, 1, 0, 1]))).toBe(3);
+    expect(longestStreak(heat([2, 3, 1]))).toBe(3);
+  });
+
+  it("does not count a run broken by a zero day", () => {
+    expect(longestStreak(heat([1, 0, 1, 0, 1]))).toBe(1);
+  });
+});
+
+describe("goalMetDays", () => {
+  it("counts days at or above the daily goal", () => {
+    expect(goalMetDays(heat([5, 4, 6, 0, 5]), 5)).toBe(3); // 5,6,5
+  });
+
+  it("returns 0 for a non-positive goal", () => {
+    expect(goalMetDays(heat([9, 9]), 0)).toBe(0);
+    expect(goalMetDays(heat([9, 9]), -1)).toBe(0);
+  });
+
+  it("returns 0 when no day reaches the goal", () => {
+    expect(goalMetDays(heat([1, 2, 3]), 5)).toBe(0);
+  });
+});
 
 describe("heatmapThresholds", () => {
   it("uses the absolute scale [1,2,3] for light activity (max ≤ 4)", () => {

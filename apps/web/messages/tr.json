@@ -64,6 +64,8 @@
     "currentStreak": "Mevcut seri",
     "streakDays": "{days, plural, one {# gün} other {# gün}}",
     "exercisesTotal": "Tamamlanan alıştırmalar",
+    "longestStreak": "En uzun seri",
+    "goalMetDays": "Hedefe ulaşılan gün",
     "exercisesThisWeek": "Bu hafta",
     "exercisesThisMonth": "Bu ay",
     "toReview": "Gözden geçirilecek alıştırmalar",

@@ -11,3 +11,4 @@
 | 7 | 01:05 | IMPLEMENTED | Reveal correct answer in result panel (+8 tests, i18n×4) | `REVEAL_CORRECT_ANSWER` | ✓/✓/✓ |
 | 8 | 01:13 | IMPLEMENTED | TTS for listening exercises (SpeechSynthesis, +4 tests) | `LISTENING_TTS` | ✓/✓/✓ |
 | 9 | 01:18 | IMPLEMENTED | Relative activity-heatmap buckets (+3 tests, i18n×4) | — (visual) | ✓/✓/✓ |
+| 10 | 01:24 | IMPLEMENTED | Longest-streak + goal-met-days stat cards (+6 tests, i18n×4) | — (dashboard) | ✓/✓/✓ |

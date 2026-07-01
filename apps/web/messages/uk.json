@@ -64,6 +64,8 @@
     "currentStreak": "Поточна серія",
     "streakDays": "{days, plural, one {# день} few {# дні} other {# днів}}",
     "exercisesTotal": "Виконано вправ",
+    "longestStreak": "Найдовша серія",
+    "goalMetDays": "Днів із досягнутою метою",
     "exercisesThisWeek": "Цього тижня",
     "exercisesThisMonth": "Цього місяця",
     "toReview": "Вправи для повторення",

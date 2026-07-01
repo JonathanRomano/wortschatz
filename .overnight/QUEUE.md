@@ -48,8 +48,7 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
   — near-miss = partial credit + "careful with spelling"; builds on A. — files: `lib/exercises/grade.ts`.
 - [ ] **V. Dashboard groupBy perf fix** — Impact 2 / Size 5 / Risk 4 / Indep 4 — Σ15 — MIG:no
   — replace two unbounded findMany with groupBy. — files: `dashboard/page.tsx`, `lib/dashboard/queries.ts`.
-- [ ] **K. Longest-streak + goal-met-days stats** — Impact 3 / Size 4 / Risk 4 / Indep 4 — Σ15 — MIG:no
-  — pure aggregation from attempt history. — files: `lib/dashboard/aggregations.ts`, `dashboard/page.tsx`.
+- [x] **K. Longest-streak + goal-met-days stats** — Σ15 — **DONE iter 10** (windowed, pure aggregations).
 - [ ] **H. Weakness-weighted selection** — Impact 4 / Size 3 / Risk 3 / Indep 4 — Σ14 — MIG:no (overlaps B)
   — bias draw toward unseen + last-failed items. — files: `lib/exercises/actions.ts`.
 - [ ] **I. Bounded session + completion screen (dailyGoal)** — Impact 4 / Size 3 / Risk 3 / Indep 4 — Σ14 — MIG:no

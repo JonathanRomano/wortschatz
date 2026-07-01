@@ -152,6 +152,28 @@ export function heatmapThresholds(counts: number[]): [number, number, number] {
 }
 
 /**
+ * Longest run of consecutive days with at least one attempt within the given
+ * (chronologically-ordered) heatmap window. A *windowed* best streak — it can't
+ * see activity older than the window, so it complements `User.streak` (the
+ * live ongoing streak) rather than replacing an all-time record.
+ */
+export function longestStreak(days: HeatmapDay[]): number {
+  let best = 0;
+  let run = 0;
+  for (const d of days) {
+    run = d.count > 0 ? run + 1 : 0;
+    if (run > best) best = run;
+  }
+  return best;
+}
+
+/** Number of days in the window on which the learner met their daily goal. */
+export function goalMetDays(days: HeatmapDay[], dailyGoal: number): number {
+  if (dailyGoal <= 0) return 0;
+  return days.reduce((n, d) => (d.count >= dailyGoal ? n + 1 : n), 0);
+}
+
+/**
  * Per-type average score over the most-recent `lastN` attempts of that
  * type. Types with zero attempts are still returned (so the radar
  * always renders all 10 axes) with `avgScore: 0, attempts: 0`. Input

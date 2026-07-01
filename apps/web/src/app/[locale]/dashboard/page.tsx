@@ -25,6 +25,8 @@ import {
   buildHeatmap,
   buildMuenzenSeries,
   buildRadar,
+  goalMetDays,
+  longestStreak,
 } from "@/lib/dashboard/aggregations";
 import { DAILY_GOAL_DEFAULT } from "@wortschatz/config";
 import {
@@ -161,6 +163,10 @@ export default async function DashboardPage({
   // default is the same number).
   const doneToday = chartData.todayCount;
   const dailyGoal = user.dailyGoal ?? DAILY_GOAL_DEFAULT;
+  // Windowed motivation stats derived purely from the 90-day heatmap (no extra
+  // query): the best consecutive-day run and how many days the goal was met.
+  const bestStreak = longestStreak(heatmap);
+  const daysGoalMet = goalMetDays(heatmap, dailyGoal);
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 5 } }}>
@@ -211,13 +217,15 @@ export default async function DashboardPage({
           gridTemplateColumns: {
             xs: "1fr",
             sm: "repeat(2, 1fr)",
-            lg: "repeat(4, 1fr)",
+            lg: "repeat(3, 1fr)",
           },
         }}
       >
         <Stat label={t("dashboard.exercisesThisWeek")} value={String(week)} />
         <Stat label={t("dashboard.exercisesThisMonth")} value={String(month)} />
         <Stat label={t("dashboard.exercisesTotal")} value={String(total)} />
+        <Stat label={t("dashboard.longestStreak")} value={String(bestStreak)} />
+        <Stat label={t("dashboard.goalMetDays")} value={String(daysGoalMet)} />
         <Stat
           label={t("dashboard.toReview")}
           value={String(mistakesCount)}

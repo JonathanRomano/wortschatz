@@ -290,3 +290,27 @@ half-up which is fine here. Existing heatmap tests (which don't assert colours) 
 **Verification:** typecheck ✓ (7/7) · test ✓ (web 50 files, aggregations +3; api 5) · build ✓ (60/60). Lint n/a.
 **Next:** iter 10 = candidate **K** (longest-streak + goal-met-days stats) or **S** (weekly recap) —
 another safe pure-aggregation dashboard win.
+
+---
+
+## Iteration 10 — 2026-07-02 01:24 CEST — Longest-streak + goal-met-days stat cards
+**Status:** IMPLEMENTED
+**Inspired by:** Duolingo's longest-streak badge + Habitica goal-hit history (queue item K, Σ15).
+**What they do:** show your best streak and how consistently you hit your daily goal — long-horizon
+motivation beyond the current streak number.
+**What we had:** the highlights grid showed only week / month / total / to-review counts. The current
+streak lives in the hero, but there was no "best streak" and no goal-consistency signal at all.
+**What I changed:** two pure helpers in `aggregations.ts` — `longestStreak(days)` (longest consecutive
+run of active days) and `goalMetDays(days, dailyGoal)` (days at/above the goal) — both computed from the
+already-fetched 90-day heatmap, so **no new query**. Added two `<Stat>` cards to the dashboard and
+rebalanced the highlights grid to 3 columns (6 cards → a clean 2×3 on desktop). Added `longestStreak` /
+`goalMetDays` labels to all four locales.
+**Files touched:** `lib/dashboard/aggregations.ts` (+2 helpers), `app/[locale]/dashboard/page.tsx`,
+`messages/{en,pt,tr,uk}.json` (+2 keys each), `__tests__/aggregations.test.ts` (+6 tests, 30→36).
+**Feature flag:** none — additive presentational stats; `git revert` removes them.
+**Risk / open questions:** pure + presentational, no money/data. Both stats are **windowed to 90 days**
+(honest: `longestStreak` complements `User.streak`, it isn't an all-time record — an all-time version
+needs a stored column = migration). Self-reviewed.
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 50 files, aggregations 36; api 5) · build ✓ (60/60). Lint n/a.
+**Next:** iter 11 = a learning-side item for variety — candidate **T** (tap-to-pair matching) or **I**
+(bounded practice session + completion screen).

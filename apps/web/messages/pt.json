@@ -64,6 +64,8 @@
     "currentStreak": "Sequência atual",
     "streakDays": "{days, plural, one {# dia} other {# dias}}",
     "exercisesTotal": "Exercícios completados",
+    "longestStreak": "Sequência mais longa",
+    "goalMetDays": "Dias com meta cumprida",
     "exercisesThisWeek": "Esta semana",
     "exercisesThisMonth": "Este mês",
     "toReview": "Exercícios para revisar",

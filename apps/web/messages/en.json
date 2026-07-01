@@ -64,6 +64,8 @@
     "currentStreak": "Current streak",
     "streakDays": "{days, plural, one {# day} other {# days}}",
     "exercisesTotal": "Exercises completed",
+    "longestStreak": "Longest streak",
+    "goalMetDays": "Days goal met",
     "exercisesThisWeek": "This week",
     "exercisesThisMonth": "This month",
     "toReview": "Exercises to review",
