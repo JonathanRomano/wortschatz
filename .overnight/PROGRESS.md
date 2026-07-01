@@ -12,3 +12,4 @@
 | 8 | 01:13 | IMPLEMENTED | TTS for listening exercises (SpeechSynthesis, +4 tests) | `LISTENING_TTS` | ✓/✓/✓ |
 | 9 | 01:18 | IMPLEMENTED | Relative activity-heatmap buckets (+3 tests, i18n×4) | — (visual) | ✓/✓/✓ |
 | 10 | 01:24 | IMPLEMENTED | Longest-streak + goal-met-days stat cards (+6 tests, i18n×4) | — (dashboard) | ✓/✓/✓ |
+| 11 | 01:30 | IMPLEMENTED | Bounded practice session + completion screen (+7 tests, i18n×4) | `PRACTICE_SESSIONS` | ✓/✓/✓ |

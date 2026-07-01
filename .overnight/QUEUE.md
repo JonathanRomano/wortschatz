@@ -51,8 +51,7 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
 - [x] **K. Longest-streak + goal-met-days stats** — Σ15 — **DONE iter 10** (windowed, pure aggregations).
 - [ ] **H. Weakness-weighted selection** — Impact 4 / Size 3 / Risk 3 / Indep 4 — Σ14 — MIG:no (overlaps B)
   — bias draw toward unseen + last-failed items. — files: `lib/exercises/actions.ts`.
-- [ ] **I. Bounded session + completion screen (dailyGoal)** — Impact 4 / Size 3 / Risk 3 / Indep 4 — Σ14 — MIG:no
-  — TypeRunner counts to a session length, shows progress + celebrate. — files: TypeRunner.tsx.
+- [x] **I. Bounded practice session + completion screen** — Σ14 — **DONE iter 11** (flag `PRACTICE_SESSIONS`).
 - [ ] **R. Radar trend (recent vs previous window)** — Impact 3 / Size 3 / Risk 4 / Indep 4 — Σ14 — MIG:no
   — files: `lib/dashboard/aggregations.ts`, `components/dashboard/ProficiencyRadar.tsx`.
 - [ ] **T. Tap-to-pair matching board** — Impact 3 / Size 3 / Risk 3 / Indep 5 — Σ14 — MIG:no

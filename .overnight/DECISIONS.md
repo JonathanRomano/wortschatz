@@ -314,3 +314,32 @@ needs a stored column = migration). Self-reviewed.
 **Verification:** typecheck ✓ (7/7) · test ✓ (web 50 files, aggregations 36; api 5) · build ✓ (60/60). Lint n/a.
 **Next:** iter 11 = a learning-side item for variety — candidate **T** (tap-to-pair matching) or **I**
 (bounded practice session + completion screen).
+
+---
+
+## Iteration 11 — 2026-07-02 01:30 CEST — Bounded practice session + completion screen
+**Status:** IMPLEMENTED
+**Inspired by:** Duolingo fixed-length lessons / Babbel bite-size sessions (queue item I, Σ14).
+**What they do:** practice comes in finite chunks with a progress bar and a satisfying "done!" screen —
+a natural stopping point instead of an endless grind.
+**What we had:** `TypeRunner` was an infinite same-type "Next" loop — no session length, no progress,
+no completion state (the single biggest structural gap the recon flagged).
+**What I changed:** a new pure `lib/exercises/session.ts` (flag `PRACTICE_SESSIONS`, `SESSION_LENGTH=5`,
+`recordSubmission`/`isSessionComplete`/`sessionProgressPct`, all unit-tested). `TypeRunner` tracks a
+`{completed, passed}` tally, shows a `LinearProgress` bar + "n of N" caption in the header, and after the
+Nth submission replaces the "Next" button with a celebratory completion panel ("Session complete!",
+"{passed} of {total} correct", "Practice again" which resets the session and loads a fresh exercise).
+Added 4 i18n keys × 4 locales. Grading/rewards are untouched — this is pure session flow.
+**Files touched:** `lib/exercises/session.ts` (new), `app/[locale]/exercises/[slug]/TypeRunner.tsx`,
+`messages/{en,pt,tr,uk}.json` (+4 keys each), `__tests__/session.test.ts` (new, 7 tests).
+**Feature flag:** `PRACTICE_SESSIONS` (exported const, default **on**). Off = the original infinite
+"Next" loop (no progress bar, no completion screen).
+**Risk / open questions:** touches the core runner but is UI-flow only (no money/data). Pure session
+logic is unit-tested; the stateful component wiring is verified by typecheck/build + traced paths
+(start, mid-session, completion, practice-again, flag-off; the single-exercise `ExerciseRunner` for
+mistake retries is intentionally left session-less). No component test — there's no existing TypeRunner
+test harness (would need to mock the server actions + transitions). The progress bar reads completion
+(0 of 5 at the start); tying the length to `user.dailyGoal` instead of a constant is a possible
+follow-up.
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 51 files, +7; api 5) · build ✓ (60/60). Lint n/a.
+**Next:** iter 12 = candidate **T** (tap-to-pair matching) or another safe item.
