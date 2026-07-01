@@ -185,6 +185,7 @@
     "wordOrderReset": "Sıfırla",
     "matchingPlaceholder": "— bir çeviri seçin —",
     "matchingAria": "{term} için çeviri",
+    "matchingTapHint": "Bir Almanca kelimeye, sonra çevirisine dokunun.",
     "conjugationOriginal": "Çekin",
     "conjugationPlaceholder": "çekilmiş hali",
     "errorOriginal": "Özgün",

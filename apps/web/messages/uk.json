@@ -185,6 +185,7 @@
     "wordOrderReset": "Скинути",
     "matchingPlaceholder": "— оберіть переклад —",
     "matchingAria": "Переклад для {term}",
+    "matchingTapHint": "Торкніться німецького слова, потім його перекладу.",
     "conjugationOriginal": "Провідміняти",
     "conjugationPlaceholder": "форма дієслова",
     "errorOriginal": "Оригінал",

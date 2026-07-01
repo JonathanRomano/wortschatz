@@ -54,8 +54,7 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
 - [x] **I. Bounded practice session + completion screen** — Σ14 — **DONE iter 11** (flag `PRACTICE_SESSIONS`).
 - [ ] **R. Radar trend (recent vs previous window)** — Impact 3 / Size 3 / Risk 4 / Indep 4 — Σ14 — MIG:no
   — files: `lib/dashboard/aggregations.ts`, `components/dashboard/ProficiencyRadar.tsx`.
-- [ ] **T. Tap-to-pair matching board** — Impact 3 / Size 3 / Risk 3 / Indep 5 — Σ14 — MIG:no
-  — keep {pairs} answer shape. — files: `components/exercises/renderers/Matching.tsx`.
+- [x] **T. Tap-to-pair matching board** — Σ14 — **DONE iter 14** (flag `MATCHING_TAP_TO_PAIR`; dropdown retained).
 - [ ] **N. Derived XP-level system** — Impact 4 / Size 3 / Risk 3 / Indep 3 — Σ13 — MIG:no
   — level from Σ positive txns; level ring + progress. — files: aggregations, LevelChip, header/dashboard.
 - [ ] **M. "Practice these mistakes" queue runner** — Impact 4 / Size 3 / Risk 3 / Indep 3 — Σ13 — MIG:no

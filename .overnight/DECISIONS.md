@@ -397,3 +397,29 @@ ordering / dead-end, and flags-off equivalence. `weakIds`/`passedIds` are also u
 **Verification:** typecheck ✓ (7/7, validates the groupBy) · test ✓ (web 52 files, selection 12; api 5) ·
 build ✓ (60/60). Lint n/a.
 **Next:** iter 14 = candidate **T** (tap-to-pair matching) or another safe item.
+
+---
+
+## Iteration 14 — 2026-07-02 01:50 CEST — Tap-to-pair matching board
+**Status:** IMPLEMENTED
+**Inspired by:** Duolingo tap-pairs / Memrise matching (queue item T, Σ14).
+**What they do:** matching is a two-column tap board (tap a word, tap its pair) — fast and thumb-friendly
+on mobile.
+**What we had:** `MatchingRenderer` used a native `<select>` dropdown per German term — slow on mobile and
+it leaks the option set.
+**What I changed:** rewrote it as a tap-to-pair two-column board — tap a German term to select it, tap a
+translation to assign it; translations stay 1:1 (reassigning moves it off the previous term), and tapping
+an already-assigned translation unmatches it. Selected/matched states use theme colours (primary /
+success). The stored answer shape (`{ pairs: { german: translation } }`) is **unchanged**, so
+`gradeLocally` and the zod schema are untouched. The original dropdown implementation is retained behind
+the flag. Added `matchingTapHint` × 4 locales and a component test asserting the interaction (assign, 1:1
+reassignment, unmatch, disabled-until-selected).
+**Files touched:** `renderers/Matching.tsx` (rewrite + retained fallback), `messages/{en,pt,tr,uk}.json`
+(+1 key each), `renderers/__tests__/Matching.test.tsx` (new, 5 tests).
+**Feature flag:** `MATCHING_TAP_TO_PAIR` (exported const, default **on**). Off = the original dropdowns.
+**Risk / open questions:** isolated renderer, answer shape preserved → no grading risk; interaction logic
+is unit-tested. Visual styling isn't verifiable in the headless harness (no browser), but behaviour is
+correct and theme-token based. Drag-to-pair and matched-pair "lock/vanish" animations are possible
+follow-ups.
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 53 files, +5; api 5) · build ✓ (60/60). Lint n/a.
+**Next:** iter 15 = a safe pure item — candidate **S** (weekly recap) or **V** (dashboard groupBy perf).

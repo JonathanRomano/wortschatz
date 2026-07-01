@@ -185,6 +185,7 @@
     "wordOrderReset": "Reiniciar",
     "matchingPlaceholder": "— escolha uma tradução —",
     "matchingAria": "Tradução para {term}",
+    "matchingTapHint": "Toque numa palavra alemã e depois na sua tradução.",
     "conjugationOriginal": "Conjugar",
     "conjugationPlaceholder": "forma conjugada",
     "errorOriginal": "Original",

@@ -185,6 +185,7 @@
     "wordOrderReset": "Reset",
     "matchingPlaceholder": "— pick a translation —",
     "matchingAria": "Translation for {term}",
+    "matchingTapHint": "Tap a German word, then its translation.",
     "conjugationOriginal": "Conjugate",
     "conjugationPlaceholder": "conjugated form",
     "errorOriginal": "Original",
