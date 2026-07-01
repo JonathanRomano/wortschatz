@@ -131,3 +131,42 @@ first-pass `dp[]` typecheck error); future array indexing must guard with `?? 0`
 adversarial review.
 
 ---
+
+## Iteration 5 — 2026-07-02 00:38 CEST — Escalating streak milestone bonuses
+**Status:** IMPLEMENTED
+**Inspired by:** Duolingo streak milestones / Memrise streak rewards (queue item C, Σ17).
+**What they do:** Hitting a 7/30/100-day streak is a celebrated moment with a bigger reward, not the
+same flat trickle every day — it makes the streak worth protecting.
+**What we had:** a flat `dailyStreak = 20` bonus on the first pass of each calendar day; `computeReward`
+never even saw the streak length, so a 100-day streak rewarded exactly like day 2.
+**What I changed:** `computeReward` now takes `streakLength` and returns a fourth component
+`milestoneBonus`, looked up from a `STREAK_MILESTONES` table (7→30, 14→50, 30→100, 50→150, 100→300,
+200→600, 365→1000) via `streakMilestoneBonus`, gated on the same first-of-day passing attempt as the
+flat bonus so it fires exactly once as the streak climbs. `submitExerciseAttempt` passes `newStreak`,
+writes the milestone as its own `DAILY_STREAK` transaction (distinct `refId=streak-milestone:<n>` for
+the history page), and folds it into the returned `streakBonus` so the result badge's total reflects it
+with no UI change. Reused the DAILY_STREAK reason → **no migration**. Also added a pure
+`applyEarnedGuard` helper (see next) to fix a bug the adversarial review found.
+**Correctness fix (review BUG 1):** the streak/milestone bonuses are per-DAY but were being zeroed by
+the per-EXERCISE `alreadyEarned` guard. If the day's first passing attempt was a *repeat* exercise, the
+streak counter still advanced but the milestone bonus was dropped — and a milestone missed that way is
+permanently lost. `applyEarnedGuard` now zeroes only `base`/`perfect` on a repeat, keeping the day-level
+streak + milestone bonuses. (This also fixes a latent one-day loss of the flat streak bonus.)
+**Files touched:** `apps/web/src/lib/muenzen.ts` (+~75: milestones + applyEarnedGuard),
+`.../exercises/actions.ts` (+~12), `.../__tests__/muenzen.test.ts` (+~90: computeReward shape,
+7 milestone tests, 3 applyEarnedGuard tests).
+**Feature flag:** `STREAK_MILESTONE_REWARDS` (exported const in muenzen.ts, default **on**). Off =
+flat-bonus-only. (The applyEarnedGuard correctness fix is a bugfix, not gated — revert the commit for
+the exact pre-iter-5 behavior.)
+**Risk / open questions:** money path → adversarial review checked double-award/replay, first-of-day
+gating, `$transaction` atomicity, UI-vs-DB double-count (all correct). It surfaced **BUG 1** (fixed
+above) and **BUG 2**: a *pre-existing* TOCTOU race — the streak/priorSuccess reads happen outside the
+`$transaction`, so two concurrent same-day submits can both compute `newStreak=7` and double-award. The
+milestone amplifies the doubled amount (up to 2×1000 at day 365). Not introduced here; a migration-free
+fix (in-tx conditional `updateMany` "claim the day") is queued as **iter 6** and taken next. Flag off
+disables the amplification. Milestone celebration UI queued as **C2**.
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 49 files, muenzen suite 46; api 5) · build ✓ (60/60).
+Lint n/a.
+**Next:** iter 6 = **streak-award concurrency hardening** (fixes review BUG 2); then iter 7 = candidate D.
+
+---

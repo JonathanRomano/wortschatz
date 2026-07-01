@@ -9,6 +9,35 @@ export const MUENZEN_RULES = {
   aiReviewCost: 30,
 } as const;
 
+/**
+ * Feature flag — Overnight loop iter 5. On top of the flat daily-streak bonus,
+ * award a one-time escalating bonus the day a streak first reaches a milestone
+ * length. Reuses the DAILY_STREAK transaction reason (no new enum → no
+ * migration). Flip to `false` to restore the flat-bonus-only behavior.
+ */
+export const STREAK_MILESTONE_REWARDS: boolean = true;
+
+/**
+ * Extra Münzen granted the day a streak first reaches each milestone length,
+ * keyed by exact streak length. Looked up by exact match, so each fires once
+ * as the streak climbs; a broken-then-rebuilt streak can re-earn them.
+ */
+export const STREAK_MILESTONES: Readonly<Record<number, number>> = {
+  7: 30,
+  14: 50,
+  30: 100,
+  50: 150,
+  100: 300,
+  200: 600,
+  365: 1000,
+};
+
+/** Milestone bonus for reaching exactly `streakLength` days (0 if none / off). */
+export function streakMilestoneBonus(streakLength: number): number {
+  if (!STREAK_MILESTONE_REWARDS) return 0;
+  return STREAK_MILESTONES[streakLength] ?? 0;
+}
+
 export class InsufficientFundsError extends Error {
   constructor() {
     super("Insufficient Münzen.");
@@ -77,7 +106,13 @@ export function computeReward(
   score: number,
   isFirstOfDay: boolean,
   tipUsed: boolean = false,
-): { base: number; perfect: number; streakBonus: number } {
+  streakLength: number = 0,
+): {
+  base: number;
+  perfect: number;
+  streakBonus: number;
+  milestoneBonus: number;
+} {
   const passed = score >= 60;
   const baseAmount = tipUsed
     ? MUENZEN_RULES.exerciseCompleteWithTip
@@ -86,8 +121,45 @@ export function computeReward(
   // Perfect bonus and daily streak are independent of the tip — the tip
   // reduces only the base completion credit.
   const perfect = score === 100 ? MUENZEN_RULES.perfectBonus : 0;
-  const streakBonus = isFirstOfDay && passed ? MUENZEN_RULES.dailyStreak : 0;
-  return { base, perfect, streakBonus };
+  const earnsStreak = isFirstOfDay && passed;
+  const streakBonus = earnsStreak ? MUENZEN_RULES.dailyStreak : 0;
+  // Milestone bonus is gated on the same first-of-day pass so it can only
+  // fire on the day the streak actually advances to the milestone length.
+  const milestoneBonus = earnsStreak ? streakMilestoneBonus(streakLength) : 0;
+  return { base, perfect, streakBonus, milestoneBonus };
+}
+
+export type RewardBreakdown = {
+  base: number;
+  perfect: number;
+  streakBonus: number;
+  milestoneBonus: number;
+};
+
+/**
+ * Apply the "already earned" guard. The per-EXERCISE rewards (base completion
+ * credit + perfect bonus) are paid only the first time a user passes a given
+ * exercise, so they're zeroed on a repeat pass. The per-DAY streak rewards
+ * (flat daily bonus + milestone bonus) are NOT zeroed — they ride on the first
+ * passing attempt of the calendar day, which is exactly when the streak
+ * counter advances, even if that attempt is a previously-passed exercise.
+ *
+ * Without this split, a repeat exercise as the day's first pass would silently
+ * drop the streak/milestone bonus while the streak counter still advanced —
+ * and a milestone missed this way is permanently lost (the next day's streak
+ * length is no longer a milestone).
+ */
+export function applyEarnedGuard(
+  rewards: RewardBreakdown,
+  alreadyEarned: boolean,
+): RewardBreakdown {
+  if (!alreadyEarned) return rewards;
+  return {
+    base: 0,
+    perfect: 0,
+    streakBonus: rewards.streakBonus,
+    milestoneBonus: rewards.milestoneBonus,
+  };
 }
 
 /**

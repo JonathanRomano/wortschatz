@@ -16,9 +16,17 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
   follow-up: umlaut-only strict mode, or a small homograph blocklist that forces exact ß, or fold-only-
   as-partial-credit. Operator may instead just flip the flag. — files: `lib/exercises/grade.ts`.
 - [x] **B. Don't re-serve already-passed exercises** — Σ18 — **DONE iter 3** (flag `PREFER_UNSEEN_EXERCISES`).
-- [ ] **C. Escalating streak milestone bonuses** — Impact 4 / Size 5 / Risk 4 / Indep 4 — Σ17 — MIG:no
-  — pass `newStreak` into `computeReward`; milestone bonus at 7/30/100 (reuse DAILY_STREAK reason).
-  — files: `lib/muenzen.ts`, `lib/exercises/actions.ts`, `packages/config/src/constants.ts` — src: Duolingo.
+- [x] **C. Escalating streak milestone bonuses** — Σ17 — **DONE iter 5** (flag `STREAK_MILESTONE_REWARDS`).
+- [ ] **BUG2. Streak-award concurrency hardening** — Impact 4 / Size 4 / Risk 3 / Indep 4 — Σ15 — MIG:no
+  — pre-existing TOCTOU: streak/priorSuccess reads are outside the `$transaction`, so concurrent
+  same-day submits double-award the flat + milestone streak bonus (amplified by iter 5). Migration-free
+  fix: move the read in-tx and advance the streak via a conditional `updateMany` (`where lastActiveAt <
+  todayUTC`) that only the first writer matches; gate streak/milestone credits on `count===1`.
+  — files: `lib/exercises/actions.ts` — **← iter 6 (next)**. Found by iter-5 adversarial review.
+- [ ] **C2. Streak-milestone celebration UI** — Impact 3 / Size 4 / Risk 4 / Indep 4 — Σ15 — MIG:no
+  — iter 5 credits the milestone bonus and folds it into the result badge total, but there's no explicit
+  "🔥 7-day streak! +30" moment. Surface `newStreak`/milestone in ExerciseResult with a celebratory
+  line. — files: `components/exercises/ExerciseResult.tsx`, runners, `messages/*.json`.
 - [x] **F. WORD_ORDER partial credit** — Σ17 — **DONE iter 4** (LCS-based, folding-aware).
 - [ ] **D. Daily-goal reward hook** — Impact 4 / Size 4 / Risk 4 / Indep 4 — Σ16 — MIG:no
   — one-time Münzen bonus when countToday hits dailyGoal (reuse BONUS reason, refId=`daily-goal:<UTCday>`

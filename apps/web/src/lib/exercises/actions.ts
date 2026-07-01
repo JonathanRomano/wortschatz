@@ -14,6 +14,7 @@ import {
   AiRateLimitedError,
 } from "@/lib/ai";
 import {
+  applyEarnedGuard,
   computeReward,
   credit,
   isSameCalendarDay,
@@ -118,9 +119,13 @@ export async function submitExerciseAttempt(
   const exerciseHasTip = exercise.tip !== null && exercise.tip !== undefined;
   const effectiveTipUsed = tipUsed && exerciseHasTip;
 
-  const { base, perfect, streakBonus } = alreadyEarned
-    ? { base: 0, perfect: 0, streakBonus: 0 }
-    : computeReward(score, isFirstOfDay, effectiveTipUsed);
+  // base/perfect are per-exercise (dropped on a repeat pass); streak + milestone
+  // are per-day and ride the first-of-day pass even when the exercise is a
+  // repeat — see applyEarnedGuard.
+  const { base, perfect, streakBonus, milestoneBonus } = applyEarnedGuard(
+    computeReward(score, isFirstOfDay, effectiveTipUsed, newStreak),
+    alreadyEarned,
+  );
   // The legacy `reward` surface in the SubmitResult bundles the
   // exercise-completion credit + perfect-score bonus into one figure for
   // the UI banner. We still write them as two separate transactions in
@@ -145,6 +150,11 @@ export async function submitExerciseAttempt(
     if (base > 0) await credit(userId, base, "EXERCISE_COMPLETE", exerciseId, tx);
     if (perfect > 0) await credit(userId, perfect, "PERFECT_SCORE_BONUS", exerciseId, tx);
     if (streakBonus > 0) await credit(userId, streakBonus, "DAILY_STREAK", exerciseId, tx);
+    // Escalating streak-milestone bonus (iter 5). Same DAILY_STREAK reason,
+    // a distinct refId so the history page can tell it from the flat bonus.
+    if (milestoneBonus > 0) {
+      await credit(userId, milestoneBonus, "DAILY_STREAK", `streak-milestone:${newStreak}`, tx);
+    }
   });
 
   revalidatePath("/dashboard");
@@ -157,7 +167,9 @@ export async function submitExerciseAttempt(
     score,
     feedback,
     reward,
-    streakBonus,
+    // Surface the flat daily bonus + any milestone bonus as one figure so the
+    // result badge's reward total includes the milestone without UI changes.
+    streakBonus: streakBonus + milestoneBonus,
     newStreak,
     alreadyEarned,
   };
