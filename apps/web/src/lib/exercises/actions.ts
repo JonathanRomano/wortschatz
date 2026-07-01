@@ -34,6 +34,9 @@ export type SubmitResult =
       // on a prior successful attempt, so this submission is a retry
       // and no Münzen were awarded.
       alreadyEarned: boolean;
+      // Correct-answer summary for a closed-form exercise the learner didn't
+      // ace (see gradeLocally / REVEAL_CORRECT_ANSWER); undefined otherwise.
+      correctAnswer?: string;
     }
   | { ok: false; error: string };
 
@@ -214,6 +217,7 @@ export async function submitExerciseAttempt(
     streakBonus: streakAwarded,
     newStreak,
     alreadyEarned,
+    correctAnswer: local.correctAnswer,
   };
 }
 

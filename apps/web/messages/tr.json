@@ -109,6 +109,7 @@
     "score": "Puan",
     "feedback": "Geri bildirim",
     "explanation": "Açıklama",
+    "correctAnswer": "Doğru cevap",
     "loading": "Yükleniyor…",
     "empty": "Filtrelerinize uyan alıştırma yok.",
     "completed": "Tamamlandı",

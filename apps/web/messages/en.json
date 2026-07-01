@@ -109,6 +109,7 @@
     "score": "Score",
     "feedback": "Feedback",
     "explanation": "Explanation",
+    "correctAnswer": "Correct answer",
     "loading": "Loading…",
     "empty": "No exercises match your filters.",
     "completed": "Completed",

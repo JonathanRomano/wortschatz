@@ -15,6 +15,7 @@ type Props = {
   reward: number;
   streakBonus: number;
   alreadyEarned: boolean;
+  correctAnswer?: string;
 };
 
 /**
@@ -28,6 +29,7 @@ export function ExerciseResult({
   reward,
   streakBonus,
   alreadyEarned,
+  correctAnswer,
 }: Props) {
   const t = useTranslations("exercises");
   const passed = score >= 60;
@@ -93,6 +95,16 @@ export function ExerciseResult({
             {feedback}
           </Typography>
         </Typography>
+        {correctAnswer ? (
+          <Typography variant="body2">
+            <Typography component="span" sx={{ fontWeight: 500, color: "text.primary" }}>
+              {t("correctAnswer")}:{" "}
+            </Typography>
+            <Typography component="span" sx={{ color: "success.main", fontWeight: 500 }}>
+              {correctAnswer}
+            </Typography>
+          </Typography>
+        ) : null}
         {explanation ? (
           <Typography variant="body2">
             <Typography component="span" sx={{ fontWeight: 500, color: "text.primary" }}>

@@ -28,18 +28,24 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
   "🔥 7-day streak! +30" moment. Surface `newStreak`/milestone in ExerciseResult with a celebratory
   line. — files: `components/exercises/ExerciseResult.tsx`, runners, `messages/*.json`.
 - [x] **F. WORD_ORDER partial credit** — Σ17 — **DONE iter 4** (LCS-based, folding-aware).
-- [ ] **D. Daily-goal reward hook** — Impact 4 / Size 4 / Risk 4 / Indep 4 — Σ16 — MIG:no
-  — one-time Münzen bonus when countToday hits dailyGoal (reuse BONUS reason, refId=`daily-goal:<UTCday>`
-  for idempotency). — files: `lib/exercises/actions.ts`, `lib/muenzen.ts` — src: Duolingo daily chest.
+- [ ] **D. Daily-goal reward hook** — Impact 4 / Size 4 / Risk 3 / Indep 4 — Σ15 — MIG:no*
+  — one-time Münzen bonus when countToday hits dailyGoal (reuse BONUS reason, refId=`daily-goal:<UTCday>`).
+  — files: `lib/exercises/actions.ts`, `lib/muenzen.ts` — src: Duolingo daily chest.
+  — ⚠ *idempotency: exact-count + in-tx prior-BONUS check is racy under concurrent submits (same class as
+  BUG2); a fully race-free version wants a unique index on (userId, reason, refId) = migration. Do with
+  operator sign-off, or accept the documented narrow race.*
 - [ ] **J. Relative activity-heatmap buckets** — Impact 2 / Size 5 / Risk 4 / Indep 5 — Σ16 — MIG:no
   — quantile thresholds from the user's own 90d data vs hardcoded 0/1/2/3/4+. — files:
   `components/dashboard/ActivityHeatmap.tsx`, `lib/dashboard/aggregations.ts` — src: GitHub graph.
 - [ ] **P. TTS for listening when audioUrl null** — Impact 4 / Size 3 / Risk 3 / Indep 5 — Σ15 — MIG:no
   — SpeechSynthesis (de-DE); hide transcript behind a toggle (no dep). — files:
   `components/exercises/renderers/ListeningComprehension.tsx` — src: Duolingo/Babbel TTS.
-- [ ] **E. Per-item correctness + reveal correct answer** — Impact 5 / Size 3 / Risk 3 / Indep 4 — Σ15 — MIG:no
-  — return `perItem`/`expected` from `gradeLocally`, highlight wrong blanks + show right token.
-  — files: grade.ts, actions.ts, `ExerciseResult.tsx`, renderers — src: Duolingo/Busuu inline correction.
+- [x] **E. Reveal correct answer in result panel** — Σ15 — **DONE iter 7** (flag `REVEAL_CORRECT_ANSWER`).
+  Scoped to an additive "Correct answer" line in ExerciseResult (no renderer changes). Per-blank inline
+  highlighting in the renderers (the richer version) remains available as a follow-up (**E2**).
+- [ ] **E2. Per-item inline correctness highlighting** — Impact 4 / Size 2 / Risk 3 / Indep 3 — Σ12 — MIG:no
+  — return `perItem: boolean[]` from gradeLocally, colour each wrong blank/pair red in the renderer.
+  — files: grade.ts, renderers (FillInTheBlank, Matching), ExerciseResult.
 - [ ] **S. Weekly recap card** — Impact 3 / Size 4 / Risk 4 / Indep 4 — Σ15 — MIG:no — this-week vs
   last-week attempts + avg-score delta. — files: `dashboard/page.tsx`, `lib/dashboard/aggregations.ts`.
 - [ ] **G. Typo tolerance (Levenshtein ≤1 / length-scaled)** — Impact 4 / Size 4 / Risk 3 / Indep 4 — Σ15 — MIG:no

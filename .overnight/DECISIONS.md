@@ -205,3 +205,31 @@ pre-existing base/perfect same-exercise race (**BUG3**, queued).
 **Next:** iter 7 = candidate **D** (daily-goal reward hook).
 
 ---
+
+## Iteration 7 — 2026-07-02 01:05 CEST — Reveal the correct answer in the result panel
+**Status:** IMPLEMENTED
+**Inspired by:** Duolingo/Busuu inline correction (queue item E, Σ15). Deferred candidate **D**
+(daily-goal reward) because a correct idempotent implementation needs either a new award-race (which I
+just spent iters 5–6 removing) or a migration — so I picked the highest-value *safe* item instead.
+**What they do:** after a miss, good apps show you the right answer, not just a score, so you actually
+learn from the attempt.
+**What we had:** `ExerciseResult` showed only a score ring + prose feedback + explanation. For a
+closed-form miss (e.g. 2/3 blanks, wrong multiple-choice) the learner never saw the correct token(s).
+**What I changed:** `gradeLocally` now attaches a `correctAnswer` string for *deterministic* grades
+scored < 100, built by a new `solutionText` helper per type (blanks joined, the correct option text,
+the joined word order, the conjugated form, `key → value` pairs). `submitExerciseAttempt` threads it
+into `SubmitResult`; `ExerciseResult` renders an additive "Correct answer" line (green, `success.main`)
+between feedback and explanation. Added the `exercises.correctAnswer` label to all four locales
+(en/pt/tr/uk). No renderer changes — the input components are untouched.
+**Files touched:** `grade.ts` (+solutionText/wrapper), `actions.ts` (SubmitResult + thread),
+`ExerciseResult.tsx`, `TypeRunner.tsx`, `ExerciseRunner.tsx`, `messages/{en,pt,tr,uk}.json`,
+`__tests__/grade.test.ts` (+8 tests, 21→29).
+**Feature flag:** `REVEAL_CORRECT_ANSWER` (exported const in grade.ts, default **on**). Off = no
+correctAnswer computed/shown (scores/feedback unchanged).
+**Risk / open questions:** additive UI, no money/concurrency — self-reviewed (i18n key parity verified
+across 4 locales; index access guarded). TRANSLATION/ERROR_CORRECTION intentionally don't reveal (they
+go to AI on a miss); open-ended types have none. Richer per-blank inline highlighting in the renderers
+is queued as **E2**.
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 49 files, grade 29; api 5) · build ✓ (60/60). Lint n/a.
+**Next:** iter 8 = candidate **P** (TTS for listening when audioUrl is null) or **J**/**K** — a safe UI
+/ read-only item.

@@ -281,6 +281,7 @@ export function TypeRunner({
               reward={result.reward}
               streakBonus={result.streakBonus}
               alreadyEarned={result.alreadyEarned}
+              correctAnswer={result.correctAnswer}
             />
             <Button
               type="button"

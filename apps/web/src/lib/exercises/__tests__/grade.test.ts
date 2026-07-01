@@ -1,10 +1,17 @@
 import { describe, it, expect } from "vitest";
 
-import { gradeLocally, UMLAUT_TOLERANT_GRADING } from "@/lib/exercises/grade";
+import {
+  gradeLocally,
+  REVEAL_CORRECT_ANSWER,
+  UMLAUT_TOLERANT_GRADING,
+} from "@/lib/exercises/grade";
 
 // Minimal Exercise stub — gradeLocally only reads type/content/solution.
-const ex = (type: string, solution: Record<string, unknown>) =>
-  ({ type, content: {}, solution }) as never;
+const ex = (
+  type: string,
+  solution: Record<string, unknown>,
+  content: Record<string, unknown> = {},
+) => ({ type, content, solution }) as never;
 
 const HINT = "ae/oe/ue/ss";
 
@@ -169,6 +176,70 @@ describe("gradeLocally — MULTIPLE_CHOICE is index-based (folding irrelevant)",
     const solution = { correctIndex: 2 };
     expect(gradeLocally(ex("MULTIPLE_CHOICE", solution), { selectedIndex: 2 }).score).toBe(100);
     expect(gradeLocally(ex("MULTIPLE_CHOICE", solution), { selectedIndex: 1 }).score).toBe(0);
+  });
+});
+
+describe("gradeLocally — correctAnswer reveal", () => {
+  it("ships REVEAL_CORRECT_ANSWER enabled", () => {
+    expect(REVEAL_CORRECT_ANSWER).toBe(true);
+  });
+
+  it("omits correctAnswer on a perfect score", () => {
+    const r = gradeLocally(ex("FILL_IN_THE_BLANK", { blanks: ["Tür"] }), {
+      blanks: ["Tür"],
+    });
+    expect(r.score).toBe(100);
+    expect(r.correctAnswer).toBeUndefined();
+  });
+
+  it("reveals the blanks on a partial FILL_IN_THE_BLANK", () => {
+    const r = gradeLocally(
+      ex("FILL_IN_THE_BLANK", { blanks: ["Tür", "Käse"] }),
+      { blanks: ["Tür", "falsch"] },
+    );
+    expect(r.score).toBeLessThan(100);
+    expect(r.correctAnswer).toBe("Tür, Käse");
+  });
+
+  it("reveals the correct option text on a wrong MULTIPLE_CHOICE", () => {
+    const r = gradeLocally(
+      ex(
+        "MULTIPLE_CHOICE",
+        { correctIndex: 2 },
+        { options: ["der", "die", "das", "den"] },
+      ),
+      { selectedIndex: 0 },
+    );
+    expect(r.score).toBe(0);
+    expect(r.correctAnswer).toBe("das");
+  });
+
+  it("reveals the joined order on a wrong WORD_ORDER", () => {
+    const r = gradeLocally(
+      ex("WORD_ORDER", { correctOrder: ["Ich", "gehe", "heim"] }),
+      { ordered: ["heim", "Ich", "gehe"] },
+    );
+    expect(r.correctAnswer).toBe("Ich gehe heim");
+  });
+
+  it("reveals the correct form on a wrong VERB_CONJUGATION", () => {
+    const r = gradeLocally(ex("VERB_CONJUGATION", { correctForm: "läuft" }), {
+      conjugated: "rennt",
+    });
+    expect(r.correctAnswer).toBe("läuft");
+  });
+
+  it("reveals the pairs on a partial MATCHING", () => {
+    const r = gradeLocally(
+      ex("MATCHING", { pairs: { Hund: "dog", Katze: "cat" } }),
+      { pairs: { Hund: "dog", Katze: "falsch" } },
+    );
+    expect(r.correctAnswer).toBe("Hund → dog, Katze → cat");
+  });
+
+  it("has no correctAnswer for open-ended types", () => {
+    const r = gradeLocally(ex("FREE_WRITING", {}), { text: "x" });
+    expect(r.correctAnswer).toBeUndefined();
   });
 });
 

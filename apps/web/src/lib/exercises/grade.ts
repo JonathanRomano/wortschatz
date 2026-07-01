@@ -6,6 +6,10 @@ export type GradeResult = {
   // True when grading reached a confident verdict (versus an AI-required
   // open-ended exercise that we couldn't actually evaluate locally).
   deterministic: boolean;
+  // A human-readable summary of the correct answer(s) for a closed-form
+  // exercise, present only when the learner didn't score 100 (so the result
+  // panel can reveal what they missed). Absent for perfect and AI-graded types.
+  correctAnswer?: string;
 };
 
 /**
@@ -26,6 +30,14 @@ export const UMLAUT_TOLERANT_GRADING: boolean = true;
  * scoring). Flip to `false` to restore strict 100/0 exact-order grading.
  */
 export const WORD_ORDER_PARTIAL_CREDIT: boolean = true;
+
+/**
+ * Feature flag — Overnight loop iter 7. Reveal the correct answer(s) for a
+ * closed-form exercise in the result panel when the learner didn't score 100,
+ * so they learn what they missed instead of only seeing a number. Flip to
+ * `false` to hide the correct-answer summary (scores/feedback are unchanged).
+ */
+export const REVEAL_CORRECT_ANSWER: boolean = true;
 
 const norm = (s: string) =>
   s
@@ -99,9 +111,62 @@ function lcsLength(
 /**
  * Local grading for exercises with a closed-form solution. Open-ended
  * types (FREE_WRITING, READING_COMPREHENSION, LISTENING_COMPREHENSION)
- * fall back to AI grading via src/lib/ai.ts.
+ * fall back to AI grading via src/lib/ai.ts. Wraps {@link gradeCore} to
+ * attach the correct-answer summary (see {@link REVEAL_CORRECT_ANSWER}).
  */
 export function gradeLocally(
+  exercise: Pick<Exercise, "type" | "content" | "solution">,
+  rawAnswer: unknown,
+): GradeResult {
+  const result = gradeCore(exercise, rawAnswer);
+  if (REVEAL_CORRECT_ANSWER && result.deterministic && result.score < 100) {
+    const answer = solutionText(exercise);
+    if (answer) return { ...result, correctAnswer: answer };
+  }
+  return result;
+}
+
+/**
+ * A human-readable rendering of the correct answer for a closed-form type,
+ * or undefined when there's nothing meaningful to show (TRANSLATION /
+ * ERROR_CORRECTION reveal via AI on a miss; open-ended types have no
+ * closed-form answer).
+ */
+function solutionText(
+  exercise: Pick<Exercise, "type" | "content" | "solution">,
+): string | undefined {
+  const type = exercise.type as ExerciseType;
+  const solution = (exercise.solution ?? {}) as Record<string, unknown>;
+  const content = (exercise.content ?? {}) as Record<string, unknown>;
+  switch (type) {
+    case "FILL_IN_THE_BLANK": {
+      const blanks = (solution.blanks as string[]) ?? [];
+      return blanks.length ? blanks.join(", ") : undefined;
+    }
+    case "MULTIPLE_CHOICE": {
+      const options = (content.options as string[]) ?? [];
+      const index = solution.correctIndex as number;
+      return options[index] ?? undefined;
+    }
+    case "WORD_ORDER": {
+      const order = (solution.correctOrder as string[]) ?? [];
+      return order.length ? order.join(" ") : undefined;
+    }
+    case "VERB_CONJUGATION":
+      return (solution.correctForm as string) || undefined;
+    case "MATCHING": {
+      const pairs = (solution.pairs as Record<string, string>) ?? {};
+      const entries = Object.entries(pairs);
+      return entries.length
+        ? entries.map(([k, v]) => `${k} → ${v}`).join(", ")
+        : undefined;
+    }
+    default:
+      return undefined;
+  }
+}
+
+function gradeCore(
   exercise: Pick<Exercise, "type" | "content" | "solution">,
   rawAnswer: unknown,
 ): GradeResult {

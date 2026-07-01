@@ -8,3 +8,4 @@
 | 4 | 00:31 | IMPLEMENTED | WORD_ORDER partial credit via LCS (+4 tests) | `WORD_ORDER_PARTIAL_CREDIT` | ✓/✓/✓ |
 | 5 | 00:38 | IMPLEMENTED | Escalating streak milestones + day-level bonus fix (+10 tests) | `STREAK_MILESTONE_REWARDS` | ✓/✓/✓ |
 | 6 | 00:52 | IMPLEMENTED | Streak-award concurrency: atomic claim-the-day (+3 tests) | — (bugfix) | ✓/✓/✓ |
+| 7 | 01:05 | IMPLEMENTED | Reveal correct answer in result panel (+8 tests, i18n×4) | `REVEAL_CORRECT_ANSWER` | ✓/✓/✓ |

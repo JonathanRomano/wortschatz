@@ -109,6 +109,7 @@
     "score": "Nota",
     "feedback": "Feedback",
     "explanation": "Explicação",
+    "correctAnswer": "Resposta correta",
     "loading": "Carregando…",
     "empty": "Nenhum exercício corresponde aos filtros.",
     "completed": "Completado",
