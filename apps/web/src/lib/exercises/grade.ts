@@ -18,6 +18,15 @@ export type GradeResult = {
  */
 export const UMLAUT_TOLERANT_GRADING: boolean = true;
 
+/**
+ * Feature flag — Overnight loop iter 4. WORD_ORDER exercises earn partial
+ * credit by longest-common-subsequence (how many words are in the correct
+ * relative order) instead of all-or-nothing, so a single transposition no
+ * longer zeroes the attempt (mirrors FILL_IN_THE_BLANK / MATCHING partial
+ * scoring). Flip to `false` to restore strict 100/0 exact-order grading.
+ */
+export const WORD_ORDER_PARTIAL_CREDIT: boolean = true;
+
 const norm = (s: string) =>
   s
     .normalize("NFKC")
@@ -60,6 +69,32 @@ const compare = (a: string, b: string): Comparison => {
 // folding umlauts/eszett — encourages typing the real characters next time.
 const UMLAUT_HINT =
   " Tip: it's spelled with ä/ö/ü/ß — we accepted your ae/oe/ue/ss spelling this time.";
+
+/**
+ * Length of the longest common subsequence of two token lists under a custom
+ * equality. Used to give WORD_ORDER partial credit: how many words are in the
+ * correct relative order, so a single transposition doesn't zero the attempt.
+ * O(n·m) with a 1-D rolling row; word counts here are tiny.
+ */
+function lcsLength(
+  a: string[],
+  b: string[],
+  isEqual: (x: string, y: string) => boolean,
+): number {
+  const m = b.length;
+  const dp: number[] = new Array(m + 1).fill(0);
+  for (let i = 1; i <= a.length; i++) {
+    let diag = 0; // dp[i-1][j-1]
+    for (let j = 1; j <= m; j++) {
+      const up = dp[j] ?? 0; // dp[i-1][j]
+      dp[j] = isEqual(a[i - 1]!, b[j - 1]!)
+        ? diag + 1
+        : Math.max(up, dp[j - 1] ?? 0);
+      diag = up;
+    }
+  }
+  return dp[m] ?? 0;
+}
 
 /**
  * Local grading for exercises with a closed-form solution. Open-ended
@@ -120,15 +155,31 @@ export function gradeLocally(
     case "WORD_ORDER": {
       const expected = (solution.correctOrder as string[]) ?? [];
       const got = (answer.ordered as string[]) ?? [];
-      const results = expected.map((e, i) => compare(e, got[i] ?? ""));
-      const ok =
-        expected.length === got.length && results.every((r) => r.ok);
-      const usedFolding = ok && results.some((r) => r.folded);
+      if (expected.length === 0) return aiPlaceholder();
+      // Partial credit by longest common subsequence: how many words are in
+      // the correct relative order. A single transposition no longer zeroes
+      // the attempt (matching FILL_IN_THE_BLANK / MATCHING partial scoring).
+      const inOrder = lcsLength(expected, got, (x, y) => compare(x, y).ok);
+      const inOrderExact = lcsLength(expected, got, (x, y) => {
+        const c = compare(x, y);
+        return c.ok && !c.folded;
+      });
+      const usedFolding = inOrder > inOrderExact;
+      const denom = Math.max(expected.length, got.length);
+      const perfect =
+        expected.length === got.length && inOrder === expected.length;
+      const score = WORD_ORDER_PARTIAL_CREDIT
+        ? Math.round((inOrder / denom) * 100)
+        : perfect
+          ? 100
+          : 0;
       return {
-        score: ok ? 100 : 0,
-        feedback: ok
-          ? "Correct word order." + (usedFolding ? UMLAUT_HINT : "")
-          : "Word order is incorrect.",
+        score,
+        feedback:
+          (perfect
+            ? "Correct word order."
+            : `${inOrder}/${denom} words in the right order.`) +
+          (usedFolding && score > 0 ? UMLAUT_HINT : ""),
         deterministic: true,
       };
     }

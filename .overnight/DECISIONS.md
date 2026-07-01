@@ -103,3 +103,31 @@ lookup + count/tier) are acceptable; a groupBy/perf pass is queued separately (V
 **Next:** iter 4 = candidate **F** (WORD_ORDER partial credit).
 
 ---
+
+## Iteration 4 — 2026-07-02 00:31 CEST — WORD_ORDER partial credit (LCS)
+**Status:** IMPLEMENTED
+**Inspired by:** Clozemaster/Duolingo partial scoring of word-bank ordering (queue item F, Σ17).
+**What they do:** Rearranging a word bank and getting one pair swapped shouldn't zero the whole item —
+you get credit for the words you did place in the right relative order.
+**What we had:** WORD_ORDER was all-or-nothing — exact ordered-array match = 100, anything else = 0,
+even a single transposition. (FILL_IN_THE_BLANK and MATCHING already gave partial credit; WORD_ORDER
+was the outlier.)
+**What I changed:** Added a pure `lcsLength` helper (1-D rolling DP) and scored WORD_ORDER by the
+longest common subsequence of expected vs submitted tokens, normalized by the longer length
+(`round(LCS / max(len) · 100)`). Equality is folding-aware (iter-2 umlaut tolerance still applies), and
+a folded-only match still appends the umlaut hint. Exact order still yields 100 with the original
+"Correct word order." wording; extra/missing/transposed words now yield graded partial credit. Added
+4 WORD_ORDER cases (updated the old "wrong order = 0" case → 67; total grade tests 17→21).
+**Files touched:** `apps/web/src/lib/exercises/grade.ts` (+~40), `.../__tests__/grade.test.ts` (+~35).
+**Feature flag:** `WORD_ORDER_PARTIAL_CREDIT` (exported const, default **on**). Off = strict 100/0
+exact-order grading.
+**Risk / open questions:** Pure function, hand-verified against all six test cases; no DB/auth/money
+touched, so self-reviewed rather than sent to an adversarial subagent. Note: partial credit means a
+mostly-correct order (≥60%) can now pass and award first-attempt Münzen — intentional and consistent
+with the other partial-credit types. Also learned this repo has `noUncheckedIndexedAccess` on (fixed a
+first-pass `dp[]` typecheck error); future array indexing must guard with `?? 0`/`!`.
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 49 files, grade 21; api 5) · build ✓ (60/60). Lint n/a.
+**Next:** iter 5 = candidate **C** (escalating streak milestone bonuses) — touches Münzen, will get an
+adversarial review.
+
+---

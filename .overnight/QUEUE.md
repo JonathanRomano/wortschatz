@@ -19,8 +19,7 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
 - [ ] **C. Escalating streak milestone bonuses** — Impact 4 / Size 5 / Risk 4 / Indep 4 — Σ17 — MIG:no
   — pass `newStreak` into `computeReward`; milestone bonus at 7/30/100 (reuse DAILY_STREAK reason).
   — files: `lib/muenzen.ts`, `lib/exercises/actions.ts`, `packages/config/src/constants.ts` — src: Duolingo.
-- [ ] **F. WORD_ORDER partial credit** — Impact 3 / Size 5 / Risk 4 / Indep 5 — Σ17 — MIG:no
-  — LCS / correct-relative-position instead of 0/100. — files: `lib/exercises/grade.ts` — src: Clozemaster.
+- [x] **F. WORD_ORDER partial credit** — Σ17 — **DONE iter 4** (LCS-based, folding-aware).
 - [ ] **D. Daily-goal reward hook** — Impact 4 / Size 4 / Risk 4 / Indep 4 — Σ16 — MIG:no
   — one-time Münzen bonus when countToday hits dailyGoal (reuse BONUS reason, refId=`daily-goal:<UTCday>`
   for idempotency). — files: `lib/exercises/actions.ts`, `lib/muenzen.ts` — src: Duolingo daily chest.

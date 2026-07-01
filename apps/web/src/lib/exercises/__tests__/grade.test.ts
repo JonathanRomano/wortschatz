@@ -84,8 +84,18 @@ describe("gradeLocally — TRANSLATION", () => {
   });
 });
 
-describe("gradeLocally — WORD_ORDER", () => {
-  it("accepts an umlaut token in otherwise-correct order", () => {
+describe("gradeLocally — WORD_ORDER (LCS partial credit)", () => {
+  const solution = { correctOrder: ["Ich", "möchte", "jetzt", "gehen"] };
+
+  it("scores 100 for the exact order without partial-credit wording", () => {
+    const r = gradeLocally(ex("WORD_ORDER", solution), {
+      ordered: ["Ich", "möchte", "jetzt", "gehen"],
+    });
+    expect(r.score).toBe(100);
+    expect(r.feedback).toBe("Correct word order.");
+  });
+
+  it("accepts an umlaut token in otherwise-correct order (100 + hint)", () => {
     const r = gradeLocally(
       ex("WORD_ORDER", { correctOrder: ["Ich", "möchte", "gehen"] }),
       { ordered: ["Ich", "moechte", "gehen"] },
@@ -94,11 +104,33 @@ describe("gradeLocally — WORD_ORDER", () => {
     expect(r.feedback).toContain(HINT);
   });
 
-  it("fails a wrong order", () => {
+  it("gives partial credit for a transposition instead of zero", () => {
+    // "Ich möchte" stay in order → 2 of 3 words correct.
     const r = gradeLocally(
       ex("WORD_ORDER", { correctOrder: ["Ich", "möchte", "gehen"] }),
       { ordered: ["gehen", "Ich", "möchte"] },
     );
+    expect(r.score).toBe(67);
+    expect(r.feedback).toContain("2/3");
+  });
+
+  it("penalizes an extra trailing word via the longer denominator", () => {
+    const r = gradeLocally(ex("WORD_ORDER", solution), {
+      ordered: ["Ich", "möchte", "jetzt", "gehen", "bitte"],
+    });
+    expect(r.score).toBe(80); // 4 in order / max(4,5)
+    expect(r.feedback).toContain("4/5");
+  });
+
+  it("scores a fully reversed order low", () => {
+    const r = gradeLocally(ex("WORD_ORDER", solution), {
+      ordered: ["gehen", "jetzt", "möchte", "Ich"],
+    });
+    expect(r.score).toBe(25); // best common subsequence length 1 of 4
+  });
+
+  it("scores an empty answer at zero", () => {
+    const r = gradeLocally(ex("WORD_ORDER", solution), { ordered: [] });
     expect(r.score).toBe(0);
   });
 });
