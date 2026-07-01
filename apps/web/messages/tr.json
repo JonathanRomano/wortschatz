@@ -79,6 +79,8 @@
       },
       "activity": {
         "title": "Etkinlik (son 90 gün)",
+        "less": "Az",
+        "more": "Çok",
         "tooltip": "{date} tarihinde {count, plural, =0 {alıştırma yok} one {1 alıştırma} other {# alıştırma}}"
       },
       "radar": {

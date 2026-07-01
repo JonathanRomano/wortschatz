@@ -6,8 +6,31 @@ import {
   buildHeatmap,
   buildRadar,
   countToday,
+  heatmapThresholds,
 } from "@/lib/dashboard/aggregations";
 import type { ExerciseType } from "@wortschatz/database";
+
+describe("heatmapThresholds", () => {
+  it("uses the absolute scale [1,2,3] for light activity (max ≤ 4)", () => {
+    expect(heatmapThresholds([])).toEqual([1, 2, 3]);
+    expect(heatmapThresholds([0, 0, 0])).toEqual([1, 2, 3]);
+    expect(heatmapThresholds([0, 1, 2, 4])).toEqual([1, 2, 3]);
+  });
+
+  it("scales cut points to ~25/50/75% of the busiest day for heavy activity", () => {
+    expect(heatmapThresholds([1, 20, 3])).toEqual([5, 10, 15]);
+    expect(heatmapThresholds([8])).toEqual([2, 4, 6]);
+  });
+
+  it("keeps the thresholds strictly increasing for every max", () => {
+    for (let max = 5; max <= 200; max++) {
+      const [a, b, c] = heatmapThresholds([max]);
+      expect(a).toBeGreaterThanOrEqual(1);
+      expect(b).toBeGreaterThan(a);
+      expect(c).toBeGreaterThan(b);
+    }
+  });
+});
 
 // All 10 exercise types as in prisma/schema.prisma. The radar always
 // returns one row per type, so we need a complete label map.

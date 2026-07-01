@@ -8,7 +8,10 @@ import Typography from "@mui/material/Typography";
 import { useTheme, alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
 
-import type { HeatmapDay } from "@/lib/dashboard/aggregations";
+import {
+  heatmapThresholds,
+  type HeatmapDay,
+} from "@/lib/dashboard/aggregations";
 
 type Props = {
   data: HeatmapDay[];
@@ -69,11 +72,18 @@ export function ActivityHeatmap({ data, locale }: Props) {
     [amber, theme.palette.surfaceAlt.main],
   );
 
+  // Bucket thresholds scale to this learner's own activity so the gradient is
+  // meaningful whether they do 2 or 20 exercises on a busy day.
+  const [t1, t2, t3] = useMemo(
+    () => heatmapThresholds(data.map((d) => d.count)),
+    [data],
+  );
+
   function colorFor(count: number): string {
     if (count <= 0) return palette[0]!;
-    if (count === 1) return palette[1]!;
-    if (count === 2) return palette[2]!;
-    if (count <= 4) return palette[3]!;
+    if (count <= t1) return palette[1]!;
+    if (count <= t2) return palette[2]!;
+    if (count <= t3) return palette[3]!;
     return palette[4]!;
   }
 
@@ -225,7 +235,7 @@ export function ActivityHeatmap({ data, locale }: Props) {
         spacing={1}
         sx={{ mt: 1.5, alignItems: "center", color: "text.secondary" }}
       >
-        <Typography variant="caption">0</Typography>
+        <Typography variant="caption">{t("less")}</Typography>
         {palette.map((c, i) => (
           <Box
             key={i}
@@ -237,7 +247,7 @@ export function ActivityHeatmap({ data, locale }: Props) {
             }}
           />
         ))}
-        <Typography variant="caption">5+</Typography>
+        <Typography variant="caption">{t("more")}</Typography>
       </Stack>
     </Box>
   );

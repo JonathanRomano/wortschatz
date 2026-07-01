@@ -34,9 +34,7 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
   — ⚠ *idempotency: exact-count + in-tx prior-BONUS check is racy under concurrent submits (same class as
   BUG2); a fully race-free version wants a unique index on (userId, reason, refId) = migration. Do with
   operator sign-off, or accept the documented narrow race.*
-- [ ] **J. Relative activity-heatmap buckets** — Impact 2 / Size 5 / Risk 4 / Indep 5 — Σ16 — MIG:no
-  — quantile thresholds from the user's own 90d data vs hardcoded 0/1/2/3/4+. — files:
-  `components/dashboard/ActivityHeatmap.tsx`, `lib/dashboard/aggregations.ts` — src: GitHub graph.
+- [x] **J. Relative activity-heatmap buckets** — Σ16 — **DONE iter 9** (pure `heatmapThresholds`).
 - [x] **P. TTS for listening when audioUrl null** — Σ15 — **DONE iter 8** (flag `LISTENING_TTS`).
 - [x] **E. Reveal correct answer in result panel** — Σ15 — **DONE iter 7** (flag `REVEAL_CORRECT_ANSWER`).
   Scoped to an additive "Correct answer" line in ExerciseResult (no renderer changes). Per-blank inline

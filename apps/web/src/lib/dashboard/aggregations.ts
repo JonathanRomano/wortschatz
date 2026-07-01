@@ -132,6 +132,26 @@ export function buildHeatmap(
 }
 
 /**
+ * Colour-bucket cut points for the activity heatmap, relative to the learner's
+ * own activity so both a light user (peaks at ~2/day) and a heavy user (~20/day)
+ * get a meaningful gradient instead of everyone saturating the top bucket.
+ *
+ * Returns three ascending thresholds [t1, t2, t3] for the four non-zero buckets:
+ * `count ≤ 0 → 0, ≤ t1 → 1, ≤ t2 → 2, ≤ t3 → 3, else → 4`. For light activity
+ * (max ≤ 4) it keeps the intuitive absolute scale [1, 2, 3]; above that the cut
+ * points scale to ~25/50/75% of the busiest day and are kept strictly
+ * increasing so no bucket collapses.
+ */
+export function heatmapThresholds(counts: number[]): [number, number, number] {
+  const max = counts.reduce((m, c) => Math.max(m, c), 0);
+  if (max <= 4) return [1, 2, 3];
+  const t1 = Math.max(1, Math.round(max * 0.25));
+  const t2 = Math.max(t1 + 1, Math.round(max * 0.5));
+  const t3 = Math.max(t2 + 1, Math.round(max * 0.75));
+  return [t1, t2, t3];
+}
+
+/**
  * Per-type average score over the most-recent `lastN` attempts of that
  * type. Types with zero attempts are still returned (so the radar
  * always renders all 10 axes) with `avgScore: 0, attempts: 0`. Input

@@ -79,6 +79,8 @@
       },
       "activity": {
         "title": "Atividade (últimos 90 dias)",
+        "less": "Menos",
+        "more": "Mais",
         "tooltip": "{count, plural, =0 {Nenhum exercício} one {1 exercício} other {# exercícios}} em {date}"
       },
       "radar": {

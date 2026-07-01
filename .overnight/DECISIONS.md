@@ -263,3 +263,30 @@ adversarial agent) given the low blast radius and test coverage.
 **Verification:** typecheck ✓ (7/7) · test ✓ (web 50 files, +4; api 5) · build ✓ (60/60). Lint n/a.
 **Next:** iter 9 = a safe read-only dashboard item — candidate **K** (longest-streak + goal-met-days) or
 **J** (relative heatmap buckets).
+
+---
+
+## Iteration 9 — 2026-07-02 01:18 CEST — Relative activity-heatmap buckets
+**Status:** IMPLEMENTED
+**Inspired by:** the GitHub contribution graph's relative shading (queue item J, Σ16).
+**What they do:** the activity calendar's colour intensity is relative to your own volume, so the
+gradient means something whether you're a light or heavy user.
+**What we had:** `ActivityHeatmap.colorFor` used hardcoded absolute buckets (0 / 1 / 2 / 3–4 / 5+). A
+heavy user who does 15 exercises a day saturates the top colour every day (no gradient); a light user
+barely leaves the first two buckets.
+**What I changed:** added a pure `heatmapThresholds(counts)` in `aggregations.ts` returning three
+ascending cut points scaled to ~25/50/75% of the learner's busiest day (kept strictly increasing so no
+bucket collapses), with the intuitive `[1,2,3]` absolute scale retained for light activity (max ≤ 4).
+`ActivityHeatmap` computes the thresholds from its own data (memoised) and `colorFor` uses them. The
+now-inaccurate `0`/`5+` legend labels became localised **Less**/**More** (GitHub-style) — added those
+two keys to `dashboard.charts.activity` in all four locales.
+**Files touched:** `lib/dashboard/aggregations.ts` (+heatmapThresholds), `components/dashboard/
+ActivityHeatmap.tsx`, `messages/{en,pt,tr,uk}.json` (+2 keys each), `__tests__/aggregations.test.ts`
+(+3 tests, incl. a strictly-increasing property test over max 5–200).
+**Feature flag:** none — a visual refinement; the absolute-scale path (max ≤ 4) preserves the prior look
+for light users, and `git revert` restores the fixed buckets.
+**Risk / open questions:** pure aggregation + presentational; no money/data. Self-reviewed. Uses `Math.round`
+half-up which is fine here. Existing heatmap tests (which don't assert colours) still pass.
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 50 files, aggregations +3; api 5) · build ✓ (60/60). Lint n/a.
+**Next:** iter 10 = candidate **K** (longest-streak + goal-met-days stats) or **S** (weekly recap) —
+another safe pure-aggregation dashboard win.

@@ -79,6 +79,8 @@
       },
       "activity": {
         "title": "Активність (останні 90 днів)",
+        "less": "Менше",
+        "more": "Більше",
         "tooltip": "{count, plural, =0 {Жодної вправи} one {1 вправа} few {# вправи} other {# вправ}} {date}"
       },
       "radar": {
