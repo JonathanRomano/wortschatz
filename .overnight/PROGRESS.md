@@ -14,3 +14,4 @@
 | 10 | 01:24 | IMPLEMENTED | Longest-streak + goal-met-days stat cards (+6 tests, i18n×4) | — (dashboard) | ✓/✓/✓ |
 | 11 | 01:30 | IMPLEMENTED | Bounded practice session + completion screen (+7 tests, i18n×4) | `PRACTICE_SESSIONS` | ✓/✓/✓ |
 | 12 | 01:36 | IMPLEMENTED | Streak celebration line in result panel (+4 tests, i18n×4) | — (additive UI) | ✓/✓/✓ |
+| 13 | 01:42 | IMPLEMENTED | Weak-first selection: auto-resurface mistakes (+5 tests) | `PREFER_WEAK_EXERCISES` | ✓/✓/✓ |

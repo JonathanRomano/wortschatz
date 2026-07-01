@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import {
   buildSelectionWheres,
   PREFER_UNSEEN_EXERCISES,
+  PREFER_WEAK_EXERCISES,
 } from "@/lib/exercises/selection";
 
 const TYPE = "FILL_IN_THE_BLANK" as const;
@@ -71,5 +72,68 @@ describe("buildSelectionWheres", () => {
   it("omits the unseen tier when the passed set is empty even if enabled", () => {
     const tiers = buildSelectionWheres(TYPE, undefined, undefined, [], true);
     expect(tiers).toHaveLength(1);
+  });
+});
+
+describe("buildSelectionWheres — weak-first tier", () => {
+  it("ships PREFER_WEAK_EXERCISES enabled", () => {
+    expect(PREFER_WEAK_EXERCISES).toBe(true);
+  });
+
+  it("prepends a weak tier (id IN weakIds) ahead of the full pool", () => {
+    const tiers = buildSelectionWheres(TYPE, undefined, undefined, [], true, [
+      "w1",
+      "w2",
+    ]);
+    expect(tiers).toHaveLength(2);
+    expect(tiers[0]).toEqual({
+      type: TYPE,
+      status: "PUBLISHED",
+      id: { in: ["w1", "w2"] },
+    });
+    expect(tiers[1]).toEqual({ type: TYPE, status: "PUBLISHED" });
+  });
+
+  it("orders weak → unseen → full when both sets are present", () => {
+    const tiers = buildSelectionWheres(
+      TYPE,
+      undefined,
+      "B1",
+      ["p1"],
+      true,
+      ["w1"],
+    );
+    expect(tiers).toHaveLength(3);
+    expect(tiers[0]).toEqual({
+      type: TYPE,
+      status: "PUBLISHED",
+      level: "B1",
+      id: { in: ["w1"] },
+    });
+    expect(tiers[1]).toEqual({
+      type: TYPE,
+      status: "PUBLISHED",
+      level: "B1",
+      id: { notIn: ["p1"] },
+    });
+    expect(tiers[2]).toEqual({ type: TYPE, status: "PUBLISHED", level: "B1" });
+  });
+
+  it("merges excludeId into the weak tier's id filter", () => {
+    const tiers = buildSelectionWheres(TYPE, "prev", undefined, [], true, ["w1"]);
+    expect(tiers[0]).toEqual({
+      type: TYPE,
+      status: "PUBLISHED",
+      id: { not: "prev", in: ["w1"] },
+    });
+  });
+
+  it("omits the weak tier when disabled or empty", () => {
+    expect(
+      buildSelectionWheres(TYPE, undefined, undefined, [], true, ["w1"], false),
+    ).toHaveLength(1);
+    expect(
+      buildSelectionWheres(TYPE, undefined, undefined, [], true, []),
+    ).toHaveLength(1);
   });
 });

@@ -368,3 +368,32 @@ moment, which currently only shows as extra coins) is queued as **C3** — it ne
 threaded through `SubmitResult` from `actions.ts`.
 **Verification:** typecheck ✓ (7/7) · test ✓ (web 52 files, +4; api 5) · build ✓ (60/60). Lint n/a.
 **Next:** iter 13 = candidate **T** (tap-to-pair matching) or **R** (radar trend) / **L** (achievements).
+
+---
+
+## Iteration 13 — 2026-07-02 01:42 CEST — Weak-first selection (auto-resurface mistakes)
+**Status:** IMPLEMENTED
+**Inspired by:** Anki/Memrise "difficult words", Duolingo personalized practice (queue item H, Σ14).
+Builds on iter 3's tiered selection.
+**What they do:** the items you keep getting wrong come back to you automatically during practice — you
+don't have to remember to go drill your mistakes.
+**What we had:** iter 3 preferred *unseen* exercises but treated a failed item like any other unseen one;
+mistakes only resurfaced if the learner manually visited `/exercises/mistakes`.
+**What I changed:** extended the pure `buildSelectionWheres` with a **weak-first tier** (`id IN weakIds`)
+ahead of the unseen and full tiers, gated by a new `PREFER_WEAK_EXERCISES` flag. `getRandomExerciseOfType`
+now derives both sets from a single `groupBy(exerciseId, _max: score)` scoped to the type/level: passed =
+best-ever ≥ 60, weak = attempted but best < 60 (never passed). Draw order: weak → unseen → full, so
+mistakes surface first, then fresh material, then anything (never dead-ends). Passing a weak item moves it
+to the passed set on the next draw, so the weak pool converges; `excludeId` prevents immediately repeating
+the same one.
+**Files touched:** `lib/exercises/selection.ts` (+weak tier/flag), `.../actions.ts` (groupBy split),
+`.../__tests__/selection.test.ts` (+5 tests, 7→12).
+**Feature flag:** `PREFER_WEAK_EXERCISES` (exported const in selection.ts, default **on**). Off = iter-3
+behavior (unseen-preferred, no weak tier).
+**Risk / open questions:** DB hot-path → adversarial review checking groupBy+relation-filter validity, the
+passed/weak split (disjoint; a passed-then-failed item counts as passed, not weak — acceptable), tier
+ordering / dead-end, and flags-off equivalence. `weakIds`/`passedIds` are also unbounded in principle
+(all attempted exercises of a type) but bounded by the published pool size; fine.
+**Verification:** typecheck ✓ (7/7, validates the groupBy) · test ✓ (web 52 files, selection 12; api 5) ·
+build ✓ (60/60). Lint n/a.
+**Next:** iter 14 = candidate **T** (tap-to-pair matching) or another safe item.

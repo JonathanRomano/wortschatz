@@ -50,8 +50,7 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
 - [ ] **V. Dashboard groupBy perf fix** — Impact 2 / Size 5 / Risk 4 / Indep 4 — Σ15 — MIG:no
   — replace two unbounded findMany with groupBy. — files: `dashboard/page.tsx`, `lib/dashboard/queries.ts`.
 - [x] **K. Longest-streak + goal-met-days stats** — Σ15 — **DONE iter 10** (windowed, pure aggregations).
-- [ ] **H. Weakness-weighted selection** — Impact 4 / Size 3 / Risk 3 / Indep 4 — Σ14 — MIG:no (overlaps B)
-  — bias draw toward unseen + last-failed items. — files: `lib/exercises/actions.ts`.
+- [x] **H. Weakness-weighted selection (resurface mistakes)** — Σ14 — **DONE iter 13** (flag `PREFER_WEAK_EXERCISES`).
 - [x] **I. Bounded practice session + completion screen** — Σ14 — **DONE iter 11** (flag `PRACTICE_SESSIONS`).
 - [ ] **R. Radar trend (recent vs previous window)** — Impact 3 / Size 3 / Risk 4 / Indep 4 — Σ14 — MIG:no
   — files: `lib/dashboard/aggregations.ts`, `components/dashboard/ProficiencyRadar.tsx`.

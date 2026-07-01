@@ -7,6 +7,7 @@ import { gradeLocally } from "@/lib/exercises/grade";
 import {
   buildSelectionWheres,
   PREFER_UNSEEN_EXERCISES,
+  PREFER_WEAK_EXERCISES,
 } from "@/lib/exercises/selection";
 import {
   evaluateAnswer,
@@ -239,22 +240,32 @@ export async function getRandomExerciseOfType(
   const session = await auth();
   const userId = session?.user?.id;
 
-  let passedIds: string[] = [];
-  if (PREFER_UNSEEN_EXERCISES && userId) {
-    const passed = await prisma.userExercise.findMany({
-      where: {
-        userId,
-        score: { gte: 60 },
-        exercise: { type, ...(level ? { level } : {}) },
-      },
-      select: { exerciseId: true },
-      distinct: ["exerciseId"],
+  const passedIds: string[] = [];
+  const weakIds: string[] = [];
+  if ((PREFER_UNSEEN_EXERCISES || PREFER_WEAK_EXERCISES) && userId) {
+    // One grouped query gives the best-ever score per exercise of this
+    // type/level, from which we split: passed (best >= 60) vs weak (attempted
+    // but best < 60, i.e. never passed → a mistake worth resurfacing).
+    const grouped = await prisma.userExercise.groupBy({
+      by: ["exerciseId"],
+      where: { userId, exercise: { type, ...(level ? { level } : {}) } },
+      _max: { score: true },
     });
-    passedIds = passed.map((p) => p.exerciseId);
+    for (const g of grouped) {
+      if ((g._max.score ?? 0) >= 60) passedIds.push(g.exerciseId);
+      else weakIds.push(g.exerciseId);
+    }
   }
 
-  // Try each tier (unseen-preferred, then the full pool) in order.
-  for (const where of buildSelectionWheres(type, excludeId, level, passedIds)) {
+  // Try each tier (weak-first, then unseen, then the full pool) in order.
+  for (const where of buildSelectionWheres(
+    type,
+    excludeId,
+    level,
+    passedIds,
+    PREFER_UNSEEN_EXERCISES,
+    weakIds,
+  )) {
     const count = await prisma.exercise.count({ where });
     if (count === 0) continue;
     const skip = Math.floor(Math.random() * count);
