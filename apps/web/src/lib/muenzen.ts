@@ -213,3 +213,8 @@ export function isSameCalendarDay(a: Date, b: Date): boolean {
     a.getUTCDate() === b.getUTCDate()
   );
 }
+
+/** Midnight (00:00:00.000) UTC of the calendar day containing `d`. */
+export function startOfUtcDay(d: Date): Date {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+}

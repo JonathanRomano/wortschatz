@@ -18,6 +18,7 @@ import {
   computeReward,
   credit,
   isSameCalendarDay,
+  startOfUtcDay,
 } from "@/lib/muenzen";
 import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 
@@ -132,6 +133,10 @@ export async function submitExerciseAttempt(
   // the DB so the history page can show them as distinct rows.
   const reward = base + perfect;
 
+  // How much streak reward was actually granted (0 unless this submission wins
+  // the day). Set inside the transaction; surfaced in the result below.
+  let streakAwarded = 0;
+
   await prisma.$transaction(async (tx) => {
     await tx.userExercise.create({
       data: {
@@ -143,17 +148,52 @@ export async function submitExerciseAttempt(
         tipUsed: effectiveTipUsed,
       },
     });
-    await tx.user.update({
-      where: { id: userId },
-      data: { lastActiveAt: now, streak: newStreak },
-    });
+
+    // Per-exercise credits (already suppressed on a repeat pass via
+    // applyEarnedGuard above).
     if (base > 0) await credit(userId, base, "EXERCISE_COMPLETE", exerciseId, tx);
     if (perfect > 0) await credit(userId, perfect, "PERFECT_SCORE_BONUS", exerciseId, tx);
-    if (streakBonus > 0) await credit(userId, streakBonus, "DAILY_STREAK", exerciseId, tx);
-    // Escalating streak-milestone bonus (iter 5). Same DAILY_STREAK reason,
-    // a distinct refId so the history page can tell it from the flat bonus.
-    if (milestoneBonus > 0) {
-      await credit(userId, milestoneBonus, "DAILY_STREAK", `streak-milestone:${newStreak}`, tx);
+
+    if (isFirstOfDay && score >= 60) {
+      // Atomically claim the first pass of this UTC day. Under concurrent
+      // same-day submissions, only the first writer matches (lastActiveAt is
+      // still before today's UTC midnight), so the streak advances and its
+      // bonuses are paid exactly once — closing the read-then-write race that
+      // could otherwise double-award the flat + milestone streak bonus.
+      const claim = await tx.user.updateMany({
+        where: {
+          id: userId,
+          OR: [
+            { lastActiveAt: null },
+            { lastActiveAt: { lt: startOfUtcDay(now) } },
+          ],
+        },
+        data: { lastActiveAt: now, streak: newStreak },
+      });
+      if (claim.count === 1) {
+        streakAwarded = streakBonus + milestoneBonus;
+        if (streakBonus > 0) {
+          await credit(userId, streakBonus, "DAILY_STREAK", exerciseId, tx);
+        }
+        // Escalating streak-milestone bonus (iter 5). Same DAILY_STREAK reason,
+        // a distinct refId so the history page can tell it from the flat bonus.
+        if (milestoneBonus > 0) {
+          await credit(userId, milestoneBonus, "DAILY_STREAK", `streak-milestone:${newStreak}`, tx);
+        }
+      }
+    } else {
+      // Not a first-of-day pass: just record the activity timestamp (the
+      // streak neither advances nor resets here). Note lastActiveAt doubles as
+      // the "day already claimed" marker, so a failed FIRST attempt of the day
+      // updates it and a later pass that same day won't re-claim the streak —
+      // consistent with the sequential fail-then-pass case (no phantom reward;
+      // newStreak isn't shown in the UI). Awarding the streak on the first PASS
+      // regardless of an earlier fail needs a dedicated streak-day column →
+      // migration; deferred (see .overnight/QUEUE.md).
+      await tx.user.update({
+        where: { id: userId },
+        data: { lastActiveAt: now },
+      });
     }
   });
 
@@ -167,9 +207,11 @@ export async function submitExerciseAttempt(
     score,
     feedback,
     reward,
-    // Surface the flat daily bonus + any milestone bonus as one figure so the
-    // result badge's reward total includes the milestone without UI changes.
-    streakBonus: streakBonus + milestoneBonus,
+    // The streak reward actually granted this submission (flat daily + any
+    // milestone bonus), or 0 if a concurrent submission already claimed the
+    // day. Surfaced as one figure so the result badge's total includes the
+    // milestone without UI changes.
+    streakBonus: streakAwarded,
     newStreak,
     alreadyEarned,
   };

@@ -170,3 +170,38 @@ Lint n/a.
 **Next:** iter 6 = **streak-award concurrency hardening** (fixes review BUG 2); then iter 7 = candidate D.
 
 ---
+
+## Iteration 6 — 2026-07-02 00:52 CEST — Streak-award concurrency: atomic "claim the day"
+**Status:** IMPLEMENTED
+**Inspired by:** the iter-5 adversarial review (BUG 2) — a pre-existing double-award race the milestone
+amplified.
+**What they do:** n/a (correctness hardening, not a competitor feature). Awarding a daily reward must be
+idempotent under concurrent requests.
+**What we had:** `submitExerciseAttempt` read `{lastActiveAt, streak}` OUTSIDE the `$transaction`, then
+unconditionally wrote `streak = newStreak` and paid the streak/milestone bonus whenever `streakBonus>0`.
+Two concurrent same-day submits both read `lastActiveAt=yesterday`, both computed `newStreak=7`, and both
+paid — doubling the flat 20 + the milestone (up to 2×1000 at day 365).
+**What I changed:** the streak advance is now an atomic conditional claim inside the transaction:
+`tx.user.updateMany({ where: { id, OR:[lastActiveAt null, lastActiveAt < startOfUtcDay(now)] }, data:{
+lastActiveAt: now, streak: newStreak }})`. Under READ COMMITTED the second concurrent writer re-checks
+the WHERE after the first commits, sees `lastActiveAt = today`, matches 0 rows, and skips — so the streak
+and its bonuses are granted exactly once. Streak/milestone credits are gated on `claim.count === 1`;
+`streakAwarded` (surfaced as the result's `streakBonus`) is 0 for the race loser so the badge is
+accurate. Non-first-of-day submits take an `else` that just refreshes `lastActiveAt`. Added a pure
+`startOfUtcDay` helper (unit-tested). Base/perfect credits are unchanged. **No migration.**
+**Files touched:** `apps/web/src/lib/exercises/actions.ts` (+~48/-12), `.../muenzen.ts` (+startOfUtcDay),
+`.../__tests__/muenzen.test.ts` (+3 startOfUtcDay tests).
+**Feature flag:** none — it's a correctness fix; `git revert` restores the prior (racy) path.
+**Risk / open questions:** the DB race itself isn't unit-testable in the jsdom/no-DB harness, so the
+concurrency logic is validated by reasoning + an adversarial review confirming exactly-once award and
+equivalence on the reset/gap, second-of-day, failed-first, new-user (null lastActiveAt), and race-loser
+paths. Review found ONE narrow edge (not a regression): a concurrent *failed* first-of-day attempt that
+commits first bumps `lastActiveAt`, so a near-simultaneous *pass* won't claim the streak that day — this
+matches the existing *sequential* "first activity claims the day" semantics, awards no phantom coins, and
+`newStreak` isn't shown in the UI. A full fix (streak on first PASS regardless of an earlier fail) needs
+a dedicated streak-day column → migration; queued as **BUG4** (deferred). Also unaddressed: the smaller
+pre-existing base/perfect same-exercise race (**BUG3**, queued).
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 49 files, muenzen 49; api 5) · build ✓ (60/60). Lint n/a.
+**Next:** iter 7 = candidate **D** (daily-goal reward hook).
+
+---

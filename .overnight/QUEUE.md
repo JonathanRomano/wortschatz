@@ -17,12 +17,12 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
   as-partial-credit. Operator may instead just flip the flag. — files: `lib/exercises/grade.ts`.
 - [x] **B. Don't re-serve already-passed exercises** — Σ18 — **DONE iter 3** (flag `PREFER_UNSEEN_EXERCISES`).
 - [x] **C. Escalating streak milestone bonuses** — Σ17 — **DONE iter 5** (flag `STREAK_MILESTONE_REWARDS`).
-- [ ] **BUG2. Streak-award concurrency hardening** — Impact 4 / Size 4 / Risk 3 / Indep 4 — Σ15 — MIG:no
-  — pre-existing TOCTOU: streak/priorSuccess reads are outside the `$transaction`, so concurrent
-  same-day submits double-award the flat + milestone streak bonus (amplified by iter 5). Migration-free
-  fix: move the read in-tx and advance the streak via a conditional `updateMany` (`where lastActiveAt <
-  todayUTC`) that only the first writer matches; gate streak/milestone credits on `count===1`.
-  — files: `lib/exercises/actions.ts` — **← iter 6 (next)**. Found by iter-5 adversarial review.
+- [x] **BUG2. Streak-award concurrency hardening** — Σ15 — **DONE iter 6** (conditional-claim updateMany).
+- [ ] **BUG3. base/perfect first-completion race** — Impact 2 / Size 3 / Risk 3 / Indep 3 — Σ11 — MIG:no
+  — smaller pre-existing race: `priorSuccess`/`alreadyEarned` is read outside the tx, so two concurrent
+  first completions of the SAME exercise can each award base+perfect (10+5). Fix likely needs a per-
+  (user,exercise) idempotency key or an in-tx guard. Lower value than BUG2 (small amounts, same-exercise
+  concurrency only). — files: `lib/exercises/actions.ts`. Noted during iter 6.
 - [ ] **C2. Streak-milestone celebration UI** — Impact 3 / Size 4 / Risk 4 / Indep 4 — Σ15 — MIG:no
   — iter 5 credits the milestone bonus and folds it into the result badge total, but there's no explicit
   "🔥 7-day streak! +30" moment. Surface `newStreak`/milestone in ExerciseResult with a celebratory
@@ -77,6 +77,10 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
   cache/versioning care (see CLAUDE.md). — files: `apps/api/src/services/claude.ts`, ExerciseResult.
 
 ## Deferred — needs a migration (write file only, never run)
+- [ ] **BUG4. Streak on first PASS regardless of an earlier same-day fail** — decouple the activity
+  timestamp from the streak-day claim with a dedicated `User.lastStreakDay` (Date) column, so a failed
+  first attempt no longer "uses up" the day. Migration-gated. Low severity (matches current sequential
+  semantics; no phantom reward). Noted during iter 6 review.
 - [ ] Streak freeze / repair — new `User.streakFreezes`/`frozenUntil` + `SPENT_STREAK_FREEZE` reason.
 - [ ] True SM-2/FSRS SRS — interval/ease/dueAt columns on UserExercise or a ReviewState table.
 - [ ] Daily/weekly quests — Quest/UserQuest tables.

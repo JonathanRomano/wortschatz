@@ -7,3 +7,4 @@
 | 3 | 22:36 | IMPLEMENTED | Prefer unseen exercises in Next draw (+7 tests) | `PREFER_UNSEEN_EXERCISES` | ✓/✓/✓ |
 | 4 | 00:31 | IMPLEMENTED | WORD_ORDER partial credit via LCS (+4 tests) | `WORD_ORDER_PARTIAL_CREDIT` | ✓/✓/✓ |
 | 5 | 00:38 | IMPLEMENTED | Escalating streak milestones + day-level bonus fix (+10 tests) | `STREAK_MILESTONE_REWARDS` | ✓/✓/✓ |
+| 6 | 00:52 | IMPLEMENTED | Streak-award concurrency: atomic claim-the-day (+3 tests) | — (bugfix) | ✓/✓/✓ |

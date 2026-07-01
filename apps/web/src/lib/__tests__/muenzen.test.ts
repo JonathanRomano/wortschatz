@@ -5,6 +5,7 @@ import {
   computeReward,
   isSameCalendarDay,
   MUENZEN_RULES,
+  startOfUtcDay,
   STREAK_MILESTONES,
   streakMilestoneBonus,
 } from "@/lib/muenzen";
@@ -169,6 +170,29 @@ describe("streakMilestoneBonus", () => {
         streakMilestoneBonus(days[i - 1]!),
       );
     }
+  });
+});
+
+describe("startOfUtcDay", () => {
+  it("returns UTC midnight of the day containing the instant", () => {
+    const d = new Date(Date.UTC(2026, 6, 2, 13, 45, 30, 500));
+    expect(startOfUtcDay(d).toISOString()).toBe("2026-07-02T00:00:00.000Z");
+  });
+
+  it("is idempotent (already-midnight stays put)", () => {
+    const midnight = new Date(Date.UTC(2026, 6, 2));
+    expect(startOfUtcDay(midnight).getTime()).toBe(midnight.getTime());
+  });
+
+  it("a prior-day instant is strictly before today's start (drives the streak claim)", () => {
+    const now = new Date(Date.UTC(2026, 6, 2, 9, 0, 0));
+    const yesterday = new Date(Date.UTC(2026, 6, 1, 23, 59, 59));
+    expect(yesterday.getTime()).toBeLessThan(startOfUtcDay(now).getTime());
+    // A same-day earlier instant is NOT before today's start.
+    const earlierToday = new Date(Date.UTC(2026, 6, 2, 1, 0, 0));
+    expect(earlierToday.getTime()).toBeGreaterThanOrEqual(
+      startOfUtcDay(now).getTime(),
+    );
   });
 });
 
