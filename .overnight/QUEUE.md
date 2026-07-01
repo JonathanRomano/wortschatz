@@ -10,9 +10,11 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
 
 ## Ready — migration-free (ranked)
 
-- [ ] **A. Umlaut/eszett-tolerant grading** — Impact 5 / Size 5 / Risk 5 / Indep 5 — **Σ20** — MIG:no
-  — fold ä↔ae, ö↔oe, ü↔ue, ß↔ss in `norm()`/`eq()`; accept as correct, flag "watch the umlaut".
-  — files: `lib/exercises/grade.ts` — source: Duolingo accent tolerance, Clozemaster. **← iter 2**
+- [x] **A. Umlaut/eszett-tolerant grading** — Σ20 — **DONE iter 2** (flag `UMLAUT_TOLERANT_GRADING`).
+- [ ] **A2. Stricter German-fold / ß-homograph handling** — Impact 3 / Size 4 / Risk 4 / Indep 4 — Σ15 — MIG:no
+  — iter 2's ß↔ss fold accepts real homographs (Maße/Masse, Buße/Busse, in Maßen/in Massen). Optional
+  follow-up: umlaut-only strict mode, or a small homograph blocklist that forces exact ß, or fold-only-
+  as-partial-credit. Operator may instead just flip the flag. — files: `lib/exercises/grade.ts`.
 - [ ] **B. Don't re-serve already-passed exercises** — Impact 4 / Size 5 / Risk 4 / Indep 5 — Σ18 — MIG:no
   — in `getRandomExerciseOfType`, exclude ids the user already passed (UserExercise score≥60), fall back
   when pool exhausted. — files: `lib/exercises/actions.ts` — source: Anki/Duolingo mastered-leave-queue.
