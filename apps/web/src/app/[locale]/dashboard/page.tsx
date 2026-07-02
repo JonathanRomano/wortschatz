@@ -15,6 +15,9 @@ import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
 import { StreakFlame } from "@/components/ui/StreakFlame";
 import { XpLevelBadge } from "@/components/ui/XpLevelBadge";
 import { levelForXp, XP_LEVELS_ENABLED } from "@/lib/muenzen";
+import { AchievementsShelf } from "@/components/dashboard/AchievementsShelf";
+import { countEarned, deriveAchievements } from "@/content/achievements";
+import type { Locale } from "@/i18n/config";
 import { LevelChip } from "@/components/ui/LevelChip";
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
 import { ChartCard } from "@/components/dashboard/ChartCard";
@@ -86,6 +89,8 @@ export default async function DashboardPage({
     attemptsByType,
     recent,
     mistakesRows,
+    passingCount,
+    perfectCount,
     lifetimeXpAgg,
     chartData,
   ] = await Promise.all([
@@ -115,6 +120,8 @@ export default async function DashboardPage({
       ) latest
       WHERE latest."score" < 60
     `,
+    prisma.userExercise.count({ where: { userId, score: { gte: 60 } } }),
+    prisma.userExercise.count({ where: { userId, score: 100 } }),
     prisma.muenzenTransaction.aggregate({
       where: { userId, amount: { gt: 0 } },
       _sum: { amount: true },
@@ -176,6 +183,16 @@ export default async function DashboardPage({
   // query): the best consecutive-day run and how many days the goal was met.
   const bestStreak = longestStreak(heatmap);
   const daysGoalMet = goalMetDays(heatmap, dailyGoal);
+  // Derived achievement badges (read-only, no persistence).
+  const achievementStats = {
+    totalPassed: passingCount,
+    perfectCount,
+    longestStreak: bestStreak,
+    goalMetDays: daysGoalMet,
+    typesTried: new Set(attemptsByType.map((a) => a.exercise.type)).size,
+  };
+  const achievements = deriveAchievements(achievementStats);
+  const achievementsEarned = countEarned(achievementStats);
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 5 } }}>
@@ -254,6 +271,12 @@ export default async function DashboardPage({
           {t("dashboard.reviewMistakes")}
         </ButtonLink>
       </Box>
+
+      <AchievementsShelf
+        items={achievements}
+        locale={locale as Locale}
+        earnedCount={achievementsEarned}
+      />
 
       {/* Row 1 — Daily goal ring + recent activity. Putting them side
           by side gives the user a "today" + "what just happened" view

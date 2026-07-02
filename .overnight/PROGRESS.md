@@ -17,3 +17,4 @@
 | 13 | 01:42 | IMPLEMENTED | Weak-first selection: auto-resurface mistakes (+5 tests) | `PREFER_WEAK_EXERCISES` | ✓/✓/✓ |
 | 14 | 01:50 | IMPLEMENTED | Tap-to-pair matching board (+5 tests, i18n×4) | `MATCHING_TAP_TO_PAIR` | ✓/✓/✓ |
 | 15 | 01:57 | IMPLEMENTED | Derived XP level badge from lifetime Münzen (+6 tests, i18n×4) | `XP_LEVELS_ENABLED` | ✓/✓/✓ |
+| 16 | 02:03 | IMPLEMENTED | Derived achievements shelf — 6 badges (+5 tests) | — (read-only) | ✓/✓/✓ |

@@ -58,8 +58,8 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
 - [x] **N. Derived XP-level system** — Σ13 — **DONE iter 15** (flag `XP_LEVELS_ENABLED`; hero level badge).
 - [ ] **M. "Practice these mistakes" queue runner** — Impact 4 / Size 3 / Risk 3 / Indep 3 — Σ13 — MIG:no
   — sequential player over getMistakes rows. — files: mistakes/page.tsx, TypeRunner.tsx, actions.ts.
-- [ ] **L. Derived achievements/badges shelf** — Impact 4 / Size 2 / Risk 3 / Indep 4 — Σ13 — MIG:no
-  — read-time derivation, no persistence. — files: aggregations, dashboard/profile.
+- [x] **L. Derived achievements/badges shelf** — Σ13 — **DONE iter 16** (6 badges, read-only derivation).
+  Persisted unlock timestamps + toasts = migration follow-up (**L2**).
 - [ ] **O. Weekly leaderboard (read-only)** — Impact 3 / Size 3 / Risk 3 / Indep 4 — Σ13 — MIG:no
   — rolling 7d sum of positive txns; mind privacy/opt-in. — files: queries, dashboard page.
 - [ ] **U. "Review due today" CTA + Leitner-ish mistakes ordering** — Impact 4 / Size 3 / Risk 3 / Indep 3 — Σ13 — MIG:no

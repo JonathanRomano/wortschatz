@@ -68,6 +68,10 @@
     "goalMetDays": "Hedefe ulaşılan gün",
     "level": "Seviye {level}",
     "levelProgress": "Sonraki seviyeye %{pct}",
+    "achievements": {
+      "title": "Başarımlar",
+      "earnedOf": "{total} başarımdan {earned} tanesi"
+    },
     "exercisesThisWeek": "Bu hafta",
     "exercisesThisMonth": "Bu ay",
     "toReview": "Gözden geçirilecek alıştırmalar",

@@ -68,6 +68,10 @@
     "goalMetDays": "Days goal met",
     "level": "Level {level}",
     "levelProgress": "{pct}% to next level",
+    "achievements": {
+      "title": "Achievements",
+      "earnedOf": "{earned} of {total} earned"
+    },
     "exercisesThisWeek": "This week",
     "exercisesThisMonth": "This month",
     "toReview": "Exercises to review",

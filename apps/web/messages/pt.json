@@ -68,6 +68,10 @@
     "goalMetDays": "Dias com meta cumprida",
     "level": "Nível {level}",
     "levelProgress": "{pct}% para o próximo nível",
+    "achievements": {
+      "title": "Conquistas",
+      "earnedOf": "{earned} de {total} conquistadas"
+    },
     "exercisesThisWeek": "Esta semana",
     "exercisesThisMonth": "Este mês",
     "toReview": "Exercícios para revisar",

@@ -449,3 +449,32 @@ XP = lifetime *earned* (positive txns), so spending Münzen never lowers the lev
 toast is a possible follow-up.
 **Verification:** typecheck ✓ (7/7) · test ✓ (web 53 files, muenzen 35; api 5) · build ✓ (60/60). Lint n/a.
 **Next:** iter 16 = candidate **L** (achievements shelf) or **S** (weekly recap) / **V** (perf).
+
+---
+
+## Iteration 16 — 2026-07-02 02:03 CEST — Derived achievements shelf
+**Status:** IMPLEMENTED
+**Inspired by:** Duolingo/Busuu achievements, Memrise goals (queue item L, Σ13). The last major
+gamification gap.
+**What they do:** a shelf of badges you unlock as you hit milestones — cheap, powerful motivation.
+**What we had:** no achievements/badges anywhere in the app.
+**What I changed:** a pure `content/achievements.ts` with 6 badges (First win, Dedicated, Week warrior,
+Flawless, Explorer, Centurion) whose earned state derives from existing stats (passed count, perfect
+count, longest streak, goal-met days, types tried) — `deriveAchievements` / `countEarned`, unit-tested.
+Badge copy is `LocalizedText` in that one file (same pattern as exercise intros → no messages/*.json
+churn for 48 strings; only the section chrome — title + "X of Y earned" — went into next-intl × 4). A new
+`AchievementsShelf` renders the grid (earned highlighted, locked dimmed) on the dashboard. Stats come from
+two new indexed COUNT queries (passing, perfect) folded into the existing `Promise.all` plus the
+already-computed streak/goal figures and `typesTried` from the existing by-type fetch.
+**Files touched:** `content/achievements.ts` (new), `components/dashboard/AchievementsShelf.tsx` (new),
+`app/[locale]/dashboard/page.tsx` (2 queries + derive + render), `messages/{en,pt,tr,uk}.json`
+(+achievements chrome block), `content/__tests__/achievements.test.ts` (new, 5 tests).
+**Feature flag:** none — additive read-only shelf; `git revert` removes it. (Kept simple; the badge set is
+easy to gate later if needed.)
+**Risk / open questions:** read-only derivation + presentational — pure logic unit-tested; the grid's
+visuals aren't verifiable headless but it's stock MUI on theme tokens. Badges are *stateless* (recomputed
+each load), so there's no unlock toast/notification — a persisted `Achievement` table for unlock
+timestamps is the migration follow-up (**L2**). `longestStreak`/`goalMetDays` are 90-day-windowed (per
+iter 10), so those two badges are effectively "within the tracked window".
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 54 files, +5; api 5) · build ✓ (60/60). Lint n/a.
+**Next:** iter 17 = a smaller safe item — candidate **S** (weekly recap), **V** (perf), or **W** (level nudge).
