@@ -125,6 +125,7 @@
     "feedback": "Відгук",
     "explanation": "Пояснення",
     "correctAnswer": "Правильна відповідь",
+    "mismatchLine": "Ви написали «{got}» — правильно: «{expected}»",
     "loading": "Завантаження…",
     "empty": "Жодна вправа не відповідає фільтрам.",
     "completed": "Виконано",

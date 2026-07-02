@@ -16,6 +16,9 @@ type Props = {
   streakBonus: number;
   alreadyEarned: boolean;
   correctAnswer?: string;
+  // Per-blank mismatches (FILL_IN_THE_BLANK): what the learner typed vs correct.
+  // Shown in place of the aggregate correctAnswer when present.
+  mismatches?: { got: string; expected: string }[];
   // The user's streak after this attempt. A celebratory line is shown when the
   // streak advanced this attempt (i.e. streakBonus > 0, the first pass of the day).
   newStreak?: number;
@@ -36,6 +39,7 @@ export function ExerciseResult({
   streakBonus,
   alreadyEarned,
   correctAnswer,
+  mismatches,
   newStreak,
   streakMilestone,
 }: Props) {
@@ -103,6 +107,20 @@ export function ExerciseResult({
             {feedback}
           </Typography>
         </Typography>
+        {mismatches && mismatches.length > 0 ? (
+          <Box>
+            <Typography variant="body2" sx={{ fontWeight: 500, color: "text.primary" }}>
+              {t("correctAnswer")}:
+            </Typography>
+            <Stack spacing={0.25} sx={{ mt: 0.25 }}>
+              {mismatches.map((m, i) => (
+                <Typography key={i} variant="body2" sx={{ color: "text.secondary" }}>
+                  {t("mismatchLine", { got: m.got || "—", expected: m.expected })}
+                </Typography>
+              ))}
+            </Stack>
+          </Box>
+        ) : null}
         {correctAnswer ? (
           <Typography variant="body2">
             <Typography component="span" sx={{ fontWeight: 500, color: "text.primary" }}>

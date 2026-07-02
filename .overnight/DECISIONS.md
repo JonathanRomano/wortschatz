@@ -538,3 +538,42 @@ only items that clear the quality bar; the migration-gated set (SRS, streak-free
 achievements/error-tags) is documented in QUEUE.md for a supervised session.
 **Next:** iter 19 = a remaining item only if it clears the bar (candidate E2 per-blank feedback, or a
 documented SKIP).
+
+---
+
+## Iteration 19 — 2026-07-02 02:20 CEST — Per-blank mismatch feedback
+**Status:** IMPLEMENTED
+**Inspired by:** Duolingo/Busuu inline correction (queue item E2). Sharpens iter 7's answer reveal.
+**What they do:** on a fill-in miss they point at the specific blank you got wrong and show what you
+typed vs the correct token — you learn from the exact mistake.
+**What we had:** iter 7 revealed the aggregate "Correct answer: Tür, Käse, Straße" — you had to work out
+which blank you actually missed.
+**What I changed:** `gradeLocally` now returns `mismatches` for FILL_IN_THE_BLANK — the wrong blanks with
+`{got, expected}` (folding-aware, so a `Tuer`↔`Tür` blank isn't flagged). It takes precedence over the
+aggregate `correctAnswer` (only one is set, so no redundancy). `ExerciseResult` renders each as
+"You wrote "X" — correct: "Y"" (empty input shown as "—"). Threaded through `SubmitResult` and both
+runners; added the `mismatchLine` i18n key × 4 and 4 grade tests (updated iter-7's aggregate test to the
+new per-blank behaviour).
+**Files touched:** `lib/exercises/grade.ts` (+blankMismatches), `.../actions.ts` (SubmitResult + thread),
+`components/exercises/ExerciseResult.tsx`, `TypeRunner.tsx`, `ExerciseRunner.tsx`,
+`messages/{en,pt,tr,uk}.json` (+1 key each), `__tests__/grade.test.ts` (updated + 3 new).
+**Feature flag:** none of its own — gated by `REVEAL_CORRECT_ANSWER` (off → no mismatches computed).
+**Risk / open questions:** contained to grading + result panel, no money/data; folding-aware and
+unit-tested. Colouring the wrong blanks *inside* the FillInTheBlank renderer (needs correctness threaded
+into RendererProps) remains a follow-up.
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 54 files, grade 32; api 5) · build ✓ (60/60). Lint n/a.
+
+---
+
+### Loop wind-down note — 02:20
+19 iterations (1 research + 18 improvements). The migration-free queue is now exhausted of items that
+clear the bar for safe, verifiable, autonomous work — the shipped set spans every area the mission named
+(exercise mechanics, answer evaluation + German umlaut/typo-ish tolerance, feedback UX, XP/levels/streaks/
+achievements, SRS-lite weak-item resurfacing, session flow, progress visualization, matching + listening
+UX). What's left in QUEUE.md is either migration-gated (true SM-2 SRS, streak-freeze, quests, persisted
+achievements/error-tags, all-time longest streak, daily-goal reward idempotency — need a supervised
+migration) or a poor autonomous fit (V raw-SQL group-by, W cross-page level nudge, R unverifiable Recharts
+overlay, O privacy-sensitive leaderboard, Q grader-string i18n refactor). Per the SPEC's "depth over
+breadth", I'm holding here rather than padding with lower-quality changes. If the loop keeps running I'll
+tackle only genuinely bar-clearing items and otherwise log SKIPs; the branch is a clean, reviewable
+commit-per-iteration history off `main` for the morning.

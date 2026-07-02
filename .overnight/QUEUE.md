@@ -38,9 +38,8 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
 - [x] **E. Reveal correct answer in result panel** — Σ15 — **DONE iter 7** (flag `REVEAL_CORRECT_ANSWER`).
   Scoped to an additive "Correct answer" line in ExerciseResult (no renderer changes). Per-blank inline
   highlighting in the renderers (the richer version) remains available as a follow-up (**E2**).
-- [ ] **E2. Per-item inline correctness highlighting** — Impact 4 / Size 2 / Risk 3 / Indep 3 — Σ12 — MIG:no
-  — return `perItem: boolean[]` from gradeLocally, colour each wrong blank/pair red in the renderer.
-  — files: grade.ts, renderers (FillInTheBlank, Matching), ExerciseResult.
+- [x] **E2. Per-blank mismatch feedback** — Σ12 — **DONE iter 19** (grade.ts `mismatches` → result panel;
+  shows "you wrote X → correct Y" per wrong blank). In-renderer colour highlighting remains a follow-up.
 - [x] **S. Week-over-week recap line** — Σ15 — **DONE iter 17** (hero caption, this-week vs last-week count).
   Avg-score delta would need a 14-day score fetch (deferred); count is derived from the existing heatmap.
 - [ ] **G. Typo tolerance (Levenshtein ≤1 / length-scaled)** — Impact 4 / Size 4 / Risk 3 / Indep 4 — Σ15 — MIG:no

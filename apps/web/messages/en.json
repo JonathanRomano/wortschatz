@@ -125,6 +125,7 @@
     "feedback": "Feedback",
     "explanation": "Explanation",
     "correctAnswer": "Correct answer",
+    "mismatchLine": "You wrote “{got}” — correct: “{expected}”",
     "loading": "Loading…",
     "empty": "No exercises match your filters.",
     "completed": "Completed",

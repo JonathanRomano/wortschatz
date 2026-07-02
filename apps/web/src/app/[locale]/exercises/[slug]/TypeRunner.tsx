@@ -324,6 +324,7 @@ export function TypeRunner({
               streakBonus={result.streakBonus}
               alreadyEarned={result.alreadyEarned}
               correctAnswer={result.correctAnswer}
+              mismatches={result.mismatches}
               newStreak={result.newStreak}
               streakMilestone={result.streakMilestone}
             />

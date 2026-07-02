@@ -192,13 +192,39 @@ describe("gradeLocally — correctAnswer reveal", () => {
     expect(r.correctAnswer).toBeUndefined();
   });
 
-  it("reveals the blanks on a partial FILL_IN_THE_BLANK", () => {
+  it("lists per-blank mismatches (not the aggregate answer) on a partial FILL_IN_THE_BLANK", () => {
     const r = gradeLocally(
       ex("FILL_IN_THE_BLANK", { blanks: ["Tür", "Käse"] }),
       { blanks: ["Tür", "falsch"] },
     );
     expect(r.score).toBeLessThan(100);
-    expect(r.correctAnswer).toBe("Tür, Käse");
+    expect(r.mismatches).toEqual([{ got: "falsch", expected: "Käse" }]);
+    expect(r.correctAnswer).toBeUndefined();
+  });
+
+  it("treats a folded blank as correct (not a mismatch)", () => {
+    const r = gradeLocally(
+      ex("FILL_IN_THE_BLANK", { blanks: ["Tür", "Käse"] }),
+      { blanks: ["Tuer", "wrong"] },
+    );
+    // Tuer↔Tür folds → correct; only Käse is a mismatch.
+    expect(r.mismatches).toEqual([{ got: "wrong", expected: "Käse" }]);
+  });
+
+  it("has no mismatches on a perfect fill-in", () => {
+    const r = gradeLocally(ex("FILL_IN_THE_BLANK", { blanks: ["Tür"] }), {
+      blanks: ["Tür"],
+    });
+    expect(r.mismatches).toBeUndefined();
+  });
+
+  it("uses the aggregate correctAnswer (not mismatches) for non-blank types", () => {
+    const r = gradeLocally(
+      ex("MULTIPLE_CHOICE", { correctIndex: 2 }, { options: ["a", "b", "c", "d"] }),
+      { selectedIndex: 0 },
+    );
+    expect(r.mismatches).toBeUndefined();
+    expect(r.correctAnswer).toBe("c");
   });
 
   it("reveals the correct option text on a wrong MULTIPLE_CHOICE", () => {

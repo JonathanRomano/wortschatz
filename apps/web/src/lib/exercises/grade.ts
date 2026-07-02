@@ -10,6 +10,10 @@ export type GradeResult = {
   // exercise, present only when the learner didn't score 100 (so the result
   // panel can reveal what they missed). Absent for perfect and AI-graded types.
   correctAnswer?: string;
+  // Per-blank mismatches for FILL_IN_THE_BLANK (what the learner typed vs the
+  // correct token), so the result panel can point at the specific wrong blanks
+  // instead of just listing every answer. Takes precedence over correctAnswer.
+  mismatches?: { got: string; expected: string }[];
 };
 
 /**
@@ -120,10 +124,34 @@ export function gradeLocally(
 ): GradeResult {
   const result = gradeCore(exercise, rawAnswer);
   if (REVEAL_CORRECT_ANSWER && result.deterministic && result.score < 100) {
+    // Prefer specific per-blank mismatches (FILL_IN_THE_BLANK); otherwise fall
+    // back to the aggregate correct-answer summary.
+    const mismatches = blankMismatches(exercise, rawAnswer);
+    if (mismatches && mismatches.length > 0) return { ...result, mismatches };
     const answer = solutionText(exercise);
     if (answer) return { ...result, correctAnswer: answer };
   }
   return result;
+}
+
+/**
+ * For FILL_IN_THE_BLANK, the blanks the learner got wrong — each with what they
+ * typed and the correct token. Folding-aware (a folded match counts correct).
+ * Returns null for other types.
+ */
+function blankMismatches(
+  exercise: Pick<Exercise, "type" | "content" | "solution">,
+  rawAnswer: unknown,
+): { got: string; expected: string }[] | null {
+  if ((exercise.type as ExerciseType) !== "FILL_IN_THE_BLANK") return null;
+  const solution = (exercise.solution ?? {}) as Record<string, unknown>;
+  const answer = (rawAnswer ?? {}) as Record<string, unknown>;
+  const expected = (solution.blanks as string[]) ?? [];
+  const got = (answer.blanks as string[]) ?? [];
+  if (expected.length === 0) return null;
+  return expected
+    .map((e, i) => ({ got: got[i] ?? "", expected: e }))
+    .filter((r) => !compare(r.expected, r.got).ok);
 }
 
 /**

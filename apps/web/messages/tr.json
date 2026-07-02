@@ -125,6 +125,7 @@
     "feedback": "Geri bildirim",
     "explanation": "Açıklama",
     "correctAnswer": "Doğru cevap",
+    "mismatchLine": "“{got}” yazdın — doğrusu: “{expected}”",
     "loading": "Yükleniyor…",
     "empty": "Filtrelerinize uyan alıştırma yok.",
     "completed": "Tamamlandı",

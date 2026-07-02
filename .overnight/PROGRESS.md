@@ -20,3 +20,4 @@
 | 16 | 02:03 | IMPLEMENTED | Derived achievements shelf — 6 badges (+5 tests) | — (read-only) | ✓/✓/✓ |
 | 17 | 02:08 | IMPLEMENTED | Week-over-week recap line in hero (+2 tests, i18n×4) | — (read-only) | ✓/✓/✓ |
 | 18 | 02:14 | IMPLEMENTED | Distinct streak-milestone celebration line (+1 test, i18n×4) | — (additive UI) | ✓/✓/✓ |
+| 19 | 02:20 | IMPLEMENTED | Per-blank mismatch feedback (you wrote X → correct Y) (+4 tests, i18n×4) | — (via `REVEAL_CORRECT_ANSWER`) | ✓/✓/✓ |
