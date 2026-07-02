@@ -478,3 +478,24 @@ timestamps is the migration follow-up (**L2**). `longestStreak`/`goalMetDays` ar
 iter 10), so those two badges are effectively "within the tracked window".
 **Verification:** typecheck ✓ (7/7) · test ✓ (web 54 files, +5; api 5) · build ✓ (60/60). Lint n/a.
 **Next:** iter 17 = a smaller safe item — candidate **S** (weekly recap), **V** (perf), or **W** (level nudge).
+
+---
+
+## Iteration 17 — 2026-07-02 02:08 CEST — Week-over-week recap line
+**Status:** IMPLEMENTED
+**Inspired by:** Duolingo weekly recap / Babbel weekly review (queue item S, Σ15).
+**What they do:** a small "you're up N vs last week" nudge gives momentum and a reason to keep the pace.
+**What we had:** the dashboard showed absolute week/month/total counts but no week-over-week comparison.
+**What I changed:** a pure `weekOverWeek(days)` in `aggregations.ts` summing the last 7 heatmap days vs
+the previous 7 (no new query — reuses the fetched 90-day heatmap), and a one-line recap caption under the
+hero name: "{count} exercises this week ({+/−delta} vs last week)". Added the `weekRecap` i18n key × 4
+locales and 2 unit tests.
+**Files touched:** `lib/dashboard/aggregations.ts` (+weekOverWeek), `app/[locale]/dashboard/page.tsx`
+(compute + hero caption), `messages/{en,pt,tr,uk}.json` (+1 key each), `__tests__/aggregations.test.ts`
+(+2 tests, 36→38).
+**Feature flag:** none — a single additive caption; `git revert` removes it.
+**Risk / open questions:** pure + presentational, no money/data — self-reviewed. Buckets are UTC-day
+based (like the heatmap), so "this week" is the last 7 UTC days, not a Mon–Sun calendar week; consistent
+with the rest of the dashboard. An avg-score delta would need a 14-day score fetch — deferred.
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 54 files, aggregations 38; api 5) · build ✓ (60/60). Lint n/a.
+**Next:** iter 18 — remaining queue is thinner (V perf, W level-nudge, U review-due, R radar); pick by value.

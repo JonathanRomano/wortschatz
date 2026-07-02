@@ -101,7 +101,8 @@
         "complete": "Bugün için tamamlandı!"
       }
     },
-    "welcomeBack": "Tekrar hoş geldin"
+    "welcomeBack": "Tekrar hoş geldin",
+    "weekRecap": "Bu hafta {count} alıştırma ({delta} geçen haftaya göre)"
   },
   "exercises": {
     "browseTitle": "Alıştırmalar",

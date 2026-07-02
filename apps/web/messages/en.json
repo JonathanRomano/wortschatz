@@ -101,7 +101,8 @@
         "complete": "Done for today!"
       }
     },
-    "welcomeBack": "Welcome back"
+    "welcomeBack": "Welcome back",
+    "weekRecap": "{count} exercises this week ({delta} vs last week)"
   },
   "exercises": {
     "browseTitle": "Exercises",

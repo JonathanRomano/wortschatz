@@ -101,7 +101,8 @@
         "complete": "Виконано на сьогодні!"
       }
     },
-    "welcomeBack": "Раді бачити знову"
+    "welcomeBack": "Раді бачити знову",
+    "weekRecap": "{count} вправ цього тижня ({delta} проти минулого тижня)"
   },
   "exercises": {
     "browseTitle": "Вправи",

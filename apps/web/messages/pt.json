@@ -101,7 +101,8 @@
         "complete": "Concluído por hoje!"
       }
     },
-    "welcomeBack": "Bem-vindo de volta"
+    "welcomeBack": "Bem-vindo de volta",
+    "weekRecap": "{count} exercícios esta semana ({delta} vs semana passada)"
   },
   "exercises": {
     "browseTitle": "Exercícios",

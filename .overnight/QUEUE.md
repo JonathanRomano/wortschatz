@@ -43,8 +43,8 @@ Scoring (0–5 each): **Impact** (for a CEFR-aligned German learner) · **Size**
 - [ ] **E2. Per-item inline correctness highlighting** — Impact 4 / Size 2 / Risk 3 / Indep 3 — Σ12 — MIG:no
   — return `perItem: boolean[]` from gradeLocally, colour each wrong blank/pair red in the renderer.
   — files: grade.ts, renderers (FillInTheBlank, Matching), ExerciseResult.
-- [ ] **S. Weekly recap card** — Impact 3 / Size 4 / Risk 4 / Indep 4 — Σ15 — MIG:no — this-week vs
-  last-week attempts + avg-score delta. — files: `dashboard/page.tsx`, `lib/dashboard/aggregations.ts`.
+- [x] **S. Week-over-week recap line** — Σ15 — **DONE iter 17** (hero caption, this-week vs last-week count).
+  Avg-score delta would need a 14-day score fetch (deferred); count is derived from the existing heatmap.
 - [ ] **G. Typo tolerance (Levenshtein ≤1 / length-scaled)** — Impact 4 / Size 4 / Risk 3 / Indep 4 — Σ15 — MIG:no
   — near-miss = partial credit + "careful with spelling"; builds on A. — files: `lib/exercises/grade.ts`.
 - [ ] **V. Dashboard groupBy perf fix** — Impact 2 / Size 5 / Risk 4 / Indep 4 — Σ15 — MIG:no

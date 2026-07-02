@@ -9,6 +9,7 @@ import {
   goalMetDays,
   heatmapThresholds,
   longestStreak,
+  weekOverWeek,
 } from "@/lib/dashboard/aggregations";
 import type { ExerciseType } from "@wortschatz/database";
 
@@ -48,6 +49,22 @@ describe("goalMetDays", () => {
 
   it("returns 0 when no day reaches the goal", () => {
     expect(goalMetDays(heat([1, 2, 3]), 5)).toBe(0);
+  });
+});
+
+describe("weekOverWeek", () => {
+  it("sums the last 7 days vs the previous 7", () => {
+    // 14 days: prev-7 all 1 (=7), last-7 all 2 (=14).
+    const days = heat([1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2]);
+    expect(weekOverWeek(days)).toEqual({ thisWeek: 14, lastWeek: 7 });
+  });
+
+  it("handles fewer than 14 days without throwing", () => {
+    expect(weekOverWeek(heat([3, 4, 5]))).toEqual({
+      thisWeek: 12,
+      lastWeek: 0,
+    });
+    expect(weekOverWeek([])).toEqual({ thisWeek: 0, lastWeek: 0 });
   });
 });
 

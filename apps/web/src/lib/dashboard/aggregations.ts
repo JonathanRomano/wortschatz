@@ -174,6 +174,19 @@ export function goalMetDays(days: HeatmapDay[], dailyGoal: number): number {
 }
 
 /**
+ * Exercise counts for the last 7 days vs the 7 days before that, from the
+ * chronologically-ordered heatmap window (last entry = today). Powers a
+ * week-over-week momentum recap without any extra query.
+ */
+export function weekOverWeek(days: HeatmapDay[]): {
+  thisWeek: number;
+  lastWeek: number;
+} {
+  const sum = (arr: HeatmapDay[]) => arr.reduce((n, d) => n + d.count, 0);
+  return { thisWeek: sum(days.slice(-7)), lastWeek: sum(days.slice(-14, -7)) };
+}
+
+/**
  * Per-type average score over the most-recent `lastN` attempts of that
  * type. Types with zero attempts are still returned (so the radar
  * always renders all 10 axes) with `avgScore: 0, attempts: 0`. Input

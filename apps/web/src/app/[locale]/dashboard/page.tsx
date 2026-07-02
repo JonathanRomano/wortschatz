@@ -32,6 +32,7 @@ import {
   buildRadar,
   goalMetDays,
   longestStreak,
+  weekOverWeek,
 } from "@/lib/dashboard/aggregations";
 import { DAILY_GOAL_DEFAULT } from "@wortschatz/config";
 import {
@@ -183,6 +184,9 @@ export default async function DashboardPage({
   // query): the best consecutive-day run and how many days the goal was met.
   const bestStreak = longestStreak(heatmap);
   const daysGoalMet = goalMetDays(heatmap, dailyGoal);
+  const wow = weekOverWeek(heatmap);
+  const weekDelta = wow.thisWeek - wow.lastWeek;
+  const weekDeltaLabel = weekDelta > 0 ? `+${weekDelta}` : String(weekDelta);
   // Derived achievement badges (read-only, no persistence).
   const achievementStats = {
     totalPassed: passingCount,
@@ -224,6 +228,12 @@ export default async function DashboardPage({
             }}
           >
             {user.name ?? session.user.email}
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
+            {t("dashboard.weekRecap", {
+              count: wow.thisWeek,
+              delta: weekDeltaLabel,
+            })}
           </Typography>
         </Box>
         <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", flexWrap: "wrap" }}>
