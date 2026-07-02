@@ -30,6 +30,19 @@ describe("ExerciseResult — streak celebration", () => {
     expect(screen.queryByText(/streakDays/)).toBeNull();
   });
 
+  it("shows the milestone line (not the streak line) when a milestone is reached", () => {
+    renderLight(
+      <ExerciseResult
+        {...base}
+        streakBonus={50}
+        newStreak={7}
+        streakMilestone={7}
+      />,
+    );
+    expect(screen.getByText(/streakMilestone/)).toBeInTheDocument();
+    expect(screen.queryByText(/streakDays/)).toBeNull();
+  });
+
   it("still shows the correct-answer line it is given", () => {
     renderLight(
       <ExerciseResult

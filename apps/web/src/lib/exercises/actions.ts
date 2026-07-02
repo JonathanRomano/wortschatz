@@ -38,6 +38,10 @@ export type SubmitResult =
       // Correct-answer summary for a closed-form exercise the learner didn't
       // ace (see gradeLocally / REVEAL_CORRECT_ANSWER); undefined otherwise.
       correctAnswer?: string;
+      // The streak length reached when this attempt crossed a streak milestone
+      // (7/14/30/…) and its bonus was awarded; undefined otherwise. Lets the UI
+      // show a distinct "milestone!" celebration vs a normal streak tick.
+      streakMilestone?: number;
     }
   | { ok: false; error: string };
 
@@ -219,6 +223,10 @@ export async function submitExerciseAttempt(
     newStreak,
     alreadyEarned,
     correctAnswer: local.correctAnswer,
+    // A milestone was reached iff its bonus was actually awarded this attempt
+    // (won the day → streakAwarded includes it).
+    streakMilestone:
+      milestoneBonus > 0 && streakAwarded > 0 ? newStreak : undefined,
   };
 }
 

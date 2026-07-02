@@ -499,3 +499,42 @@ based (like the heatmap), so "this week" is the last 7 UTC days, not a Mon–Sun
 with the rest of the dashboard. An avg-score delta would need a 14-day score fetch — deferred.
 **Verification:** typecheck ✓ (7/7) · test ✓ (web 54 files, aggregations 38; api 5) · build ✓ (60/60). Lint n/a.
 **Next:** iter 18 — remaining queue is thinner (V perf, W level-nudge, U review-due, R radar); pick by value.
+
+---
+
+## Iteration 18 — 2026-07-02 02:14 CEST — Distinct streak-milestone celebration
+**Status:** IMPLEMENTED
+**Inspired by:** Duolingo milestone moments (queue item C3). Completes the streak arc (iters 5/6/12).
+**What they do:** hitting 7/30/100 days is a bigger, distinct celebration than a normal daily tick.
+**What we had:** iter 5 awards the milestone bonus (extra coins) and iter 12 shows a "🔥 N-day streak!"
+line, but a milestone looked the same as any other streak day in the UI.
+**What I changed:** `submitExerciseAttempt` now derives `streakMilestone` (the streak length reached) into
+`SubmitResult` when a milestone bonus was actually awarded this attempt (`milestoneBonus > 0 &&
+streakAwarded > 0` — i.e. it won the day). `ExerciseResult` shows a stronger "🎉 N-day milestone!" line in
+place of the normal streak tick when that's set. Both runners pass it through. Added the `streakMilestone`
+i18n key × 4 locales and an `ExerciseResult` test for milestone-over-streak precedence.
+**Files touched:** `lib/exercises/actions.ts` (SubmitResult + derive), `components/exercises/
+ExerciseResult.tsx`, `TypeRunner.tsx`, `ExerciseRunner.tsx`, `messages/{en,pt,tr,uk}.json` (+1 key each),
+`__tests__/ExerciseResult.test.tsx` (+1 test).
+**Feature flag:** none — additive UI reading existing/derived `SubmitResult` data; `git revert` removes it.
+Gated implicitly by `STREAK_MILESTONE_REWARDS` (no milestone bonus → no `streakMilestone`).
+**Risk / open questions:** trivial/additive, no money path touched (derived from already-computed award
+figures). Self-reviewed.
+**Verification:** typecheck ✓ (7/7) · test ✓ (web 54 files; api 5) · build ✓ (60/60). Lint n/a.
+
+---
+
+### Loop status note — 02:14
+18 iterations in (1 research + 16 improvements + this). The high/medium-value migration-free queue is now
+**substantially exhausted** — shipped across grading tolerance, partial credit, answer reveal, streak
+milestones+concurrency+celebration, unseen/weak selection, bounded sessions, TTS, tap-matching, heatmap,
+streak/goal stats, XP levels, achievements, weekly recap. Remaining ready items are lower-value or a poor
+fit for safe, verifiable, autonomous execution here: **V** (dashboard perf) needs a relation-join GROUP BY
+= raw SQL I can't run to verify; **W** (level nudge) sprawls across the per-type hub + per-page level
+filters; **R** (radar trend) is a Recharts overlay I can't visually verify; **Q** (localize grader feedback)
+is a string-vs-key refactor; **O** (leaderboard) is privacy-sensitive. Per the SPEC's "depth over breadth,"
+continuing to force these risks the sloppiness it warns against. Next iterations will slow cadence and pick
+only items that clear the quality bar; the migration-gated set (SRS, streak-freeze, quests, persisted
+achievements/error-tags) is documented in QUEUE.md for a supervised session.
+**Next:** iter 19 = a remaining item only if it clears the bar (candidate E2 per-blank feedback, or a
+documented SKIP).

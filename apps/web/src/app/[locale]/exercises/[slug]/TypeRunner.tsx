@@ -325,6 +325,7 @@ export function TypeRunner({
               alreadyEarned={result.alreadyEarned}
               correctAnswer={result.correctAnswer}
               newStreak={result.newStreak}
+              streakMilestone={result.streakMilestone}
             />
             {sessionDone ? (
               <Box

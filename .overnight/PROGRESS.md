@@ -19,3 +19,4 @@
 | 15 | 01:57 | IMPLEMENTED | Derived XP level badge from lifetime Münzen (+6 tests, i18n×4) | `XP_LEVELS_ENABLED` | ✓/✓/✓ |
 | 16 | 02:03 | IMPLEMENTED | Derived achievements shelf — 6 badges (+5 tests) | — (read-only) | ✓/✓/✓ |
 | 17 | 02:08 | IMPLEMENTED | Week-over-week recap line in hero (+2 tests, i18n×4) | — (read-only) | ✓/✓/✓ |
+| 18 | 02:14 | IMPLEMENTED | Distinct streak-milestone celebration line (+1 test, i18n×4) | — (additive UI) | ✓/✓/✓ |
