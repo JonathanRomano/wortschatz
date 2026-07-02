@@ -1,5 +1,40 @@
 # Progress — one line per iteration (10-second morning overview)
 
+## Executive summary (morning read)
+
+Branch `feature/overnight-competitive-loop`, off `main`, 19 commits, linear, nothing pushed.
+**18 competitive improvements shipped** (+ the recon), each: researched from a best-in-class app →
+mapped to our code → implemented behind a **feature flag** (where behavior-changing) → **typecheck +
+test + build green** → most risky/money ones **adversarially reviewed** by a second agent. Web test
+count grew 532 → ~600+ across the night. No migrations run; no schema touched. Every commit is
+independently `git revert`-able.
+
+**What landed, by theme:**
+- *German answer-checking:* umlaut/eszett tolerance (2), WORD_ORDER partial credit (4), reveal correct
+  answer (7), per-blank mismatch feedback (19).
+- *Gamification economy:* escalating streak milestones (5) + streak-award concurrency fix (6) + streak
+  celebration (12) + distinct milestone celebration (18); derived XP levels (15); achievements shelf (16).
+- *Adaptive practice / SRS-lite:* don't re-serve passed exercises (3); auto-resurface weak items (13).
+- *Session flow:* bounded practice sessions + completion screen (11).
+- *Exercise UX:* TTS for listening (8); tap-to-pair matching (14).
+- *Progress viz:* relative heatmap buckets (9); longest-streak + goal-met stats (10); week-over-week
+  recap (17).
+
+**Flags to toggle during review:** `UMLAUT_TOLERANT_GRADING`, `WORD_ORDER_PARTIAL_CREDIT`,
+`REVEAL_CORRECT_ANSWER`, `STREAK_MILESTONE_REWARDS`, `PREFER_UNSEEN_EXERCISES`, `PREFER_WEAK_EXERCISES`,
+`PRACTICE_SESSIONS`, `LISTENING_TTS`, `MATCHING_TAP_TO_PAIR`, `XP_LEVELS_ENABLED`.
+
+**Deferred (need a supervised migration or don't fit safe autonomous work):** true SM-2 SRS,
+streak-freeze, quests, persisted achievements/error-tags, all-time longest streak, daily-goal reward
+idempotency; plus V (raw-SQL group-by), W (level nudge), R (Recharts overlay), O (leaderboard). See
+DECISIONS.md wind-down note + QUEUE.md.
+
+**Environment caveats:** lint is non-functional on this repo (no ESLint config/install) so it's not a
+gate; clear `apps/web/.next` if a stale route-validator typecheck error appears.
+
+---
+
+
 | Iter | Time | Status | Improvement | Feature flag | Gates (tc/test/build) |
 |-----:|------|--------|-------------|--------------|-----------------------|
 | 1 | 22:19 | RESEARCH | Codebase recon + seeded 25-item queue | — | baseline ✓ |
