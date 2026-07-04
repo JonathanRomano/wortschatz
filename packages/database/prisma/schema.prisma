@@ -110,6 +110,15 @@ model User {
   dailyGoal         Int           @default(5)
   avatarUrl         String?
 
+  // Sprint 05 — the professional pivot ("Beruf"). `profession` is a
+  // config-validated slug from PROFESSION_SLUGS in @wortschatz/config,
+  // stored as TEXT (like `nativeLanguage`) so new professions never
+  // require a migration. NULL = learning for themselves; the app
+  // behaves exactly as before. `targetLevel` is the goal level (the
+  // exam they need), alongside `learningLevel` (where they are now).
+  profession        String?
+  targetLevel       CefrLevel?
+
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
@@ -205,6 +214,9 @@ model Exercise {
   @@index([status])
   @@index([generationSessionId])
   @@index([basePromptVersionId])
+  // Sprint 05 — profession tags (`beruf:<slug>`, `unit:<slug>`) are
+  // filtered with `tags: { has: … }`; GIN makes that an index scan.
+  @@index([tags], type: Gin)
 }
 
 // Sprint 02 Task 7 — per-exercise discussion thread. Soft-deleted rows

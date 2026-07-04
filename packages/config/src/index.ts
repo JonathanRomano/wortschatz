@@ -7,5 +7,6 @@
 export * from "./constants.js";
 export * from "./env.js";
 export * from "./helicone.js";
+export * from "./professions.js";
 export * from "./validators.js";
 export * from "./utils.js";

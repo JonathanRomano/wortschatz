@@ -186,6 +186,18 @@
     "ERROR_CORRECTION": "Cümledeki hatayı bulun ve düzeltin.",
     "FREE_WRITING": "Kısa bir metin yazın — AI tarafından değerlendirilir."
   },
+  "professions": {
+    "pflege": "Sağlık ve bakım",
+    "it": "BT ve mühendislik",
+    "gastro": "Otelcilik ve gastronomi",
+    "handwerk": "Zanaat ve lojistik"
+  },
+  "professionDescriptions": {
+    "pflege": "Hemşireler, bakıcılar ve klinik çalışanları için Almanca — servis rutinleri, vardiya devirleri ve hasta görüşmeleri.",
+    "it": "Yazılımcılar ve mühendisler için Almanca — günlük toplantılar, kod incelemeleri ve ofis hayatı.",
+    "gastro": "Mutfaklar, oteller ve restoranlar için Almanca — servis, siparişler ve misafirler.",
+    "handwerk": "Şantiyeler, atölyeler, depolar ve yollar için Almanca — aletler, iş güvenliği ve programlar."
+  },
   "renderers": {
     "hint": "İpucu",
     "blankAria": "{n}. boşluk",

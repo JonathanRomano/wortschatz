@@ -186,6 +186,18 @@
     "ERROR_CORRECTION": "Spot and fix the mistake in a sentence.",
     "FREE_WRITING": "Write a short text — graded by AI."
   },
+  "professions": {
+    "pflege": "Healthcare & care",
+    "it": "IT & engineering",
+    "gastro": "Hospitality & gastronomy",
+    "handwerk": "Trades & logistics"
+  },
+  "professionDescriptions": {
+    "pflege": "German for nurses, caregivers, and clinic staff — ward routines, handovers, and patient conversations.",
+    "it": "German for developers and engineers — standups, code reviews, and everyday office life.",
+    "gastro": "German for kitchens, hotels, and restaurants — service, orders, and guests.",
+    "handwerk": "German for building sites, workshops, warehouses, and the road — tools, safety, and schedules."
+  },
   "renderers": {
     "hint": "Hint",
     "blankAria": "Blank {n}",

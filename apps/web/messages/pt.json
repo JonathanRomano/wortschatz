@@ -186,6 +186,18 @@
     "ERROR_CORRECTION": "Identifique e corrija o erro em uma frase.",
     "FREE_WRITING": "Escreva um texto curto — avaliado por IA."
   },
+  "professions": {
+    "pflege": "Saúde e cuidados",
+    "it": "TI e engenharia",
+    "gastro": "Hotelaria e gastronomia",
+    "handwerk": "Ofícios e logística"
+  },
+  "professionDescriptions": {
+    "pflege": "Alemão para enfermeiros, cuidadores e equipes de clínica — rotinas de plantão, passagens de turno e conversas com pacientes.",
+    "it": "Alemão para desenvolvedores e engenheiros — dailies, code reviews e o dia a dia do escritório.",
+    "gastro": "Alemão para cozinhas, hotéis e restaurantes — atendimento, pedidos e hóspedes.",
+    "handwerk": "Alemão para obras, oficinas, armazéns e estradas — ferramentas, segurança e horários."
+  },
   "renderers": {
     "hint": "Dica",
     "blankAria": "Lacuna {n}",

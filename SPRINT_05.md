@@ -51,16 +51,22 @@ Canonical definition lives in `@wortschatz/config`:
 ```ts
 // packages/config/src/professions.ts
 export const PROFESSION_TAG_PREFIX = "beruf:";
-export const PROFESSIONS = [
-  { slug: "pflege",       icon: "medical" },   // healthcare / care work
-  { slug: "it",           icon: "code" },      // IT / engineering
-  { slug: "gastro",       icon: "restaurant" },// hospitality / gastronomy
-  { slug: "handwerk",     icon: "build" },     // construction / trades / logistics
+export const UNIT_TAG_PREFIX = "unit:";
+export const PROFESSION_SLUGS = [
+  "pflege",   // healthcare / care work
+  "it",       // IT / engineering
+  "gastro",   // hospitality / gastronomy
+  "handwerk", // construction / trades / logistics
 ] as const;
-export type ProfessionSlug = (typeof PROFESSIONS)[number]["slug"];
+export type ProfessionSlug = (typeof PROFESSION_SLUGS)[number];
 export const professionTag = (slug: ProfessionSlug) => `${PROFESSION_TAG_PREFIX}${slug}`;
-export const isProfessionSlug = (v: string): v is ProfessionSlug => …;
+export const isProfessionSlug = (v: unknown): v is ProfessionSlug => …;
+// + unitTag, professionsFromTags, unitFromTags
 ```
+
+Icons stay out of `@wortschatz/config` (it's consumed by apps/api too);
+the glyph map lives in the web `ProfessionChip` component, following the
+`ExerciseTypeIcon` pattern.
 
 Display names live in `messages/*.json` under a new `professions` block
 (same pattern as `exerciseTypes`) — **never** in the DB or in components.
@@ -175,10 +181,9 @@ theme tokens only.
   scenario: `READING_COMPREHENSION`, `WORD_ORDER`; production:
   `FREE_WRITING` with AI review).
 - **Seeding volume note:** 4 professions × 5 units × ~8 exercises ≈ 160
-  generations against `AI_RATE_LIMITS.GENERATE_EXERCISE = 50/day`. Seed
-  one profession per day, or temporarily bump the constant in a dedicated
-  commit and revert after seeding (this spec is the required "request" per
-  CLAUDE.md's constants rule — still make the bump its own commit).
+  generations. `AI_RATE_LIMITS.GENERATE_EXERCISE` is already 5000/day on
+  current `main`, so the whole seed fits in a single run — no limit bump
+  needed. (An earlier draft of this spec assumed the old 50/day limit.)
 - **Accepts when:** generated rows carry both tags; `GenerationSession`
   audit rows unchanged in shape; prompt-parity test green **without**
   baseline regeneration; dry-run supported.
@@ -248,7 +253,6 @@ theme tokens only.
 - **Content quality per profession.** Generated Fach-German needs a human
   skim before publishing (exercises stay `DRAFT` → admin approves; that
   pipeline already exists). Healthcare terminology especially.
-- **Seeding throughput** — see Task 4 note.
 - **Tag-string coupling.** `beruf:`/`unit:` conventions are enforced only
   in code. Mitigation: single source (`professionTag()` helper +
   validators in `@wortschatz/config`), never inline strings.
