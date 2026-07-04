@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { CefrLevel, ExerciseType } from "@wortschatz/database";
 import Container from "@mui/material/Container";
@@ -39,6 +40,7 @@ import {
   HEATMAP_DAYS,
   RADAR_LAST_N,
 } from "@/lib/dashboard/constants";
+import { CAREER_TRACKS, SETUP_SEEN_COOKIE } from "@/lib/track/flags";
 
 // Match the levels currently offered on /exercises. Legacy rows at B2+
 // are still counted into levelCounts but their breakdown row is hidden.
@@ -73,8 +75,22 @@ export default async function DashboardPage({
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    select: { muenzen: true, streak: true, name: true, dailyGoal: true },
+    select: {
+      muenzen: true,
+      streak: true,
+      name: true,
+      dailyGoal: true,
+      profession: true,
+    },
   });
+
+  // Sprint 05 — first-visit career setup. Only when the browser hasn't
+  // seen the flow yet (cookie), so "just learning for myself" users
+  // (profession stays NULL by design) aren't bounced back here forever.
+  if (CAREER_TRACKS && !user.profession) {
+    const jar = await cookies();
+    if (!jar.has(SETUP_SEEN_COOKIE)) redirect(`/${locale}/setup`);
+  }
 
   const now = new Date();
   const weekAgo = new Date(now);

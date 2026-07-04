@@ -198,6 +198,25 @@
     "gastro": "German for kitchens, hotels, and restaurants — service, orders, and guests.",
     "handwerk": "German for building sites, workshops, warehouses, and the road — tools, safety, and schedules."
   },
+  "setup": {
+    "title": "Welcome to Wortschatz!",
+    "subtitle": "Three quick questions and your German training fits your job.",
+    "stepLabel": "Step {current} of {total}",
+    "professionTitle": "What do you work as?",
+    "professionHint": "We'll train you with the German of your real workday. You can change this anytime in your profile.",
+    "levelTitle": "Where is your German today?",
+    "levelHint": "A rough guess is fine — we adjust as you practice.",
+    "notSure": "I'm not sure yet",
+    "goalTitle": "Set your goal",
+    "goalHint": "The level you're aiming for (for a job or exam) and your daily pace.",
+    "targetLevelLabel": "Target level (optional)",
+    "dailyGoalLabel": "Exercises per day",
+    "back": "Back",
+    "next": "Continue",
+    "finish": "Start learning",
+    "skip": "I'm just learning for myself",
+    "error": "Something went wrong — please try again."
+  },
   "renderers": {
     "hint": "Hint",
     "blankAria": "Blank {n}",
@@ -300,6 +319,13 @@
         "ADMIN_ADJUSTMENT": "Adjustment",
         "BONUS": "Bonus"
       }
+    },
+    "career": {
+      "title": "Career",
+      "subtitle": "Tell us what you do — your practice adapts to the German of your job.",
+      "professionLabel": "Your profession",
+      "noProfession": "Not work-related",
+      "targetLevelLabel": "Target level"
     }
   },
   "admin": {

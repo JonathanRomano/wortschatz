@@ -198,6 +198,25 @@
     "gastro": "Alemão para cozinhas, hotéis e restaurantes — atendimento, pedidos e hóspedes.",
     "handwerk": "Alemão para obras, oficinas, armazéns e estradas — ferramentas, segurança e horários."
   },
+  "setup": {
+    "title": "Boas-vindas ao Wortschatz!",
+    "subtitle": "Três perguntas rápidas e seu treino de alemão se ajusta ao seu trabalho.",
+    "stepLabel": "Etapa {current} de {total}",
+    "professionTitle": "Com o que você trabalha?",
+    "professionHint": "Vamos treinar você com o alemão do seu dia a dia de trabalho. Você pode mudar isso a qualquer momento no perfil.",
+    "levelTitle": "Como está seu alemão hoje?",
+    "levelHint": "Um chute aproximado já serve — ajustamos conforme você pratica.",
+    "notSure": "Ainda não sei",
+    "goalTitle": "Defina sua meta",
+    "goalHint": "O nível que você quer alcançar (para um emprego ou exame) e seu ritmo diário.",
+    "targetLevelLabel": "Nível-alvo (opcional)",
+    "dailyGoalLabel": "Exercícios por dia",
+    "back": "Voltar",
+    "next": "Continuar",
+    "finish": "Começar a aprender",
+    "skip": "Estou aprendendo por conta própria",
+    "error": "Algo deu errado — tente novamente."
+  },
   "renderers": {
     "hint": "Dica",
     "blankAria": "Lacuna {n}",
@@ -300,6 +319,13 @@
         "ADMIN_ADJUSTMENT": "Ajuste",
         "BONUS": "Bônus"
       }
+    },
+    "career": {
+      "title": "Carreira",
+      "subtitle": "Conte o que você faz — sua prática se adapta ao alemão da sua profissão.",
+      "professionLabel": "Sua profissão",
+      "noProfession": "Não é para o trabalho",
+      "targetLevelLabel": "Nível-alvo"
     }
   },
   "admin": {

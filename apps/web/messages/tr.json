@@ -198,6 +198,25 @@
     "gastro": "Mutfaklar, oteller ve restoranlar için Almanca — servis, siparişler ve misafirler.",
     "handwerk": "Şantiyeler, atölyeler, depolar ve yollar için Almanca — aletler, iş güvenliği ve programlar."
   },
+  "setup": {
+    "title": "Wortschatz'a hoş geldiniz!",
+    "subtitle": "Üç kısa soru; Almanca çalışmanız işinize göre şekillensin.",
+    "stepLabel": "Adım {current}/{total}",
+    "professionTitle": "Ne iş yapıyorsunuz?",
+    "professionHint": "Sizi gerçek iş gününüzün Almancasıyla çalıştıracağız. Bunu profilinizden istediğiniz zaman değiştirebilirsiniz.",
+    "levelTitle": "Almancanız bugün ne durumda?",
+    "levelHint": "Kabaca bir tahmin yeterli — siz pratik yaptıkça ayarlarız.",
+    "notSure": "Henüz emin değilim",
+    "goalTitle": "Hedefinizi belirleyin",
+    "goalHint": "Ulaşmak istediğiniz seviye (iş veya sınav için) ve günlük temponuz.",
+    "targetLevelLabel": "Hedef seviye (isteğe bağlı)",
+    "dailyGoalLabel": "Günlük alıştırma sayısı",
+    "back": "Geri",
+    "next": "Devam",
+    "finish": "Öğrenmeye başla",
+    "skip": "Sadece kendim için öğreniyorum",
+    "error": "Bir şeyler ters gitti — lütfen tekrar deneyin."
+  },
   "renderers": {
     "hint": "İpucu",
     "blankAria": "{n}. boşluk",
@@ -300,6 +319,13 @@
         "ADMIN_ADJUSTMENT": "Düzeltme",
         "BONUS": "Bonus"
       }
+    },
+    "career": {
+      "title": "Kariyer",
+      "subtitle": "Ne iş yaptığınızı söyleyin — pratiğiniz mesleğinizin Almancasına uyarlanır.",
+      "professionLabel": "Mesleğiniz",
+      "noProfession": "İşle ilgili değil",
+      "targetLevelLabel": "Hedef seviye"
     }
   },
   "admin": {

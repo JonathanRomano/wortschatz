@@ -40,6 +40,8 @@ function makeFormData(
     bio: "",
     nativeLanguage: "",
     learningLevel: "",
+    profession: "",
+    targetLevel: "",
     dailyGoal: 5,
   };
   const merged = { ...defaults, ...overrides };
@@ -102,6 +104,8 @@ describe("saveProfile — happy path", () => {
         bio: "Aprendendo alemão.",
         nativeLanguage: "pt",
         learningLevel: "B1",
+        profession: null,
+        targetLevel: null,
         dailyGoal: 10,
       },
     });
@@ -319,6 +323,53 @@ describe("saveProfile — name", () => {
     const result = await saveProfile(
       makeFormData({ name: "x".repeat(121) }),
     );
+
+    expect(result).toEqual({ ok: false, error: "invalid_input" });
+    expect(userUpdateMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("saveProfile — career fields (Sprint 05)", () => {
+  it("saves a valid profession slug", async () => {
+    const result = await saveProfile(makeFormData({ profession: "pflege" }));
+
+    expect(result).toEqual({ ok: true });
+    expect(userUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ profession: "pflege" }),
+      }),
+    );
+  });
+
+  it("rejects an unknown profession slug", async () => {
+    const result = await saveProfile(makeFormData({ profession: "astronaut" }));
+
+    expect(result).toEqual({ ok: false, error: "invalid_input" });
+    expect(userUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("collapses the empty placeholder to null for both career fields", async () => {
+    await saveProfile(makeFormData({ profession: "", targetLevel: "" }));
+
+    expect(userUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ profession: null, targetLevel: null }),
+      }),
+    );
+  });
+
+  it("saves a valid target level", async () => {
+    await saveProfile(makeFormData({ targetLevel: "B2" }));
+
+    expect(userUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ targetLevel: "B2" }),
+      }),
+    );
+  });
+
+  it("rejects an invalid target level", async () => {
+    const result = await saveProfile(makeFormData({ targetLevel: "Z9" }));
 
     expect(result).toEqual({ ok: false, error: "invalid_input" });
     expect(userUpdateMock).not.toHaveBeenCalled();

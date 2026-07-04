@@ -7,6 +7,7 @@ import Box from "@mui/material/Box";
 
 import { auth } from "@/auth";
 import { prisma } from "@wortschatz/database";
+import { isProfessionSlug, type ProfessionSlug } from "@wortschatz/config";
 import { Card } from "@/components/ui/Card";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
@@ -33,6 +34,8 @@ export default async function ProfilePage({
       bio: true,
       nativeLanguage: true,
       learningLevel: true,
+      profession: true,
+      targetLevel: true,
       dailyGoal: true,
       avatarUrl: true,
       muenzen: true,
@@ -128,12 +131,20 @@ export default async function ProfilePage({
           bio={user.bio ?? ""}
           nativeLanguage={user.nativeLanguage ?? ""}
           learningLevel={user.learningLevel ?? ""}
+          profession={toProfession(user.profession)}
+          targetLevel={user.targetLevel ?? ""}
           dailyGoal={user.dailyGoal}
           avatarUrl={user.avatarUrl}
         />
       </Card>
     </Container>
   );
+}
+
+// The column is free-form TEXT; tolerate a slug that's no longer in
+// PROFESSION_SLUGS (removed profession) by falling back to "unset".
+function toProfession(value: string | null): ProfessionSlug | "" {
+  return value != null && isProfessionSlug(value) ? value : "";
 }
 
 function StatCell({

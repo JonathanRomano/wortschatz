@@ -14,6 +14,8 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 
+import { PROFESSION_SLUGS, type ProfessionSlug } from "@wortschatz/config";
+
 import { saveProfile, type SaveProfileResult } from "./actions";
 
 // UI-language picker (used for the i18n of Wortschatz itself).
@@ -43,6 +45,8 @@ type Props = {
   bio: string;
   nativeLanguage: string;
   learningLevel: CefrLevel | "";
+  profession: ProfessionSlug | "";
+  targetLevel: CefrLevel | "";
   dailyGoal: number;
   avatarUrl: string | null;
 };
@@ -58,15 +62,22 @@ export function ProfileForm({
   bio: initialBio,
   nativeLanguage: initialNative,
   learningLevel: initialLevel,
+  profession: initialProfession,
+  targetLevel: initialTarget,
   dailyGoal: initialGoal,
   avatarUrl: initialAvatarUrl,
 }: Props) {
   const t = useTranslations("profile");
+  const tProfessions = useTranslations("professions");
   const [name, setName] = useState(initialName);
   const [lang, setLang] = useState<UiLanguage>(preferredLanguage);
   const [bio, setBio] = useState(initialBio);
   const [native, setNative] = useState(initialNative);
   const [level, setLevel] = useState<CefrLevel | "">(initialLevel);
+  const [profession, setProfession] = useState<ProfessionSlug | "">(
+    initialProfession,
+  );
+  const [targetLevel, setTargetLevel] = useState<CefrLevel | "">(initialTarget);
   const [dailyGoal, setDailyGoal] = useState(initialGoal);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialAvatarUrl);
   const [uploading, setUploading] = useState(false);
@@ -293,6 +304,51 @@ export function ProfileForm({
           label={t("learningLevel.label")}
           value={level}
           onChange={(e) => setLevel(e.target.value as CefrLevel | "")}
+        >
+          <MenuItem value="">{t("placeholder")}</MenuItem>
+          {CEFR_LEVELS.map((l) => (
+            <MenuItem key={l} value={l}>
+              {l}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        {/* Career section (Sprint 05). Profession drives which
+            beruf:-tagged exercises the track and next-draw prefer;
+            target level is the goal shown on "Dein Weg". */}
+        <Box sx={{ pt: 1 }}>
+          <Typography variant="h4" sx={{ fontSize: "1.125rem" }}>
+            {t("career.title")}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ mt: 0.5, color: "text.secondary" }}
+          >
+            {t("career.subtitle")}
+          </Typography>
+        </Box>
+
+        <TextField
+          select
+          name="profession"
+          label={t("career.professionLabel")}
+          value={profession}
+          onChange={(e) => setProfession(e.target.value as ProfessionSlug | "")}
+        >
+          <MenuItem value="">{t("career.noProfession")}</MenuItem>
+          {PROFESSION_SLUGS.map((slug) => (
+            <MenuItem key={slug} value={slug}>
+              {tProfessions(slug)}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        <TextField
+          select
+          name="targetLevel"
+          label={t("career.targetLevelLabel")}
+          value={targetLevel}
+          onChange={(e) => setTargetLevel(e.target.value as CefrLevel | "")}
         >
           <MenuItem value="">{t("placeholder")}</MenuItem>
           {CEFR_LEVELS.map((l) => (

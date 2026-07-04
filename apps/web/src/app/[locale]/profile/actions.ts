@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@wortschatz/database";
+import { PROFESSION_SLUGS } from "@wortschatz/config";
 
 // Native-language allow-list. We don't reuse `UiLanguage` because (a)
 // `UiLanguage` is uppercase + the UI-supported locales only, while
@@ -35,6 +36,11 @@ const schema = z.object({
     .transform((v) => (v && v.length > 0 ? v : null)),
   nativeLanguage: optionalEnum(NATIVE_LANGUAGES),
   learningLevel: optionalEnum(CEFR_LEVELS),
+  // Sprint 05 — career fields. `profession` is a config-validated slug
+  // (see PROFESSION_SLUGS); `targetLevel` is the goal level for the
+  // job/exam. Both optional: "" from the placeholder MenuItem → null.
+  profession: optionalEnum(PROFESSION_SLUGS),
+  targetLevel: optionalEnum(CEFR_LEVELS),
   // Slider posts a string; coerce, then clamp. We clamp rather than
   // reject because the slider widget can't produce out-of-range values
   // under normal use — clamping is defense in depth, not the primary UX.
@@ -57,6 +63,8 @@ export async function saveProfile(
     bio: formData.get("bio") ?? undefined,
     nativeLanguage: formData.get("nativeLanguage") ?? "",
     learningLevel: formData.get("learningLevel") ?? "",
+    profession: formData.get("profession") ?? "",
+    targetLevel: formData.get("targetLevel") ?? "",
     dailyGoal: formData.get("dailyGoal") ?? 5,
   });
   if (!parsed.success) return { ok: false, error: "invalid_input" };
