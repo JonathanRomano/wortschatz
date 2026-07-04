@@ -217,6 +217,28 @@
     "skip": "Estou aprendendo por conta própria",
     "error": "Algo deu errado — tente novamente."
   },
+  "track": {
+    "title": "Dein Weg",
+    "subtitle": "Seu alemão, para o seu trabalho — unidade por unidade.",
+    "goal": "Meta: {level}",
+    "progressLabel": "{percent}% concluído",
+    "today": "Plano de hoje",
+    "todayEmpty": "Nada na fila — você está em dia!",
+    "start": "Começar",
+    "done": "Feito",
+    "units": "Unidades",
+    "unitProgress": "{passed} de {target}",
+    "locked": "Bloqueada",
+    "comingSoon": "Em breve",
+    "trackComplete": "Trilha concluída — trabalho incrível!",
+    "continue": "Continuar",
+    "noProfessionTitle": "Escolha sua profissão",
+    "noProfessionBody": "Conte com o que você trabalha e o Wortschatz monta seu caminho até o alemão do trabalho.",
+    "noProfessionCta": "Começar",
+    "noContentTitle": "Sua trilha está sendo preparada",
+    "noContentBody": "Os exercícios desta trilha ainda não foram publicados. Enquanto isso, pratique o alemão geral!",
+    "noContentCta": "Ver exercícios"
+  },
   "renderers": {
     "hint": "Dica",
     "blankAria": "Lacuna {n}",

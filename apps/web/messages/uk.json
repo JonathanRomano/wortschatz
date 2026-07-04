@@ -217,6 +217,28 @@
     "skip": "Я вчуся просто для себе",
     "error": "Щось пішло не так — спробуйте ще раз."
   },
+  "track": {
+    "title": "Dein Weg",
+    "subtitle": "Ваша німецька для вашої роботи — юніт за юнітом.",
+    "goal": "Мета: {level}",
+    "progressLabel": "Виконано {percent}%",
+    "today": "План на сьогодні",
+    "todayEmpty": "У черзі нічого немає — ви все виконали!",
+    "start": "Почати",
+    "done": "Готово",
+    "units": "Юніти",
+    "unitProgress": "{passed} з {target}",
+    "locked": "Заблоковано",
+    "comingSoon": "Незабаром",
+    "trackComplete": "Трек завершено — чудова робота!",
+    "continue": "Продовжити",
+    "noProfessionTitle": "Оберіть професію",
+    "noProfessionBody": "Розкажіть, ким ви працюєте, і Wortschatz побудує ваш шлях до робочої німецької.",
+    "noProfessionCta": "Розпочати",
+    "noContentTitle": "Ваш трек готується",
+    "noContentBody": "Вправи цього треку ще не опубліковані. Тим часом практикуйте загальну німецьку!",
+    "noContentCta": "Переглянути вправи"
+  },
   "renderers": {
     "hint": "Підказка",
     "blankAria": "Пропуск {n}",

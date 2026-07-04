@@ -217,6 +217,28 @@
     "skip": "I'm just learning for myself",
     "error": "Something went wrong — please try again."
   },
+  "track": {
+    "title": "Dein Weg",
+    "subtitle": "Your German, for your job — unit by unit.",
+    "goal": "Goal: {level}",
+    "progressLabel": "{percent}% complete",
+    "today": "Today's plan",
+    "todayEmpty": "Nothing queued — you're all caught up!",
+    "start": "Start",
+    "done": "Done",
+    "units": "Units",
+    "unitProgress": "{passed} of {target}",
+    "locked": "Locked",
+    "comingSoon": "Coming soon",
+    "trackComplete": "Track complete — incredible work!",
+    "continue": "Continue",
+    "noProfessionTitle": "Choose your profession",
+    "noProfessionBody": "Tell us what you work as and Wortschatz builds your path to job-ready German.",
+    "noProfessionCta": "Get started",
+    "noContentTitle": "Your track is being prepared",
+    "noContentBody": "The exercises for this track aren't published yet. Practice general German meanwhile!",
+    "noContentCta": "Browse exercises"
+  },
   "renderers": {
     "hint": "Hint",
     "blankAria": "Blank {n}",

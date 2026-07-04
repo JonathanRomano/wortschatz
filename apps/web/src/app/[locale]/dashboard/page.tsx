@@ -41,6 +41,8 @@ import {
   RADAR_LAST_N,
 } from "@/lib/dashboard/constants";
 import { CAREER_TRACKS, SETUP_SEEN_COOKIE } from "@/lib/track/flags";
+import { fetchTrackData } from "@/lib/track/queries";
+import { TrackCard } from "@/components/dashboard/TrackCard";
 
 // Match the levels currently offered on /exercises. Legacy rows at B2+
 // are still counted into levelCounts but their breakdown row is hidden.
@@ -110,6 +112,7 @@ export default async function DashboardPage({
     perfectCount,
     lifetimeXpAgg,
     chartData,
+    trackData,
   ] = await Promise.all([
     prisma.userExercise.count({ where: { userId } }),
     prisma.userExercise.count({ where: { userId, completedAt: { gte: weekAgo } } }),
@@ -144,6 +147,7 @@ export default async function DashboardPage({
       _sum: { amount: true },
     }),
     fetchDashboardChartData(userId, now),
+    CAREER_TRACKS ? fetchTrackData(userId, now) : Promise.resolve(null),
   ]);
 
   const mistakesCount = Number(mistakesRows[0]?.count ?? 0n);
@@ -260,6 +264,18 @@ export default async function DashboardPage({
           ) : null}
         </Stack>
       </Stack>
+
+      {/* Dein Weg teaser (Sprint 05) — only for users with a career track. */}
+      {trackData?.progress ? (
+        <Box sx={{ mt: { xs: 2, sm: 3 } }}>
+          <TrackCard
+            profession={trackData.progress.track.profession}
+            percent={trackData.progress.percent}
+            doneToday={trackData.plan.filter((p) => p.done).length}
+            planTotal={trackData.plan.length}
+          />
+        </Box>
+      ) : null}
 
       {/* Highlights — totals only. Münzen + streak already in the hero,
           so they're not duplicated here. */}

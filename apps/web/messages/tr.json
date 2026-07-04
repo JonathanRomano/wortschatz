@@ -217,6 +217,28 @@
     "skip": "Sadece kendim için öğreniyorum",
     "error": "Bir şeyler ters gitti — lütfen tekrar deneyin."
   },
+  "track": {
+    "title": "Dein Weg",
+    "subtitle": "İşiniz için Almanca — ünite ünite.",
+    "goal": "Hedef: {level}",
+    "progressLabel": "%{percent} tamamlandı",
+    "today": "Bugünün planı",
+    "todayEmpty": "Sırada bir şey yok — her şey tamam!",
+    "start": "Başla",
+    "done": "Bitti",
+    "units": "Üniteler",
+    "unitProgress": "{passed}/{target}",
+    "locked": "Kilitli",
+    "comingSoon": "Yakında",
+    "trackComplete": "Rota tamamlandı — harika iş!",
+    "continue": "Devam et",
+    "noProfessionTitle": "Mesleğinizi seçin",
+    "noProfessionBody": "Ne iş yaptığınızı söyleyin, Wortschatz sizi işe hazır Almancaya götüren yolu kursun.",
+    "noProfessionCta": "Başlayın",
+    "noContentTitle": "Rotanız hazırlanıyor",
+    "noContentBody": "Bu rotanın alıştırmaları henüz yayımlanmadı. Bu arada genel Almanca pratiği yapın!",
+    "noContentCta": "Alıştırmalara göz at"
+  },
   "renderers": {
     "hint": "İpucu",
     "blankAria": "{n}. boşluk",
