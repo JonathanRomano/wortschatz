@@ -275,7 +275,9 @@
   "filters": {
     "level": "Seviye",
     "all": "Tüm seviyeler",
-    "clearLevel": "Tüm seviyeleri göster"
+    "clearLevel": "Tüm seviyeleri göster",
+    "professionLabel": "Meslek",
+    "professionAll": "Tüm alıştırmalar"
   },
   "review": {
     "title": "AI metin değerlendirmesi",

@@ -137,3 +137,81 @@ describe("buildSelectionWheres — weak-first tier", () => {
     ).toHaveLength(1);
   });
 });
+
+describe("buildSelectionWheres — profession preference (Sprint 05)", () => {
+  it("prepends a profession-scoped copy of every tier", () => {
+    const tiers = buildSelectionWheres(
+      TYPE,
+      undefined,
+      "B1",
+      ["p1"],
+      true,
+      ["w1"],
+      true,
+      "beruf:pflege",
+    );
+    // weak∧beruf, unseen∧beruf, full∧beruf, weak, unseen, full
+    expect(tiers).toHaveLength(6);
+    expect(tiers[0]).toEqual({
+      type: TYPE,
+      status: "PUBLISHED",
+      level: "B1",
+      id: { in: ["w1"] },
+      tags: { has: "beruf:pflege" },
+    });
+    expect(tiers[2]).toEqual({
+      type: TYPE,
+      status: "PUBLISHED",
+      level: "B1",
+      tags: { has: "beruf:pflege" },
+    });
+    // The unscoped tiers still follow, so the draw never dead-ends.
+    expect(tiers[5]).toEqual({ type: TYPE, status: "PUBLISHED", level: "B1" });
+  });
+
+  it("changes nothing when no profession tag is supplied", () => {
+    const withNull = buildSelectionWheres(TYPE, undefined, undefined, [], true, [], true, null);
+    expect(withNull).toHaveLength(1);
+  });
+
+  it("changes nothing when the flag is off", () => {
+    const tiers = buildSelectionWheres(
+      TYPE,
+      undefined,
+      undefined,
+      [],
+      true,
+      [],
+      true,
+      "beruf:it",
+      false,
+    );
+    expect(tiers).toHaveLength(1);
+    expect(tiers[0]).not.toHaveProperty("tags");
+  });
+
+  it("keeps the profession-scoped full pool ahead of the unscoped weak tier", () => {
+    const tiers = buildSelectionWheres(
+      TYPE,
+      undefined,
+      undefined,
+      [],
+      true,
+      ["w1"],
+      true,
+      "beruf:gastro",
+    );
+    // weak∧beruf, full∧beruf, weak, full — work German outranks general mistakes.
+    expect(tiers).toHaveLength(4);
+    expect(tiers[1]).toEqual({
+      type: TYPE,
+      status: "PUBLISHED",
+      tags: { has: "beruf:gastro" },
+    });
+    expect(tiers[2]).toEqual({
+      type: TYPE,
+      status: "PUBLISHED",
+      id: { in: ["w1"] },
+    });
+  });
+});

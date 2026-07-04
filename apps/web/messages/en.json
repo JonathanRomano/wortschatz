@@ -275,7 +275,9 @@
   "filters": {
     "level": "Level",
     "all": "All levels",
-    "clearLevel": "Show all levels"
+    "clearLevel": "Show all levels",
+    "professionLabel": "Profession",
+    "professionAll": "All exercises"
   },
   "review": {
     "title": "AI text review",

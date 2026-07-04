@@ -6,9 +6,11 @@ import { auth } from "@/auth";
 import { gradeLocally } from "@/lib/exercises/grade";
 import {
   buildSelectionWheres,
+  PREFER_PROFESSION_MATCH,
   PREFER_UNSEEN_EXERCISES,
   PREFER_WEAK_EXERCISES,
 } from "@/lib/exercises/selection";
+import { isProfessionSlug, professionTag } from "@wortschatz/config";
 import {
   evaluateAnswer,
   AI_CONFIGURED,
@@ -253,22 +255,36 @@ export async function getRandomExerciseOfType(
 
   const passedIds: string[] = [];
   const weakIds: string[] = [];
-  if ((PREFER_UNSEEN_EXERCISES || PREFER_WEAK_EXERCISES) && userId) {
+  let berufTag: string | null = null;
+  if ((PREFER_UNSEEN_EXERCISES || PREFER_WEAK_EXERCISES || PREFER_PROFESSION_MATCH) && userId) {
     // One grouped query gives the best-ever score per exercise of this
     // type/level, from which we split: passed (best >= 60) vs weak (attempted
-    // but best < 60, i.e. never passed → a mistake worth resurfacing).
-    const grouped = await prisma.userExercise.groupBy({
-      by: ["exerciseId"],
-      where: { userId, exercise: { type, ...(level ? { level } : {}) } },
-      _max: { score: true },
-    });
+    // but best < 60, i.e. never passed → a mistake worth resurfacing). The
+    // profession lookup (Sprint 05) rides the same round-trip.
+    const [grouped, userRow] = await Promise.all([
+      prisma.userExercise.groupBy({
+        by: ["exerciseId"],
+        where: { userId, exercise: { type, ...(level ? { level } : {}) } },
+        _max: { score: true },
+      }),
+      PREFER_PROFESSION_MATCH
+        ? prisma.user.findUnique({
+            where: { id: userId },
+            select: { profession: true },
+          })
+        : Promise.resolve(null),
+    ]);
     for (const g of grouped) {
       if ((g._max.score ?? 0) >= 60) passedIds.push(g.exerciseId);
       else weakIds.push(g.exerciseId);
     }
+    if (userRow?.profession && isProfessionSlug(userRow.profession)) {
+      berufTag = professionTag(userRow.profession);
+    }
   }
 
-  // Try each tier (weak-first, then unseen, then the full pool) in order.
+  // Try each tier (profession-scoped first when set, then weak → unseen →
+  // full pool) in order.
   for (const where of buildSelectionWheres(
     type,
     excludeId,
@@ -276,6 +292,8 @@ export async function getRandomExerciseOfType(
     passedIds,
     PREFER_UNSEEN_EXERCISES,
     weakIds,
+    PREFER_WEAK_EXERCISES,
+    berufTag,
   )) {
     const count = await prisma.exercise.count({ where });
     if (count === 0) continue;

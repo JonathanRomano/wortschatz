@@ -275,7 +275,9 @@
   "filters": {
     "level": "Рівень",
     "all": "Усі рівні",
-    "clearLevel": "Показати всі рівні"
+    "clearLevel": "Показати всі рівні",
+    "professionLabel": "Професія",
+    "professionAll": "Усі вправи"
   },
   "review": {
     "title": "Огляд тексту від ШІ",

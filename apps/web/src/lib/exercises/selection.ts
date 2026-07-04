@@ -19,6 +19,14 @@ export const PREFER_UNSEEN_EXERCISES: boolean = true;
 export const PREFER_WEAK_EXERCISES: boolean = true;
 
 /**
+ * Feature flag — Sprint 05 ("Beruf"). When the learner has a profession on
+ * their profile, the random draw tries `beruf:<slug>`-tagged exercises first
+ * (their work German) before falling back to the general pool. Flip to
+ * `false` to make the draw profession-blind again.
+ */
+export const PREFER_PROFESSION_MATCH: boolean = true;
+
+/**
  * Build the ordered list of `where` clauses to try when picking a random
  * exercise of a type. The caller attempts each in order and takes the first
  * tier that yields a row:
@@ -32,6 +40,11 @@ export const PREFER_WEAK_EXERCISES: boolean = true;
  *   Tier 3: the full published pool (the original uniform-random behavior),
  *           so the stream never dead-ends once everything has been passed.
  *
+ * Sprint 05: when {@link PREFER_PROFESSION_MATCH} is on and a profession tag
+ * is supplied, each tier is tried twice — first scoped to the tag (work
+ * German first), then unscoped — so the ordering becomes
+ * weak∧beruf → unseen∧beruf → all∧beruf → weak → unseen → all.
+ *
  * Pure and DB-free so the tiering is unit-testable in isolation. The random
  * skip/take and the cross-level fallback stay in the server action.
  */
@@ -43,6 +56,8 @@ export function buildSelectionWheres(
   preferUnseen: boolean = PREFER_UNSEEN_EXERCISES,
   weakIds: string[] = [],
   preferWeak: boolean = PREFER_WEAK_EXERCISES,
+  professionTagValue: string | null = null,
+  preferProfession: boolean = PREFER_PROFESSION_MATCH,
 ): Prisma.ExerciseWhereInput[] {
   const full: Prisma.ExerciseWhereInput = {
     type,
@@ -77,5 +92,15 @@ export function buildSelectionWheres(
 
   // Tier 3 — the full pool, so the stream never dead-ends.
   tiers.push(full);
+
+  // Sprint 05 — profession-scoped copies of every tier go first.
+  if (preferProfession && professionTagValue) {
+    const scoped = tiers.map((where) => ({
+      ...where,
+      tags: { has: professionTagValue },
+    }));
+    return [...scoped, ...tiers];
+  }
+
   return tiers;
 }

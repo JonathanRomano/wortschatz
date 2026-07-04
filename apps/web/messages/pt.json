@@ -275,7 +275,9 @@
   "filters": {
     "level": "Nível",
     "all": "Todos os níveis",
-    "clearLevel": "Mostrar todos os níveis"
+    "clearLevel": "Mostrar todos os níveis",
+    "professionLabel": "Profissão",
+    "professionAll": "Todos os exercícios"
   },
   "review": {
     "title": "Revisão de texto por IA",

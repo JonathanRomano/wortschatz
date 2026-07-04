@@ -10,13 +10,14 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { auth } from "@/auth";
 import { prisma } from "@wortschatz/database";
 import type { Locale } from "@/i18n/config";
-import { pickLocalized } from "@wortschatz/config";
+import { pickLocalized, professionsFromTags, type ProfessionSlug } from "@wortschatz/config";
 import { getRandomExerciseOfType } from "@/lib/exercises/actions";
 import { getSkipIntro } from "@/lib/preferences/actions";
 import { Card } from "@/components/ui/Card";
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
 import { InlineLink } from "@/components/ui/InlineLink";
 import { LevelChip } from "@/components/ui/LevelChip";
+import { ProfessionChip } from "@/components/ui/ProfessionChip";
 import { LevelFilter } from "./LevelFilter";
 import { TypeRunner, type LoadedExercise } from "./TypeRunner";
 import { ExerciseRunner } from "./ExerciseRunner";
@@ -57,7 +58,7 @@ async function loadExercise(
   id: string,
   locale: Locale,
   userId: string,
-): Promise<LoadedExercise | null> {
+): Promise<(LoadedExercise & { professions: ProfessionSlug[] }) | null> {
   const exercise = await prisma.exercise.findUnique({
     where: { id },
     select: {
@@ -70,6 +71,7 @@ async function loadExercise(
       status: true,
       model: true,
       tip: true,
+      tags: true,
     },
   });
   if (!exercise || exercise.status !== "PUBLISHED") return null;
@@ -89,6 +91,7 @@ async function loadExercise(
     alreadyEarned: Boolean(priorSuccess),
     model: exercise.model,
     tip: exercise.tip ? pickLocalized(exercise.tip, locale) : null,
+    professions: professionsFromTags(exercise.tags),
   };
 }
 
@@ -259,6 +262,9 @@ export default async function ExerciseSlugPage({
         >
           <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
             <LevelChip level={detail.level} />
+            {detail.professions.map((slug) => (
+              <ProfessionChip key={slug} slug={slug} size="sm" />
+            ))}
             <Typography
               variant="overline"
               sx={{

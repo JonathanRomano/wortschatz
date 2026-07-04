@@ -9,9 +9,16 @@ import LinearProgress from "@mui/material/LinearProgress";
 
 import { auth } from "@/auth";
 import { prisma } from "@wortschatz/database";
+import {
+  PROFESSION_SLUGS,
+  isProfessionSlug,
+  professionTag,
+  type ProfessionSlug,
+} from "@wortschatz/config";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card } from "@/components/ui/Card";
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
+import { CAREER_TRACKS } from "@/lib/track/flags";
 
 const TYPES: ExerciseType[] = [
   "FILL_IN_THE_BLANK",
@@ -28,8 +35,10 @@ const TYPES: ExerciseType[] = [
 
 export default async function ExercisesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -40,11 +49,24 @@ export default async function ExercisesPage({
   const t = await getTranslations("exercises");
   const tt = await getTranslations("exerciseTypes");
   const td = await getTranslations("exerciseTypeDescriptions");
+  const tFilters = await getTranslations("filters");
+  const tProfessions = await getTranslations("professions");
+
+  // Sprint 05 — ?beruf=<slug> scopes the per-type availability counts to
+  // one profession's tagged content. URL state so filters are shareable
+  // and survive the back button. Unknown slugs are treated as "all".
+  const sp = await searchParams;
+  const rawBeruf = Array.isArray(sp.beruf) ? sp.beruf[0] : sp.beruf;
+  const beruf: ProfessionSlug | null =
+    CAREER_TRACKS && rawBeruf && isProfessionSlug(rawBeruf) ? rawBeruf : null;
 
   const [publishedByType, attemptsByType] = await Promise.all([
     prisma.exercise.groupBy({
       by: ["type"],
-      where: { status: "PUBLISHED" },
+      where: {
+        status: "PUBLISHED",
+        ...(beruf ? { tags: { has: professionTag(beruf) } } : {}),
+      },
       _count: { _all: true },
     }),
     prisma.userExercise.findMany({
@@ -78,6 +100,39 @@ export default async function ExercisesPage({
           {t("browseSubtitle")}
         </Typography>
       </Box>
+
+      {/* Profession filter (Sprint 05) — link pills, URL-driven. */}
+      {CAREER_TRACKS ? (
+        <Stack
+          direction="row"
+          spacing={1}
+          component="nav"
+          aria-label={tFilters("professionLabel")}
+          sx={{ mt: 3, flexWrap: "wrap", rowGap: 1 }}
+        >
+          <ButtonLink
+            href="/exercises"
+            variant={beruf === null ? "contained" : "outlined"}
+            color="primary"
+            size="small"
+            sx={{ minHeight: 44, borderRadius: 9999 }}
+          >
+            {tFilters("professionAll")}
+          </ButtonLink>
+          {PROFESSION_SLUGS.map((slug) => (
+            <ButtonLink
+              key={slug}
+              href={`/exercises?beruf=${slug}`}
+              variant={beruf === slug ? "contained" : "outlined"}
+              color="primary"
+              size="small"
+              sx={{ minHeight: 44, borderRadius: 9999 }}
+            >
+              {tProfessions(slug)}
+            </ButtonLink>
+          ))}
+        </Stack>
+      ) : null}
 
       <Box
         component="ul"
