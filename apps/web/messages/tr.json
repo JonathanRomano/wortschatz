@@ -64,6 +64,14 @@
     "currentStreak": "Mevcut seri",
     "streakDays": "{days, plural, one {# gün} other {# gün}}",
     "exercisesTotal": "Tamamlanan alıştırmalar",
+    "longestStreak": "En uzun seri",
+    "goalMetDays": "Hedefe ulaşılan gün",
+    "level": "Seviye {level}",
+    "levelProgress": "Sonraki seviyeye %{pct}",
+    "achievements": {
+      "title": "Başarımlar",
+      "earnedOf": "{total} başarımdan {earned} tanesi"
+    },
     "exercisesThisWeek": "Bu hafta",
     "exercisesThisMonth": "Bu ay",
     "toReview": "Gözden geçirilecek alıştırmalar",
@@ -79,6 +87,8 @@
       },
       "activity": {
         "title": "Etkinlik (son 90 gün)",
+        "less": "Az",
+        "more": "Çok",
         "tooltip": "{date} tarihinde {count, plural, =0 {alıştırma yok} one {1 alıştırma} other {# alıştırma}}"
       },
       "radar": {
@@ -91,7 +101,8 @@
         "complete": "Bugün için tamamlandı!"
       }
     },
-    "welcomeBack": "Tekrar hoş geldin"
+    "welcomeBack": "Tekrar hoş geldin",
+    "weekRecap": "Bu hafta {count} alıştırma ({delta} geçen haftaya göre)"
   },
   "exercises": {
     "browseTitle": "Alıştırmalar",
@@ -106,14 +117,22 @@
     "filterAll": "Tümü",
     "submit": "Cevabı gönder",
     "next": "Sonraki alıştırma",
+    "sessionProgress": "{done} / {total}",
+    "sessionCompleteTitle": "Oturum tamamlandı!",
+    "sessionSummary": "{total} sorudan {passed} doğru",
+    "practiceAgain": "Tekrar çalış",
     "score": "Puan",
     "feedback": "Geri bildirim",
     "explanation": "Açıklama",
+    "correctAnswer": "Doğru cevap",
+    "mismatchLine": "“{got}” yazdın — doğrusu: “{expected}”",
     "loading": "Yükleniyor…",
     "empty": "Filtrelerinize uyan alıştırma yok.",
     "completed": "Tamamlandı",
     "alreadyEarned": "Bu alıştırma için Münzen'i zaten kazandınız.",
     "rewardEarned": "+{amount} Münzen kazanıldı",
+    "streakDays": "🔥 {days} günlük seri!",
+    "streakMilestone": "🎉 {days} günlük dönüm noktası!",
     "instructionsByType": {
       "FILL_IN_THE_BLANK": "Eksik kelimeyi doldurun.",
       "MULTIPLE_CHOICE": "Doğru cevabı seçin.",
@@ -175,6 +194,7 @@
     "wordOrderReset": "Sıfırla",
     "matchingPlaceholder": "— bir çeviri seçin —",
     "matchingAria": "{term} için çeviri",
+    "matchingTapHint": "Bir Almanca kelimeye, sonra çevirisine dokunun.",
     "conjugationOriginal": "Çekin",
     "conjugationPlaceholder": "çekilmiş hali",
     "errorOriginal": "Özgün",
@@ -185,6 +205,9 @@
     "freeWritingPlaceholder": "Metninizi buraya yazın…",
     "freeWritingWordCount": "{count} / {min} kelime",
     "listeningAudioMissing": "Ses yakında geliyor — şimdilik aşağıdaki transkripti okuyun.",
+    "listeningPlay": "Sesi oynat",
+    "listeningShowTranscript": "Metni göster",
+    "listeningHideTranscript": "Metni gizle",
     "listeningAnswerPlaceholder": "Cevabınız…"
   },
   "exerciseIntros": {

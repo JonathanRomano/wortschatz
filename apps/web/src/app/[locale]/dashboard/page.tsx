@@ -13,6 +13,11 @@ import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card } from "@/components/ui/Card";
 import { MuenzenBadge } from "@/components/ui/MuenzenBadge";
 import { StreakFlame } from "@/components/ui/StreakFlame";
+import { XpLevelBadge } from "@/components/ui/XpLevelBadge";
+import { levelForXp, XP_LEVELS_ENABLED } from "@/lib/muenzen";
+import { AchievementsShelf } from "@/components/dashboard/AchievementsShelf";
+import { countEarned, deriveAchievements } from "@/content/achievements";
+import type { Locale } from "@/i18n/config";
 import { LevelChip } from "@/components/ui/LevelChip";
 import { ExerciseTypeIcon } from "@/components/ui/ExerciseTypeIcon";
 import { ChartCard } from "@/components/dashboard/ChartCard";
@@ -25,6 +30,9 @@ import {
   buildHeatmap,
   buildMuenzenSeries,
   buildRadar,
+  goalMetDays,
+  longestStreak,
+  weekOverWeek,
 } from "@/lib/dashboard/aggregations";
 import { DAILY_GOAL_DEFAULT } from "@wortschatz/config";
 import {
@@ -82,6 +90,9 @@ export default async function DashboardPage({
     attemptsByType,
     recent,
     mistakesRows,
+    passingCount,
+    perfectCount,
+    lifetimeXpAgg,
     chartData,
   ] = await Promise.all([
     prisma.userExercise.count({ where: { userId } }),
@@ -110,6 +121,12 @@ export default async function DashboardPage({
       ) latest
       WHERE latest."score" < 60
     `,
+    prisma.userExercise.count({ where: { userId, score: { gte: 60 } } }),
+    prisma.userExercise.count({ where: { userId, score: 100 } }),
+    prisma.muenzenTransaction.aggregate({
+      where: { userId, amount: { gt: 0 } },
+      _sum: { amount: true },
+    }),
     fetchDashboardChartData(userId, now),
   ]);
 
@@ -161,6 +178,25 @@ export default async function DashboardPage({
   // default is the same number).
   const doneToday = chartData.todayCount;
   const dailyGoal = user.dailyGoal ?? DAILY_GOAL_DEFAULT;
+  // Derived XP level from lifetime earned Münzen (positive transactions only).
+  const xp = levelForXp(lifetimeXpAgg._sum.amount ?? 0);
+  // Windowed motivation stats derived purely from the 90-day heatmap (no extra
+  // query): the best consecutive-day run and how many days the goal was met.
+  const bestStreak = longestStreak(heatmap);
+  const daysGoalMet = goalMetDays(heatmap, dailyGoal);
+  const wow = weekOverWeek(heatmap);
+  const weekDelta = wow.thisWeek - wow.lastWeek;
+  const weekDeltaLabel = weekDelta > 0 ? `+${weekDelta}` : String(weekDelta);
+  // Derived achievement badges (read-only, no persistence).
+  const achievementStats = {
+    totalPassed: passingCount,
+    perfectCount,
+    longestStreak: bestStreak,
+    goalMetDays: daysGoalMet,
+    typesTried: new Set(attemptsByType.map((a) => a.exercise.type)).size,
+  };
+  const achievements = deriveAchievements(achievementStats);
+  const achievementsEarned = countEarned(achievementStats);
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 5 } }}>
@@ -193,10 +229,19 @@ export default async function DashboardPage({
           >
             {user.name ?? session.user.email}
           </Typography>
+          <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
+            {t("dashboard.weekRecap", {
+              count: wow.thisWeek,
+              delta: weekDeltaLabel,
+            })}
+          </Typography>
         </Box>
         <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", flexWrap: "wrap" }}>
           <StreakFlame days={user.streak} size="lg" />
           <MuenzenBadge amount={user.muenzen} size="lg" />
+          {XP_LEVELS_ENABLED ? (
+            <XpLevelBadge level={xp.level} progressPct={xp.progressPct} size="lg" />
+          ) : null}
         </Stack>
       </Stack>
 
@@ -211,13 +256,15 @@ export default async function DashboardPage({
           gridTemplateColumns: {
             xs: "1fr",
             sm: "repeat(2, 1fr)",
-            lg: "repeat(4, 1fr)",
+            lg: "repeat(3, 1fr)",
           },
         }}
       >
         <Stat label={t("dashboard.exercisesThisWeek")} value={String(week)} />
         <Stat label={t("dashboard.exercisesThisMonth")} value={String(month)} />
         <Stat label={t("dashboard.exercisesTotal")} value={String(total)} />
+        <Stat label={t("dashboard.longestStreak")} value={String(bestStreak)} />
+        <Stat label={t("dashboard.goalMetDays")} value={String(daysGoalMet)} />
         <Stat
           label={t("dashboard.toReview")}
           value={String(mistakesCount)}
@@ -234,6 +281,12 @@ export default async function DashboardPage({
           {t("dashboard.reviewMistakes")}
         </ButtonLink>
       </Box>
+
+      <AchievementsShelf
+        items={achievements}
+        locale={locale as Locale}
+        earnedCount={achievementsEarned}
+      />
 
       {/* Row 1 — Daily goal ring + recent activity. Putting them side
           by side gives the user a "today" + "what just happened" view

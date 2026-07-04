@@ -64,6 +64,14 @@
     "currentStreak": "Поточна серія",
     "streakDays": "{days, plural, one {# день} few {# дні} other {# днів}}",
     "exercisesTotal": "Виконано вправ",
+    "longestStreak": "Найдовша серія",
+    "goalMetDays": "Днів із досягнутою метою",
+    "level": "Рівень {level}",
+    "levelProgress": "{pct}% до наступного рівня",
+    "achievements": {
+      "title": "Досягнення",
+      "earnedOf": "{earned} з {total} здобуто"
+    },
     "exercisesThisWeek": "Цього тижня",
     "exercisesThisMonth": "Цього місяця",
     "toReview": "Вправи для повторення",
@@ -79,6 +87,8 @@
       },
       "activity": {
         "title": "Активність (останні 90 днів)",
+        "less": "Менше",
+        "more": "Більше",
         "tooltip": "{count, plural, =0 {Жодної вправи} one {1 вправа} few {# вправи} other {# вправ}} {date}"
       },
       "radar": {
@@ -91,7 +101,8 @@
         "complete": "Виконано на сьогодні!"
       }
     },
-    "welcomeBack": "Раді бачити знову"
+    "welcomeBack": "Раді бачити знову",
+    "weekRecap": "{count} вправ цього тижня ({delta} проти минулого тижня)"
   },
   "exercises": {
     "browseTitle": "Вправи",
@@ -106,14 +117,22 @@
     "filterAll": "Усі",
     "submit": "Надіслати відповідь",
     "next": "Наступна вправа",
+    "sessionProgress": "{done} з {total}",
+    "sessionCompleteTitle": "Сесію завершено!",
+    "sessionSummary": "{passed} з {total} правильних",
+    "practiceAgain": "Практикувати знову",
     "score": "Оцінка",
     "feedback": "Відгук",
     "explanation": "Пояснення",
+    "correctAnswer": "Правильна відповідь",
+    "mismatchLine": "Ви написали «{got}» — правильно: «{expected}»",
     "loading": "Завантаження…",
     "empty": "Жодна вправа не відповідає фільтрам.",
     "completed": "Виконано",
     "alreadyEarned": "Ви вже заробили Münzen за цю вправу.",
     "rewardEarned": "+{amount} Münzen зароблено",
+    "streakDays": "🔥 Серія {days} днів!",
+    "streakMilestone": "🎉 Рубіж у {days} днів!",
     "instructionsByType": {
       "FILL_IN_THE_BLANK": "Заповніть пропущене слово.",
       "MULTIPLE_CHOICE": "Виберіть правильну відповідь.",
@@ -175,6 +194,7 @@
     "wordOrderReset": "Скинути",
     "matchingPlaceholder": "— оберіть переклад —",
     "matchingAria": "Переклад для {term}",
+    "matchingTapHint": "Торкніться німецького слова, потім його перекладу.",
     "conjugationOriginal": "Провідміняти",
     "conjugationPlaceholder": "форма дієслова",
     "errorOriginal": "Оригінал",
@@ -185,6 +205,9 @@
     "freeWritingPlaceholder": "Пишіть свій текст тут…",
     "freeWritingWordCount": "{count} / {min} слів",
     "listeningAudioMissing": "Аудіо буде доступне згодом — прочитайте розшифровку нижче.",
+    "listeningPlay": "Відтворити аудіо",
+    "listeningShowTranscript": "Показати розшифровку",
+    "listeningHideTranscript": "Сховати розшифровку",
     "listeningAnswerPlaceholder": "Ваша відповідь…"
   },
   "exerciseIntros": {

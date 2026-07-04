@@ -64,6 +64,14 @@
     "currentStreak": "Current streak",
     "streakDays": "{days, plural, one {# day} other {# days}}",
     "exercisesTotal": "Exercises completed",
+    "longestStreak": "Longest streak",
+    "goalMetDays": "Days goal met",
+    "level": "Level {level}",
+    "levelProgress": "{pct}% to next level",
+    "achievements": {
+      "title": "Achievements",
+      "earnedOf": "{earned} of {total} earned"
+    },
     "exercisesThisWeek": "This week",
     "exercisesThisMonth": "This month",
     "toReview": "Exercises to review",
@@ -79,6 +87,8 @@
       },
       "activity": {
         "title": "Activity (last 90 days)",
+        "less": "Less",
+        "more": "More",
         "tooltip": "{count, plural, =0 {No exercises} one {1 exercise} other {# exercises}} on {date}"
       },
       "radar": {
@@ -91,7 +101,8 @@
         "complete": "Done for today!"
       }
     },
-    "welcomeBack": "Welcome back"
+    "welcomeBack": "Welcome back",
+    "weekRecap": "{count} exercises this week ({delta} vs last week)"
   },
   "exercises": {
     "browseTitle": "Exercises",
@@ -106,14 +117,22 @@
     "filterAll": "All",
     "submit": "Submit answer",
     "next": "Next exercise",
+    "sessionProgress": "{done} of {total}",
+    "sessionCompleteTitle": "Session complete!",
+    "sessionSummary": "{passed} of {total} correct",
+    "practiceAgain": "Practice again",
     "score": "Score",
     "feedback": "Feedback",
     "explanation": "Explanation",
+    "correctAnswer": "Correct answer",
+    "mismatchLine": "You wrote “{got}” — correct: “{expected}”",
     "loading": "Loading…",
     "empty": "No exercises match your filters.",
     "completed": "Completed",
     "alreadyEarned": "You already earned Münzen for this exercise.",
     "rewardEarned": "+{amount} Münzen earned",
+    "streakDays": "🔥 {days}-day streak!",
+    "streakMilestone": "🎉 {days}-day milestone!",
     "instructionsByType": {
       "FILL_IN_THE_BLANK": "Fill in the missing word.",
       "MULTIPLE_CHOICE": "Choose the correct answer.",
@@ -175,6 +194,7 @@
     "wordOrderReset": "Reset",
     "matchingPlaceholder": "— pick a translation —",
     "matchingAria": "Translation for {term}",
+    "matchingTapHint": "Tap a German word, then its translation.",
     "conjugationOriginal": "Conjugate",
     "conjugationPlaceholder": "conjugated form",
     "errorOriginal": "Original",
@@ -185,6 +205,9 @@
     "freeWritingPlaceholder": "Write your text here…",
     "freeWritingWordCount": "{count} / {min} words",
     "listeningAudioMissing": "Audio is coming soon — read the transcript below for now.",
+    "listeningPlay": "Play audio",
+    "listeningShowTranscript": "Show transcript",
+    "listeningHideTranscript": "Hide transcript",
     "listeningAnswerPlaceholder": "Your answer…"
   },
   "exerciseIntros": {

@@ -15,6 +15,16 @@ type Props = {
   reward: number;
   streakBonus: number;
   alreadyEarned: boolean;
+  correctAnswer?: string;
+  // Per-blank mismatches (FILL_IN_THE_BLANK): what the learner typed vs correct.
+  // Shown in place of the aggregate correctAnswer when present.
+  mismatches?: { got: string; expected: string }[];
+  // The user's streak after this attempt. A celebratory line is shown when the
+  // streak advanced this attempt (i.e. streakBonus > 0, the first pass of the day).
+  newStreak?: number;
+  // Set when this attempt crossed a streak milestone (7/30/…) — shown as a
+  // stronger "milestone!" line in place of the normal streak tick.
+  streakMilestone?: number;
 };
 
 /**
@@ -28,6 +38,10 @@ export function ExerciseResult({
   reward,
   streakBonus,
   alreadyEarned,
+  correctAnswer,
+  mismatches,
+  newStreak,
+  streakMilestone,
 }: Props) {
   const t = useTranslations("exercises");
   const passed = score >= 60;
@@ -93,6 +107,30 @@ export function ExerciseResult({
             {feedback}
           </Typography>
         </Typography>
+        {mismatches && mismatches.length > 0 ? (
+          <Box>
+            <Typography variant="body2" sx={{ fontWeight: 500, color: "text.primary" }}>
+              {t("correctAnswer")}:
+            </Typography>
+            <Stack spacing={0.25} sx={{ mt: 0.25 }}>
+              {mismatches.map((m, i) => (
+                <Typography key={i} variant="body2" sx={{ color: "text.secondary" }}>
+                  {t("mismatchLine", { got: m.got || "—", expected: m.expected })}
+                </Typography>
+              ))}
+            </Stack>
+          </Box>
+        ) : null}
+        {correctAnswer ? (
+          <Typography variant="body2">
+            <Typography component="span" sx={{ fontWeight: 500, color: "text.primary" }}>
+              {t("correctAnswer")}:{" "}
+            </Typography>
+            <Typography component="span" sx={{ color: "success.main", fontWeight: 500 }}>
+              {correctAnswer}
+            </Typography>
+          </Typography>
+        ) : null}
         {explanation ? (
           <Typography variant="body2">
             <Typography component="span" sx={{ fontWeight: 500, color: "text.primary" }}>
@@ -113,6 +151,15 @@ export function ExerciseResult({
             sx={{ fontWeight: 500, color: "secondary.main" }}
           >
             {t("rewardEarned", { amount: totalReward })}
+          </Typography>
+        ) : null}
+        {streakMilestone ? (
+          <Typography variant="body2" sx={{ fontWeight: 700, color: "secondary.main" }}>
+            {t("streakMilestone", { days: streakMilestone })}
+          </Typography>
+        ) : streakBonus > 0 && newStreak ? (
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "tertiary.main" }}>
+            {t("streakDays", { days: newStreak })}
           </Typography>
         ) : null}
       </Stack>

@@ -64,6 +64,14 @@
     "currentStreak": "Sequência atual",
     "streakDays": "{days, plural, one {# dia} other {# dias}}",
     "exercisesTotal": "Exercícios completados",
+    "longestStreak": "Sequência mais longa",
+    "goalMetDays": "Dias com meta cumprida",
+    "level": "Nível {level}",
+    "levelProgress": "{pct}% para o próximo nível",
+    "achievements": {
+      "title": "Conquistas",
+      "earnedOf": "{earned} de {total} conquistadas"
+    },
     "exercisesThisWeek": "Esta semana",
     "exercisesThisMonth": "Este mês",
     "toReview": "Exercícios para revisar",
@@ -79,6 +87,8 @@
       },
       "activity": {
         "title": "Atividade (últimos 90 dias)",
+        "less": "Menos",
+        "more": "Mais",
         "tooltip": "{count, plural, =0 {Nenhum exercício} one {1 exercício} other {# exercícios}} em {date}"
       },
       "radar": {
@@ -91,7 +101,8 @@
         "complete": "Concluído por hoje!"
       }
     },
-    "welcomeBack": "Bem-vindo de volta"
+    "welcomeBack": "Bem-vindo de volta",
+    "weekRecap": "{count} exercícios esta semana ({delta} vs semana passada)"
   },
   "exercises": {
     "browseTitle": "Exercícios",
@@ -106,14 +117,22 @@
     "filterAll": "Todos",
     "submit": "Enviar resposta",
     "next": "Próximo exercício",
+    "sessionProgress": "{done} de {total}",
+    "sessionCompleteTitle": "Sessão concluída!",
+    "sessionSummary": "{passed} de {total} corretos",
+    "practiceAgain": "Praticar novamente",
     "score": "Nota",
     "feedback": "Feedback",
     "explanation": "Explicação",
+    "correctAnswer": "Resposta correta",
+    "mismatchLine": "Você escreveu “{got}” — correto: “{expected}”",
     "loading": "Carregando…",
     "empty": "Nenhum exercício corresponde aos filtros.",
     "completed": "Completado",
     "alreadyEarned": "Você já ganhou Münzen por este exercício.",
     "rewardEarned": "+{amount} Münzen ganhas",
+    "streakDays": "🔥 Sequência de {days} dias!",
+    "streakMilestone": "🎉 Marco de {days} dias!",
     "instructionsByType": {
       "FILL_IN_THE_BLANK": "Complete a palavra que falta.",
       "MULTIPLE_CHOICE": "Escolha a resposta correta.",
@@ -175,6 +194,7 @@
     "wordOrderReset": "Reiniciar",
     "matchingPlaceholder": "— escolha uma tradução —",
     "matchingAria": "Tradução para {term}",
+    "matchingTapHint": "Toque numa palavra alemã e depois na sua tradução.",
     "conjugationOriginal": "Conjugar",
     "conjugationPlaceholder": "forma conjugada",
     "errorOriginal": "Original",
@@ -185,6 +205,9 @@
     "freeWritingPlaceholder": "Escreva seu texto aqui…",
     "freeWritingWordCount": "{count} / {min} palavras",
     "listeningAudioMissing": "O áudio chega em breve — leia a transcrição abaixo por enquanto.",
+    "listeningPlay": "Reproduzir áudio",
+    "listeningShowTranscript": "Mostrar transcrição",
+    "listeningHideTranscript": "Ocultar transcrição",
     "listeningAnswerPlaceholder": "Sua resposta…"
   },
   "exerciseIntros": {
