@@ -368,7 +368,10 @@
         "preview": "Preview prompt",
         "save": "Save as template",
         "generate": "Generate",
-        "generating": "Generating…"
+        "generating": "Generating…",
+        "profession": "Profession tag",
+        "professionHelp": "Optional — tags the rows for that career track",
+        "professionNone": "None (general content)"
       },
       "preview": {
         "title": "Prompt preview",

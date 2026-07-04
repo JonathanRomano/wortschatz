@@ -21,6 +21,8 @@
  * failed and the loop moves on — except a rate-limit error, which stops the
  * batch (every remaining item would fail the same way) after being recorded.
  */
+import { professionTag, unitTag } from "@wortschatz/config";
+
 import { fetchRecentExamples } from "./recent-examples";
 import { insertExercise } from "./insert";
 import {
@@ -81,6 +83,19 @@ function override(s: string | undefined): boolean {
 }
 
 /**
+ * Sprint 05 — append the career tags (`beruf:<slug>`, `unit:<slug>`) the
+ * request asked for. Stamped here at save time so a model that ignores
+ * its instructions can never break the tagging contract.
+ */
+function withCareerTags(tags: string[], request: GenerationRequest): string[] {
+  const extra: string[] = [];
+  if (request.professionSlug) extra.push(professionTag(request.professionSlug));
+  if (request.unitSlug) extra.push(unitTag(request.unitSlug));
+  if (extra.length === 0) return tags;
+  return [...new Set([...tags, ...extra])];
+}
+
+/**
  * Map a thrown generator error onto a failure code. Both generators signal
  * the same way: AiRateLimitedError (stops the batch),
  * GenerationValidationError (the remote 422) and GenerationError (the direct
@@ -136,6 +151,8 @@ export async function runGeneration(config: RunConfig): Promise<GenerationResult
   log(
     `[${providerLabel}] ${type} · ${level} · count=${count}` +
       `${request.topic ? ` · topic=${request.topic}` : " · topics=auto"}` +
+      `${request.professionSlug ? ` · beruf=${request.professionSlug}` : ""}` +
+      `${request.unitSlug ? ` · unit=${request.unitSlug}` : ""}` +
       `${dryRun ? " · DRY RUN" : ""}` +
       ` · model=${modelUsed}`,
   );
@@ -168,6 +185,8 @@ export async function runGeneration(config: RunConfig): Promise<GenerationResult
         model: config.model,
       });
 
+      const tags = withCareerTags(ex.tags, request);
+
       const summary: GeneratedExerciseSummary = {
         id: null,
         type,
@@ -178,7 +197,7 @@ export async function runGeneration(config: RunConfig): Promise<GenerationResult
         content: ex.content,
         solution: ex.solution,
         explanation: ex.explanation,
-        tags: ex.tags,
+        tags,
         tip: ex.tip,
         basePromptVersionId: ex.basePromptVersionId ?? null,
       };
@@ -188,7 +207,7 @@ export async function runGeneration(config: RunConfig): Promise<GenerationResult
         log(`  [DRY] ${label} — "${ex.title}"`);
         log(
           JSON.stringify(
-            { title: ex.title, content: ex.content, solution: ex.solution, tags: ex.tags, tip: ex.tip },
+            { title: ex.title, content: ex.content, solution: ex.solution, tags, tip: ex.tip },
             null,
             2,
           ),
@@ -202,7 +221,7 @@ export async function runGeneration(config: RunConfig): Promise<GenerationResult
           solution: ex.solution,
           explanation: ex.explanation,
           tip: ex.tip,
-          tags: ex.tags,
+          tags,
           modelUsed: ex.modelUsed,
           generationSessionId: sessionId || undefined,
           basePromptVersionId: ex.basePromptVersionId ?? null,

@@ -7,6 +7,7 @@
  * boundary — not the wider CefrLevel enum (which includes C1/C2).
  */
 import { z } from "zod";
+import { PROFESSION_SLUGS } from "@wortschatz/config";
 
 import type { GenerationResult } from "@scripts/shared/types";
 
@@ -48,6 +49,15 @@ export const GenerateRequestSchema = z
     noRecent: z.boolean().optional(),
     customPrompt: CustomPromptSchema.optional(),
     savedPromptId: z.string().min(1).optional(),
+    // Sprint 05 — optional career tagging: beruf:<slug> / unit:<slug>
+    // are stamped onto the saved rows by the runner.
+    professionSlug: z.enum(PROFESSION_SLUGS).optional(),
+    unitSlug: z
+      .string()
+      .trim()
+      .regex(/^[a-z][a-z0-9-]*$/)
+      .max(60)
+      .optional(),
   })
   .strict();
 

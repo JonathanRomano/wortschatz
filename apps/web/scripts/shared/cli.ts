@@ -9,11 +9,14 @@
  *   --topic  <string>         (optional; cycles canonical topics if omitted)
  *   --model  <string>         (optional; overrides the provider default)
  *   --delay-ms <n>            (default 500)
+ *   --profession <slug>       (optional; stamps beruf:<slug> on the rows)
+ *   --unit   <slug>           (optional; stamps unit:<slug> on the rows)
  *   --dry-run                 (boolean)
  *   --no-recent               (boolean)
  *   --verbose                 (boolean)
  */
 import type { CefrLevel, ExerciseType } from "@wortschatz/database";
+import { PROFESSION_SLUGS, isProfessionSlug, type ProfessionSlug } from "@wortschatz/config";
 
 import { contentSchemaFor } from "@wortschatz/exercises";
 
@@ -42,6 +45,8 @@ export function parseArgs(argv: string[]): CliArgs {
   let topic: string | undefined;
   let model: string | undefined;
   let delayMs = 500;
+  let profession: ProfessionSlug | undefined;
+  let unit: string | undefined;
   let dryRun = false;
   let noRecent = false;
   let verbose = false;
@@ -89,6 +94,21 @@ export function parseArgs(argv: string[]): CliArgs {
         i++;
         break;
       }
+      case "--profession": {
+        const v = takeValue(argv, i, "--profession").toLowerCase();
+        if (!isProfessionSlug(v)) {
+          fail(
+            `Unknown --profession "${v}". Expected one of: ${PROFESSION_SLUGS.join(", ")}.`,
+          );
+        }
+        profession = v;
+        i++;
+        break;
+      }
+      case "--unit":
+        unit = takeValue(argv, i, "--unit");
+        i++;
+        break;
       case "--dry-run":
         dryRun = true;
         break;
@@ -106,5 +126,17 @@ export function parseArgs(argv: string[]): CliArgs {
   if (!type) fail(`--type is required (one of: ${VALID_TYPES.join(", ")}).`);
   if (!level) fail(`--level is required (one of: ${SUPPORTED_LEVELS.join(", ")}).`);
 
-  return { type, level, count, topic, model, delayMs, dryRun, noRecent, verbose };
+  return {
+    type,
+    level,
+    count,
+    topic,
+    model,
+    delayMs,
+    profession,
+    unit,
+    dryRun,
+    noRecent,
+    verbose,
+  };
 }

@@ -368,7 +368,10 @@
         "preview": "Pré-visualizar prompt",
         "save": "Salvar como modelo",
         "generate": "Gerar",
-        "generating": "Gerando…"
+        "generating": "Gerando…",
+        "profession": "Tag de profissão",
+        "professionHelp": "Opcional — marca as linhas para a trilha daquela profissão",
+        "professionNone": "Nenhuma (conteúdo geral)"
       },
       "preview": {
         "title": "Pré-visualização do prompt",

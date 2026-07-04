@@ -17,6 +17,8 @@ import Autocomplete from "@mui/material/Autocomplete";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
+import { PROFESSION_SLUGS, type ProfessionSlug } from "@wortschatz/config";
+
 import { Card } from "@/components/ui/Card";
 import { EXERCISE_TYPES, GENERATOR_LEVELS } from "@/lib/admin/schemas";
 import { generateExercises, type SavedPromptDTO } from "@/lib/admin/client";
@@ -48,10 +50,12 @@ export function GenerateForm({
 }) {
   const t = useTranslations("admin.generate.form");
   const tTypes = useTranslations("exerciseTypes");
+  const tProfessions = useTranslations("professions");
 
   const [type, setType] = useState<ExType>("FILL_IN_THE_BLANK");
   const [level, setLevel] = useState<Level>("A2");
   const [topic, setTopic] = useState("");
+  const [profession, setProfession] = useState<ProfessionSlug | "">("");
   const [count, setCount] = useState(5);
   const [savedPromptId, setSavedPromptId] = useState("");
   const [system, setSystem] = useState("");
@@ -89,6 +93,7 @@ export function GenerateForm({
     noRecent,
     customPrompt,
     savedPromptId: effectiveSavedId || undefined,
+    professionSlug: profession || undefined,
   });
 
   const onGenerate = async () => {
@@ -164,6 +169,22 @@ export function GenerateForm({
             slotProps={{ htmlInput: { min: 1, max: 20 } }}
             fullWidth
           />
+
+          <TextField
+            select
+            label={t("profession")}
+            helperText={t("professionHelp")}
+            value={profession}
+            onChange={(e) => setProfession(e.target.value as ProfessionSlug | "")}
+            fullWidth
+          >
+            <MenuItem value="">{t("professionNone")}</MenuItem>
+            {PROFESSION_SLUGS.map((slug) => (
+              <MenuItem key={slug} value={slug}>
+                {tProfessions(slug)}
+              </MenuItem>
+            ))}
+          </TextField>
         </Box>
 
         <TextField

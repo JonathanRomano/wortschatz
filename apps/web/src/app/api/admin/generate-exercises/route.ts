@@ -76,6 +76,8 @@ export async function POST(request: Request) {
       noRecent: input.noRecent,
       customPrompt,
       savedPromptId: input.savedPromptId,
+      professionSlug: input.professionSlug,
+      unitSlug: input.unitSlug,
     };
 
     // Pre-create the session so it carries the UI metadata; the runner links

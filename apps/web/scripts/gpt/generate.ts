@@ -46,6 +46,8 @@ async function main() {
       count: args.count,
       dryRun: args.dryRun,
       noRecent: args.noRecent,
+      professionSlug: args.profession,
+      unitSlug: args.unit,
     },
     model: args.model,
     delayMs: args.delayMs,

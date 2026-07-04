@@ -13,6 +13,7 @@
  * types consumed by run.ts and the admin route.
  */
 import type { CefrLevel, ExerciseType } from "@wortschatz/database";
+import type { ProfessionSlug } from "@wortschatz/config";
 import type {
   CustomPrompt,
   PromptInput,
@@ -80,6 +81,10 @@ export interface CliArgs {
   delayMs: number;
   /** Override the provider's default model. */
   model?: string;
+  /** Sprint 05 — stamp `beruf:<slug>` on every generated exercise. */
+  profession?: ProfessionSlug;
+  /** Sprint 05 — stamp `unit:<slug>` (track-unit membership). */
+  unit?: string;
 }
 
 // --- Generation request / context / result ----------------------------
@@ -100,6 +105,14 @@ export interface GenerationRequest {
   customPrompt?: CustomPrompt;
   /** For UI calls only — links the run to a saved prompt template. */
   savedPromptId?: string;
+  /**
+   * Sprint 05 — when set, every exercise this run saves gets the
+   * `beruf:<slug>` tag appended (career-track content). Tagging happens
+   * at save time in run.ts, never in the model output.
+   */
+  professionSlug?: ProfessionSlug;
+  /** Sprint 05 — companion `unit:<slug>` tag (track-unit membership). */
+  unitSlug?: string;
 }
 
 /**

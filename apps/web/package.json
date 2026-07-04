@@ -14,7 +14,8 @@
     "db:generate-fitb": "tsx scripts/generate-fitb-exercises.ts",
     "db:seed-muenzen-history": "tsx scripts/seed-muenzen-history.ts",
     "gen:claude": "tsx scripts/claude/generate.ts",
-    "gen:gpt": "tsx scripts/gpt/generate.ts"
+    "gen:gpt": "tsx scripts/gpt/generate.ts",
+    "gen:seed-tracks": "tsx scripts/seed-tracks.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",

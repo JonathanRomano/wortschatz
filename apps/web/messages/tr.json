@@ -368,7 +368,10 @@
         "preview": "İstemi önizle",
         "save": "Şablon olarak kaydet",
         "generate": "Üret",
-        "generating": "Üretiliyor…"
+        "generating": "Üretiliyor…",
+        "profession": "Meslek etiketi",
+        "professionHelp": "İsteğe bağlı — satırları o kariyer rotası için etiketler",
+        "professionNone": "Yok (genel içerik)"
       },
       "preview": {
         "title": "İstem önizlemesi",

@@ -183,3 +183,64 @@ describe("runGeneration — UI context", () => {
     expect(result.sessionId).toBe("sess-ui");
   });
 });
+
+describe("runGeneration — career tags (Sprint 05)", () => {
+  it("stamps beruf:<slug> and unit:<slug> onto inserted rows", async () => {
+    await runGeneration(
+      config({
+        request: { ...baseRequest, professionSlug: "pflege", unitSlug: "uebergabe" },
+      }),
+    );
+
+    const data = mocks.exerciseCreate.mock.calls[0]![0].data;
+    expect(data.tags).toEqual(["food", "beruf:pflege", "unit:uebergabe"]);
+  });
+
+  it("stamps only the profession tag when no unit is given", async () => {
+    await runGeneration(
+      config({ request: { ...baseRequest, professionSlug: "it" } }),
+    );
+
+    const data = mocks.exerciseCreate.mock.calls[0]![0].data;
+    expect(data.tags).toEqual(["food", "beruf:it"]);
+  });
+
+  it("dedupes when the model already emitted the tag", async () => {
+    const generate = generatorReturning({
+      ...VALID_PAYLOAD,
+      tags: ["beruf:gastro", "essen"],
+    });
+    await runGeneration(
+      config({ generate, request: { ...baseRequest, professionSlug: "gastro" } }),
+    );
+
+    const data = mocks.exerciseCreate.mock.calls[0]![0].data;
+    expect(data.tags).toEqual(["beruf:gastro", "essen"]);
+  });
+
+  it("leaves tags untouched for untagged (general) runs", async () => {
+    await runGeneration(config());
+    const data = mocks.exerciseCreate.mock.calls[0]![0].data;
+    expect(data.tags).toEqual(["food"]);
+  });
+
+  it("carries the stamped tags into dry-run summaries too", async () => {
+    const result = await runGeneration(
+      config({
+        request: {
+          ...baseRequest,
+          dryRun: true,
+          professionSlug: "handwerk",
+          unitSlug: "baustelle",
+        },
+      }),
+    );
+
+    expect(mocks.exerciseCreate).not.toHaveBeenCalled();
+    expect(result.generated[0]!.tags).toEqual([
+      "food",
+      "beruf:handwerk",
+      "unit:baustelle",
+    ]);
+  });
+});
