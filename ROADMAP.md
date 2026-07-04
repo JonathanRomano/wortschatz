@@ -4,6 +4,18 @@ This document captures everything that was scaffolded vs. left as TODO in the
 foundational pass. Each item lists exact file paths and what the next session
 needs to do.
 
+> **Sprint 05 ("Beruf") completed 2026-07-04** — the professional pivot:
+> profession on the profile, `beruf:`/`unit:` tags on `Exercise.tags`, a
+> skippable `/setup` flow, static track curricula (4 professions × 5 B1
+> units), profession-aware generation + `pnpm gen:seed-tracks`, the
+> track engine + "Dein Weg" page + dashboard card, browse `?beruf=`
+> filter, and a profession-first draw. All behind `CAREER_TRACKS` /
+> `PREFER_PROFESSION_MATCH`. 752 web tests green; one migration
+> (`20260704120000_user_profession_and_tags_index`) **not yet applied**.
+> Spec + results in `SPRINT_05.md`. Next up (in order): seed the track
+> content with `gen:seed-tracks`, A2/B2 units, exam-prep mode, AI
+> workplace roleplay, CV/cover-letter review preset.
+
 > **Sprint 02 completed** — all 8 tasks shipped across roughly 8 `feat:`
 > commits + 1 initial `chore:` (git init). **427 tests across 33 files,
 > all green**; `npm run build` and `npx tsc --noEmit` both clean. See

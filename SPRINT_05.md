@@ -272,3 +272,38 @@ theme tokens only.
    existing `/ai/review-text` pipeline (cheapest big win).
 5. Promote tags to a `Tag` table only when admins need to manage them in
    the UI.
+
+---
+
+## Results (sprint wrap-up, 2026-07-04)
+
+All eight tasks shipped, one semantic commit each, every commit green on
+typecheck + tests + build. Web test count 662 → **752**.
+
+| Task | Commit | Delivered |
+| --- | --- | --- |
+| 1 | `feat(beruf): … profession foundation` | config slugs + helpers, `User.profession`/`targetLevel`, GIN index migration, i18n ×4, `ProfessionChip` |
+| 2 | `feat(beruf): … profile career section + setup flow` | Career section on the profile, 3-step skippable `/setup`, seen-cookie redirect |
+| 3 | `feat(beruf): … track curricula` | 4 professions × 5 B1 units, localized titles, German topics, content test |
+| 4 | `feat(beruf): … profession-aware generation` | save-time `beruf:`/`unit:` stamping, CLI flags, admin select, `gen:seed-tracks` |
+| 5 | `feat(beruf): … track engine` | progress + sequential unlock + daily plan (pure, 100% branch), batched queries |
+| 6 | `feat(beruf): … Dein Weg page + dashboard card` | `/track` with plan + unit list + empty states, dashboard teaser card |
+| 7 | `feat(beruf): … filter + profession-first draw` | `?beruf=` browse filter, `PREFER_PROFESSION_MATCH` draw tiers, detail-page chips |
+| 8 | `docs(beruf): …` | CLAUDE.md section, ROADMAP note, this results section, i18n parity audit (482 keys ×4, identical) |
+
+**Deviations from the spec (all recorded inline as they happened):**
+
+- Icons moved out of `@wortschatz/config` into `ProfessionChip`
+  (config is UI-agnostic and consumed by apps/api).
+- The old 50/day seeding concern was moot — `GENERATE_EXERCISE` is
+  5000/day on current main; the whole seed fits one run.
+- "Exercise cards show ProfessionChips" landed on the exercise *detail*
+  header — the browse page lists types, not individual exercises.
+- The browse filter scopes the per-type availability counts; the
+  per-type runner is scoped via the draw preference rather than a query
+  param.
+
+**Left deliberately undone (next sprints):** actually running
+`gen:seed-tracks` against the live DB (needs `ANTHROPIC_API_KEY` + a
+human skim of the drafts), applying the migration, a header nav link to
+`/track`, A2/B2 units, exam-prep mode, AI roleplay, CV review preset.

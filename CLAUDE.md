@@ -313,6 +313,57 @@ fallback. Full guide in [docs/prompts.md](./docs/prompts.md).
   no `GenerationSession`. The 40 seed rows + v1 content live in
   `packages/database/prisma/seed-data/base-prompts.ts`; the seed is idempotent.
 
+## Career tracks — "Beruf" (Sprint 05)
+
+The professional pivot: the user picks their **profession** on the profile
+and profession-tagged exercises reach them through a guided track. Product
+decisions + full design in [SPRINT_05.md](./SPRINT_05.md).
+
+- **Profession tags, not an enum.** Slugs live in
+  `packages/config/src/professions.ts` (`PROFESSION_SLUGS` = `pflege`, `it`,
+  `gastro`, `handwerk`) and are stored on the existing `Exercise.tags`
+  column as `beruf:<slug>` plus `unit:<slug>` for track-unit membership
+  (GIN-indexed). Always build/parse tags via the config helpers
+  (`professionTag`, `unitTag`, `professionsFromTags`, `unitFromTags`,
+  `isProfessionSlug`) — never inline the strings. Adding a profession =
+  config slug + `professions`/`professionDescriptions` i18n ×4 + a track
+  file + generated content. **No migration.**
+- **User columns.** `User.profession` (free-form TEXT validated against the
+  config, like `nativeLanguage`) and `User.targetLevel` (goal CEFR level).
+  NULL profession = pre-pivot behavior everywhere.
+- **Setup flow.** `/setup` (3 steps, skippable) runs once per browser: the
+  dashboard redirects there when `CAREER_TRACKS` is on, `profession` is
+  NULL, and the `SETUP_SEEN_COOKIE` cookie is absent. Skipping stamps only
+  the cookie — "learning for myself" users keep NULL and are never
+  re-prompted on that browser.
+- **Track content is static code** (`src/content/tracks/<slug>.ts`, same
+  pattern as exercise-intros): 5 B1 units per profession with localized
+  titles and a German `topic` string. Unit membership = `beruf:` + `unit:`
+  tags on the exercise; unit completion = `targetCount` distinct passes
+  (score ≥ 60), target capped at the published pool size.
+- **Engine split** mirrors the dashboard: pure logic in
+  `src/lib/track/engine.ts` (progress, sequential unlock, daily plan —
+  weak-first, spills into later units, today's passes checked off),
+  queries batched in `src/lib/track/queries.ts`. UI: `/track` ("Dein Weg")
+  + the dashboard `TrackCard` (fed through the dashboard's existing
+  `Promise.all` — don't add ad-hoc Prisma).
+- **Generation tagging happens at save time** in `runGeneration`
+  (`professionSlug`/`unitSlug` on the request) — the model output can't
+  break it, and profession context rides **inside the `topic` string**, so
+  the locked prompt seam and the parity baseline stay untouched. CLI:
+  `--profession`/`--unit` on `gen:claude`/`gen:gpt`;
+  `pnpm gen:seed-tracks` walks all curricula (8 types × every unit;
+  supports `--profession`, `--unit`, `--dry-run`). Admin generate has an
+  optional profession select.
+- **Selection preference.** `PREFER_PROFESSION_MATCH` (in
+  `lib/exercises/selection.ts`) makes the random draw try every tier
+  profession-scoped first (weak∧beruf → unseen∧beruf → all∧beruf → weak →
+  unseen → all). Browse accepts `?beruf=<slug>` URL filtering.
+- **Flags:** `CAREER_TRACKS` (`lib/track/flags.ts`) gates setup redirect,
+  `/track`, the dashboard card, and the browse filter;
+  `PREFER_PROFESSION_MATCH` gates the draw preference. Both off → the app
+  behaves exactly pre-pivot.
+
 ## Testing
 
 `vitest` is the runner; tests live under `__tests__/` directories beside
@@ -482,6 +533,11 @@ Constants, TTLs, rate limits, pricing:
   depend on them; the prompt-parity test guards against silent drift. The
   `GenerationSession` table is the long-term foundation for curation: don't
   denormalize it or skip writing it for performance without flagging it.
+- The `beruf:`/`unit:` tag contract (Sprint 05) — tags are the join between
+  professions, track units, and exercises. Don't rename the prefixes, inline
+  the strings instead of the `@wortschatz/config` helpers, or promote
+  professions to a Prisma enum (extensibility-without-migration is the
+  point — see SPRINT_05.md).
 - The hardcoded per-type prompt files are the **fallback of record** for
   DB-backed curation — don't edit their text to "fix a prompt" (edit the DB
   version via `/admin/prompts/base`), and never remove the file fallback or the
